@@ -5,10 +5,10 @@ from .models import User
 
 
 class LoginForm(Form):
-    username = StringField('Username', validators=[DataRequired(), Length(max=255)])
+    username = StringField('Usuário', validators=[DataRequired(), Length(max=255)])
     email = StringField('Email', validators=[DataRequired(), Email()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    remember = BooleanField("Remember Me")
+    password = PasswordField('Senha', validators=[DataRequired()])
+    remember = BooleanField("Me lembre")
 
     def validate(self):
         check_validate = super(LoginForm, self).validate()
@@ -29,13 +29,13 @@ class LoginForm(Form):
 
 
 class RegisterForm(Form):
-    username = StringField('Username', [DataRequired(), Length(max=50),
+    username = StringField('Usuário', [DataRequired(), Length(max=50),
                                         Regexp('^[A-Za-z][A-Za-z0-9_.]*$', 0,
                                                'Nome deve conter somente letras, '
                                                'números, ponto ou sublinha')])
     email = StringField('Email', [DataRequired(), Email()])
-    password = PasswordField('Password', [DataRequired(), Length(min=8)])
-    confirm = PasswordField('Confirm Password', [DataRequired(), EqualTo('password')])
+    password = PasswordField('Senha', [DataRequired(), Length(min=8)])
+    confirm = PasswordField('Confirme a Senha', [DataRequired(), EqualTo('password')])
 
     def validate(self):
         # if our validators do not pass
