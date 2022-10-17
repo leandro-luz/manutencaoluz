@@ -14,5 +14,4 @@ faker
 email_validator
 itsdangerous
 python-dotenv
-sendgrid
 gunicorn

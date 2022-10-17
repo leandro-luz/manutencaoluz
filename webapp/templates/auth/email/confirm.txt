@@ -1,0 +1,15 @@
+Caríssimo(a) {{ user.username }},
+
+Bem vindo ao Manutenção Luz!
+
+Para confirmar sua conta, por favor clique no link abaixo:
+
+{{ url_for('auth.confirm', token=token, _external=True) }}
+
+Atenciosamente,
+
+Time Manutenção Luz
+
+Aviso: não responder para este endereço de email, pois ele não é monitorado.<
+
+

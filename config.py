@@ -1,9 +1,14 @@
 class Config(object):
     SECRET_KEY = "123"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SENDGRID_API_KEY = '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'
-    MAIL_FROM = 'guguleo2019@gmail.com'
     DEBUG_TB_INTERCEPT_REDIRECTS = False
+    MAIL_SERVER = 'smtp-mail.outlook.com'
+    MAIL_PORT = 587
+    MAIL_SENDER = 'Time Manutenção Luz <manutencaoluz@outlook.com>'
+    MAIL_USERNAME = 'manutencaoluz@outlook.com'
+    MAIL_PASSWORD = 'Aaa-11111'
+    MAIL_USE_TLS = True
+    MAIL_USE_SSL = False
 
 
 class ProdConfig(Config):

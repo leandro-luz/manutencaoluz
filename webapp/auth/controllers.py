@@ -6,8 +6,10 @@ from flask import (render_template,
                    flash)
 from flask_login import login_user, logout_user, current_user, login_required
 from webapp.auth.models import db, User
-from .forms import LoginForm, RegisterForm
 from webapp.email import send_email
+from .forms import LoginForm, RegisterForm
+
+
 
 auth_blueprint = Blueprint(
     'auth',
@@ -47,14 +49,11 @@ def register():
         new_user.set_password(form.password.data)
         db.session.add(new_user)
         db.session.commit()
-
         token = new_user.create_token()
-        send_email('Finalização de cadastro - Manutenção Luz',
-                   form.email.data,
-                   render_template('/email/confirm.html',
-                                   user=new_user,
-                                   token=token)
-                   )
+        send_email(new_user.email,
+                   'Confirmação de Conta',
+                   'auth/email/confirm',
+                   user=new_user, token=token)
 
         flash("Para finalizar o cadastro, foi enviado a confirmação para o seu email.", category="success")
         return redirect(url_for('.login'))
@@ -77,17 +76,12 @@ def confirm(token):
 
 @auth_blueprint.route('/<string:username>/confirm', methods=['GET', 'POST'])
 def resend_confirmation(username):
-    print('return: ', username)
     user = User.query.filter_by(username=username).one()
-    print('username: ', user.username, user.password)
     token = user.create_token()
-    print(token)
-    send_email('Finalização de cadastro - Manutenção Luz',
-               user.email,
-               render_template('/email/confirm.html',
-                               user=user,
-                               token=token)
-               )
+    send_email(user.email,
+               'Confirmação de Conta',
+               'auth/email/confirm',
+               user=user, token=token)
 
     flash("Um novo email de confirmação foi enviado para o seu email.", category="success")
     return redirect(url_for('main.index'))

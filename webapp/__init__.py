@@ -2,12 +2,12 @@ from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_debugtoolbar import DebugToolbarExtension
-# from flask_mail import Mail
+from flask_mail import Mail
 
 db = SQLAlchemy()
 migrate = Migrate()
 debug_toolbar = DebugToolbarExtension()
-# mail = Mail()
+mail = Mail()
 
 
 def create_app(object_name):
@@ -16,7 +16,7 @@ def create_app(object_name):
 
     db.init_app(app)
     migrate.init_app(app, db)
-    # mail.init_app(app)
+    mail.init_app(app)
     debug_toolbar.init_app(app)
 
     from .auth import create_module as auth_create_module
