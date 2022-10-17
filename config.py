@@ -8,7 +8,7 @@ class Config(object):
 
 class ProdConfig(Config):
     # SQLALCHEMY_DATABASE_URI = 'mysql://ba59712aa64752:bfe80c0c@us-cdbr-east-06.cleardb.net/heroku_4be8a3175e5b04d'
-    SQLALCHEMY_DATABASE_URI = 'mysql://b8d4068ee1d780:7948459d@us-cdbr-east-06.cleardb.net/heroku_49991105f1c285b'
+    SQLALCHEMY_DATABASE_URI = 'mysql://bbc6cd19f46ca6:866f1a3b@us-cdbr-east-06.cleardb.net/heroku_dd95a3d8007484b'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
