@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Manutenção Luz - Conta não confirmada{% endblock %}
+{% block body %}
+<div class="page-header">
+    <h2>
+        Caríssimo(a), {{ user.username }}!
+    </h2>
+    <br>
+    <h3>Sua conta ainda não foi confirmada.</h3>
+    <br>
+    <p>
+        Antes de acessar esta plataforma, você precisa validar sua conta.
+    </p>
+    <p>
+        Verifique sua caixa de entrada ou spam, você provavelmente recebeu um email
+        com o link de confirmação da sua conta.
+    </p>
+    <br>
+    <p>
+        Não recebeu o email e gostaria de solicitar novamente?
+        Por favor <a href="{{ url_for('auth.resend_confirmation', username=user.username) }}">clique aqui</a>
+    </p>
+    <br>
+    <br>
+</div>
+{% endblock %}

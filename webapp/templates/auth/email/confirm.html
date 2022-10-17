@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<p>Caríssimo(a) {{ user.username }},</p>
+<br>
+<p>Bem vindo ao <b>Manutenção Luz</b>!</p>
+<p>Para confirmar sua conta, por favor <a href="{{ url_for('auth.confirm', token=token, _external=True) }}">clique aqui</a>.</p>
+<p>Uma outra forma para confirmar, é copiar o link abaixo e colar na sua barra de endereço</p>
+<p><small>"{{ url_for('auth.confirm', token=token, _external=True) }}"</small></p>
+<br>
+<br>
+<p>Atenciosamente,</p>
+<p>Time Manutenção Luz</p>
+<br>
+<br>
+<br>
+<br>
+<p><small>Aviso: não responder para este endereço de email, pois ele não é monitorado.</small></p>
+
+
+</body>
+</html>
