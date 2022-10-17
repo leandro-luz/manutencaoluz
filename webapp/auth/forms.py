@@ -17,12 +17,12 @@ class LoginForm(Form):
         user = User.query.filter_by(username=self.username.data).first()
 
         if not user:
-            self.username.errors.append('Usuário não cadastrado')
+            self.username.errors.append('Usuário ou senha não válidos')
             return False
 
         # Do the passwords match
         if not user.check_password(self.password.data):
-            self.password.errors.append('Senha não válida')
+            self.username.errors.append('Usuário ou senha não válidos')
             return False
 
         return True
@@ -47,6 +47,12 @@ class RegisterForm(Form):
         user = User.query.filter_by(username=self.username.data).first()
         if user:
             self.username.errors.append("Usuário já cadastrado com este nome")
+            return False
+
+        # Is the email already being used
+        user = User.query.filter_by(email=self.email.data).first()
+        if user:
+            self.username.errors.append("Usuário já cadastrado com este email")
             return False
 
         return True
