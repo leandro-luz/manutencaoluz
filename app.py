@@ -8,4 +8,4 @@ app = create_app('config.%sConfig' % env.capitalize())
 register(app)
 
 if __name__ == '__main__':
-    app.run()
+    app.run(Debug=True)
