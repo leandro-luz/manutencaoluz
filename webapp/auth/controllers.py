@@ -9,8 +9,6 @@ from webapp.auth.models import db, User
 from webapp.email import send_email
 from .forms import LoginForm, RegisterForm
 
-
-
 auth_blueprint = Blueprint(
     'auth',
     __name__,
@@ -26,6 +24,7 @@ def login():
         user = User.query.filter_by(username=form.username.data).one()
         if user.confirmed:
             login_user(user, remember=form.remember.data)
+            user.ping()
             flash("Você está dentro do sistema.", category="success")
             return redirect(url_for('sistema.index'))
         return render_template('unconfirmed.html', user=user)
@@ -44,8 +43,8 @@ def logout():
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
-        new_user = User(form.username.data)
-        new_user.set_email(form.email.data)
+        new_user = User(form.username.data.lower())
+        new_user.set_email(form.email.data.lower())
         new_user.set_password(form.password.data)
         db.session.add(new_user)
         db.session.commit()
@@ -66,6 +65,7 @@ def confirm(token):
     user = User.query.filter_by(id=user_id).one()
     if user is not None and not user.confirmed:
         user.set_confirmed(True)
+
         db.session.add(user)
         db.session.commit()
         flash('Sua conta foi confirmada, Obrigado', category='success')

@@ -18,6 +18,8 @@ class User(db.Model):
     email = db.Column(db.String(50), nullable=False, index=True, unique=True)
     password = db.Column(db.String(50))
     confirmed = db.Column(db.Boolean, default=False)
+    member_since = db.Column(db.DateTime(), nullable=True)
+    last_seen = db.Column(db.DateTime(), nullable=True)
 
     roles = db.relationship(
         'Role',
@@ -40,11 +42,16 @@ class User(db.Model):
                 return True
         return False
 
+    def get_id(self):
+        return str(self.id)
+
     def set_email(self, email):
         self.email = email
 
     def set_confirmed(self, confirmed):
         self.confirmed = confirmed
+        print("confirmou o email")
+        self.member_since = datetime.datetime.now()
 
     def set_password(self, password):
         # self.password = bcrypt.generate_password_hash(password)
@@ -53,6 +60,11 @@ class User(db.Model):
     def check_password(self, password):
         # return bcrypt.check_password_hash(self.password, password)
         return self.password == password
+
+    def ping(self):
+        self.last_seen = datetime.datetime.now()
+        db.session.add(self)
+        db.session.commit()
 
     @property
     def is_authenticated(self):
@@ -71,9 +83,6 @@ class User(db.Model):
             return True
         else:
             return False
-
-    def get_id(self):
-        return str(self.id)
 
     def create_token(self, expiration=600):
         token = jwt.encode(
