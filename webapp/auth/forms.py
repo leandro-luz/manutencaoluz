@@ -75,3 +75,31 @@ class ChangePasswordForm(Form):
             return False
 
         return True
+
+
+class PasswordResetRequestForm(Form):
+    email = StringField('Email', validators=[DataRequired(), Length(1, 64),
+                                             Email()])
+    submit = SubmitField('Reset Password')
+
+    def validate(self):
+        # if our validators do not pass
+        check_validate = super(PasswordResetRequestForm, self).validate()
+        if not check_validate:
+            return False
+
+        return True
+
+
+class PasswordResetForm(Form):
+    password = PasswordField('Nova Senha', validators=[
+        DataRequired(), EqualTo('password2', message='As senhas devem ser iguais')])
+    password2 = PasswordField('Confirme a Senha', validators=[DataRequired()])
+    submit = SubmitField('Reset Password')
+
+    def validate(self):
+        # if our validators do not pass
+        check_validate = super(PasswordResetForm, self).validate()
+        if not check_validate:
+            return False
+        return True

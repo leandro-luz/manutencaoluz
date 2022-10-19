@@ -37,7 +37,7 @@
             <input class="btn btn-primary" id="login_button"
                    type="submit" value="Acessar">
             <p>
-            <p>Esqueceu a sua senha? <a href="#">Clique para resetar ela</a>.</p>
+            <p>Esqueceu a sua senha? <a href="{{ url_for('auth.password_reset_request') }}">Clique para resetar ela</a>.</p>
             <p>
             <p>Novo Usuário? <a href="{{ url_for('auth.register') }}">Clique aqui para registrar</a>.</p>
 

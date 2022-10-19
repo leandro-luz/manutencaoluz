@@ -83,9 +83,9 @@ class User(db.Model):
         else:
             return False
 
-    def create_token(self, expiration=600):
+    def create_token(self, tipo, expiration=60):
         token = jwt.encode(
-            {"id": self.id,
+            {tipo: self.id,
              "exp": datetime.datetime.now(tz=datetime.timezone.utc)
                     + datetime.timedelta(seconds=expiration)},
             config.Config.SECRET_KEY,
@@ -94,7 +94,7 @@ class User(db.Model):
         return token
 
     @staticmethod
-    def verify_token(token):
+    def verify_token(tipo, token):
         try:
             data = jwt.decode(
                 token,
@@ -103,12 +103,8 @@ class User(db.Model):
                 algorithms=["HS256"]
             )
         except:
-            return False
-        # if data.get('id') != self.id:
-        #     return False
-        # self.confirmed = True
-        # db.session.add(self)
-        return data.get('id')
+            return False, 0
+        return True, data.get(tipo)
 
 
 class Role(db.Model):
