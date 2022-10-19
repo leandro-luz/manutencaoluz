@@ -3,7 +3,7 @@ from webapp import db, migrate, create_app
 from webapp.auth.models import User
 
 
-env = os.environ.get('WEBAPP_ENV', 'prod')
+env = os.environ.get('WEBAPP_ENV', 'dev')
 app = create_app('config.%sConfig' % env.capitalize())
 
 

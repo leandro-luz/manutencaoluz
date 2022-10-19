@@ -25,23 +25,28 @@
                 {% endif %}
                 {{ form.password(class_='form-control') }}
             </div>
-            <div class="form-group">
-                {{ form.remember.label }}
-                {% if form.remember.errors %}
-                {% for e in form.remember.errors %}
-                <p class="help-block">{{ e }}</p>
-                {% endfor %}
-                {% endif %}
-                {{ form.remember(class_='form-control') }}
-            </div>
-            <input class="btn btn-primary" id="login_button" type="submit" value="Acessar">
+            <!--            <div class="form-group">-->
+            <!--                {{ form.remember.label }}-->
+            <!--                {% if form.remember.errors %}-->
+            <!--                {% for e in form.remember.errors %}-->
+            <!--                <p class="help-block">{{ e }}</p>-->
+            <!--                {% endfor %}-->
+            <!--                {% endif %}-->
+            <!--                {{ form.remember(class_='form-control') }}-->
+            <!--            </div>-->
+            <input class="btn btn-primary" id="login_button"
+                   type="submit" value="Acessar">
+            <p>
+            <p>Esqueceu a sua senha? <a href="#">Clique para resetar ela</a>.</p>
+            <p>
+            <p>Novo Usuário? <a href="{{ url_for('auth.register') }}">Clique aqui para registrar</a>.</p>
+
         </form>
 
     </div>
     <div class="col-md-4"></div>
-
 </div>
-    <br>
-    <br>
-    <br>
+<br>
+<br>
+<br>
 {% endblock %}

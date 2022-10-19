@@ -7,7 +7,7 @@ from flask import (render_template,
 from flask_login import login_user, logout_user, current_user, login_required
 from webapp.auth.models import db, User
 from webapp.email import send_email
-from .forms import LoginForm, RegisterForm
+from .forms import LoginForm, RegisterForm, ChangePasswordForm
 
 auth_blueprint = Blueprint(
     'auth',
@@ -69,6 +69,7 @@ def confirm(token):
         db.session.add(user)
         db.session.commit()
         flash('Sua conta foi confirmada, Obrigado', category='success')
+        return redirect(url_for('auth.login'))
     else:
         flash('O link para confirmação é invalido ou está expirado!', category='error')
     return redirect(url_for('main.index'))
@@ -85,3 +86,19 @@ def resend_confirmation(username):
 
     flash("Um novo email de confirmação foi enviado para o seu email.", category="success")
     return redirect(url_for('main.index'))
+
+
+@auth_blueprint.route('/change_password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    form = ChangePasswordForm()
+    if form.validate_on_submit():
+        if current_user.check_password(form.old_password.data):
+            current_user.password = form.password.data
+            db.session.add(current_user)
+            db.session.commit()
+            flash("Sua senha foi atualizada", category="sucess")
+            return redirect(url_for('main.index'))
+        else:
+            flash('Senha inválida', category="error")
+    return render_template("auth/change_password.html", form=form)

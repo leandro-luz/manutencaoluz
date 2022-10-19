@@ -50,7 +50,6 @@ class User(db.Model):
 
     def set_confirmed(self, confirmed):
         self.confirmed = confirmed
-        print("confirmou o email")
         self.member_since = datetime.datetime.now()
 
     def set_password(self, password):
