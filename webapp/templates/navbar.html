@@ -16,7 +16,7 @@
                 <ul class="dropdown-menu">
                     <li><a href="#">Conta</a></li>
                     <li><a href="{{ url_for('auth.change_password') }}">Trocar senha</a></li>
-                    <li><a href="#">Trocar email</a></li>
+                    <li><a href="{{ url_for('auth.change_email_request') }}">Trocar email</a></li>
                     <li><a href="{{ url_for('auth.logout') }}">Desconectar</a></li>
                 </ul>
             </li>

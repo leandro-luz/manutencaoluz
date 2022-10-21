@@ -103,3 +103,17 @@ class PasswordResetForm(Form):
         if not check_validate:
             return False
         return True
+
+
+class ChangeEmailForm(Form):
+    email = StringField('Novo Email', validators=[DataRequired(), Length(1, 64),
+                                                 Email()])
+    password = PasswordField('Senha', validators=[DataRequired()])
+    submit = SubmitField('Atualizar')
+
+    def validate(self):
+        if User.query.filter_by(email=self.email.data.lower()).first() is not None:
+            return False
+
+
+        return True

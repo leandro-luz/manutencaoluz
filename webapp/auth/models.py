@@ -83,9 +83,10 @@ class User(db.Model):
         else:
             return False
 
-    def create_token(self, tipo, expiration=60):
+    def create_token(self, expiration=60):
         token = jwt.encode(
-            {tipo: self.id,
+            {"id": self.id,
+             "email": self.email,
              "exp": datetime.datetime.now(tz=datetime.timezone.utc)
                     + datetime.timedelta(seconds=expiration)},
             config.Config.SECRET_KEY,
