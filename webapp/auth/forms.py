@@ -5,9 +5,12 @@ from .models import User
 
 
 class LoginForm(Form):
-    username = StringField('Usuário', validators=[DataRequired(), Length(max=255)])
-    email = StringField('Email', validators=[DataRequired(), Email()])
-    password = PasswordField('Senha', validators=[DataRequired()])
+    username = StringField('Usuário', validators=[DataRequired(), Length(max=255)],
+                           render_kw={"placeholder": "Digite o seu nome"})
+    email = StringField('Email', validators=[DataRequired(), Email()],
+                        render_kw={"placeholder": "Digite o seu email"})
+    password = PasswordField('Senha', validators=[DataRequired()],
+                             render_kw={"placeholder": "Digite a sua senha"})
     remember = BooleanField("Me lembre")
     submit = SubmitField("Enviar")
 
@@ -33,10 +36,14 @@ class RegisterForm(Form):
     username = StringField('Usuário', [DataRequired(), Length(max=50),
                                        Regexp('^[A-Za-z][A-Za-z0-9_.]*$', 0,
                                               'Nome deve conter somente letras, '
-                                              'números, ponto ou sublinha')])
-    email = StringField('Email', [DataRequired(), Email()])
-    password = PasswordField('Senha', [DataRequired(), Length(min=8)])
-    confirm = PasswordField('Confirme a Senha', [DataRequired(), EqualTo('password')])
+                                              'números, ponto ou sublinha')],
+                           render_kw={"placeholder": "Digite o seu nome"})
+    email = StringField('Email', [DataRequired(), Email()],
+                        render_kw={"placeholder": "Digite o seu email"})
+    password = PasswordField('Senha', [DataRequired(), Length(min=8)],
+                             render_kw={"placeholder": "Digite a sua senha"})
+    confirm = PasswordField('Confirme a Senha', [DataRequired(), EqualTo('password')],
+                            render_kw={"placeholder": "Confirme a sua senha"})
     submit = SubmitField('Registrar')
 
     def validate(self):
@@ -61,11 +68,14 @@ class RegisterForm(Form):
 
 
 class ChangePasswordForm(Form):
-    old_password = PasswordField('Senha antiga', validators=[DataRequired()])
+    old_password = PasswordField('Senha antiga', validators=[DataRequired()],
+                                 render_kw={"placeholder": "Digite a senha antiga"})
     password = PasswordField('Nova senha', validators=[
-        DataRequired(), EqualTo('password2', message='As senhas devem ser iguais!')])
+        DataRequired(), EqualTo('password2', message='As senhas devem ser iguais!')],
+                             render_kw={"placeholder": "Digite a nova senha"})
     password2 = PasswordField('Confirme a nova senha',
-                              validators=[DataRequired()])
+                              validators=[DataRequired()],
+                              render_kw={"placeholder": "Confirme a nova senha"})
     submit = SubmitField('Atualizar')
 
     def validate(self):
@@ -79,7 +89,8 @@ class ChangePasswordForm(Form):
 
 class PasswordResetRequestForm(Form):
     email = StringField('Email', validators=[DataRequired(), Length(1, 64),
-                                             Email()])
+                                             Email()],
+                        render_kw={"placeholder": "Digite o seu email"})
     submit = SubmitField('Reset Password')
 
     def validate(self):
@@ -107,13 +118,14 @@ class PasswordResetForm(Form):
 
 class ChangeEmailForm(Form):
     email = StringField('Novo Email', validators=[DataRequired(), Length(1, 64),
-                                                 Email()])
-    password = PasswordField('Senha', validators=[DataRequired()])
+                                                  Email()],
+                        render_kw={"placeholder": "Digite o novo email"})
+    password = PasswordField('Senha', validators=[DataRequired()],
+                             render_kw={"placeholder": "Digite a sua senha"})
     submit = SubmitField('Atualizar')
 
     def validate(self):
         if User.query.filter_by(email=self.email.data.lower()).first() is not None:
             return False
-
 
         return True

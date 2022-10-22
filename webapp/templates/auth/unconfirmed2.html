@@ -1,0 +1,33 @@
+{% extends "base2.html" %}
+{% block body %}
+<body>
+<div class="container col-11 col-md-11" id="form-container">
+    <div class="row gx-5">
+        <div class="col-md-6">
+            <h3>ACESSO NEGADO</h3>
+            <p></p>
+            <p>Sua conta ainda não foi confirmada.</p>
+            <p>
+                Antes de acessar esta plataforma, você precisa validar sua conta.
+            </p>
+            <p>
+                Verifique sua caixa de entrada ou spam, você provavelmente recebeu um email
+                com o link de confirmação da sua conta.
+            </p>
+
+        </div>
+        <div class="col-md-6">
+            <div class="row align-items-center">
+                <div class="col-12">
+                    <img alt="Tela de Registro" class="img-fluid" src="/static/img/notify.svg">
+                </div>
+                <div class="col-12" id="link-register-user">
+                    <a href="{{ url_for('auth.resend_confirmation', username=user.username) }}">
+                        Não recebeu o email e gostaria de solicitar novamente?</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+{% endblock %}

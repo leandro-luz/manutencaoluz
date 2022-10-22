@@ -33,7 +33,7 @@ def before_request():
 def unconfirmed():
     if current_user.is_anonymous or current_user.confirmed:
         return redirect(url_for('main.index'))
-    return render_template('auth/unconfirmed.html')
+    return redirect(url_for('auth.login'))
 
 
 @auth_blueprint.route('/login', methods=['GET', 'POST'])
@@ -46,8 +46,8 @@ def login():
             user.ping()
             flash("Você está dentro do sistema.", category="success")
             return redirect(url_for('sistema.index'))
-        return render_template('unconfirmed.html', user=user)
-    return render_template('login.html', form=form)
+        return render_template('unconfirmed2.html', user=user)
+    return render_template('login2.html', form=form)
 
 
 @auth_blueprint.route('/logout', methods=['GET', 'POST'])
@@ -75,7 +75,7 @@ def register():
                    token=token)
         flash("Para finalizar o cadastro, foi enviado a confirmação para o seu email.", category="success")
         return redirect(url_for('.login'))
-    return render_template('register.html', form=form)
+    return render_template('register2.html', form=form)
 
 
 @auth_blueprint.route('/confirm/<token>')
@@ -122,7 +122,7 @@ def change_password():
             return redirect(url_for('main.index'))
         else:
             flash('Senha inválida', category="error")
-    return render_template("auth/change_password.html", form=form)
+    return render_template("auth/change_password2.html", form=form)
 
 
 # solicitação de nova senha
@@ -143,7 +143,7 @@ def password_reset_request():
         flash('Um email com instruções para redefinição de senha foi enviado para seu email.',
               category="sucess")
         return redirect(url_for('auth.login'))
-    return render_template('auth/request_reset_password.html', form=form)
+    return render_template('auth/request_reset_password2.html', form=form)
 
 
 @auth_blueprint.route('/reset/<token>', methods=['GET', 'POST'])
@@ -164,7 +164,6 @@ def password_reset_verify_token(token):
 @auth_blueprint.route('/password_reset/<token>', methods=['GET', 'POST'])
 def password_reset(token):
     form = PasswordResetForm()
-
     if form.validate_on_submit():
         result, user_id = User.verify_token("id", token)
         if result:
@@ -179,7 +178,7 @@ def password_reset(token):
         else:
             flash('O link para confirmação é invalido ou está expirado!', category='error')
             return redirect(url_for('main.index'))
-    return render_template('auth/reset_password.html', form=form, token=token)
+    return render_template('auth/reset_password2.html', form=form, token=token)
 
 
 @auth_blueprint.route('/change_email', methods=['GET', 'POST'])
@@ -200,7 +199,7 @@ def change_email_request():
             return redirect(url_for('main.index'))
         else:
             flash('Email ou senha inválidos')
-    return render_template("auth/change_email.html", form=form, token=token)
+    return render_template("auth/change_email2.html", form=form, token=token)
 
 
 @auth_blueprint.route('/change_email/<token>')

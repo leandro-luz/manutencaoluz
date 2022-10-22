@@ -9,5 +9,4 @@ main_blueprint = Blueprint(
 
 @main_blueprint.route('/')
 def index():
-    return render_template('home.html')
-    # return redirect(url_for('blog.sistema'))
+    return render_template('home2.html')

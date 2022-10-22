@@ -6,7 +6,7 @@ from flask_mail import Mail
 
 db = SQLAlchemy()
 migrate = Migrate()
-debug_toolbar = DebugToolbarExtension()
+# debug_toolbar = DebugToolbarExtension()
 mail = Mail()
 
 
@@ -17,7 +17,7 @@ def create_app(object_name):
     db.init_app(app)
     migrate.init_app(app, db)
     mail.init_app(app)
-    debug_toolbar.init_app(app)
+    # debug_toolbar.init_app(app)
 
     from .auth import create_module as auth_create_module
     from .main import create_module as main_create_module

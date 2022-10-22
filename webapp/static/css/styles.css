@@ -1,0 +1,182 @@
+
+
+body {
+    background-color: #1111;
+    color: #111;
+}
+
+.text {
+    color: #111;
+}
+
+.primary-bg-color {
+    background-color: #57A5DC;
+}
+
+.secondary-bg-color {
+    background-color: #19259C;
+}
+
+.light-bg-color {
+    background-color: #FCF5EB;
+}
+
+.dark-bg-color {
+    background-color: #101010;
+}
+
+.primary-color {
+    color: #C09578;
+}
+
+.secondary-color {
+    color: #626262;
+}
+
+.light-color {
+    color: #FCF5EB;
+}
+
+/* NAVBAR */
+#navbar .navbar-nav {
+    flex-direction: row
+    justify-content: end
+}
+
+#navbar .navbar-nav li {
+    margin-left: 1em;
+}
+
+#navbar a {
+    color: #FFF;
+}
+
+#navbar li {
+    position: relative;
+}
+
+#navbar i {
+    font-size: 20px;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    width: 100%
+    text-align: center;
+}
+
+@media (min-width: 768px) {
+    .navbar-brand{
+        text-align: left;
+    }
+}
+
+#navbar-items {
+    justify-content: space-between;
+}
+
+@media(min-width: 768px) {
+    .navbar-items {
+        min-width: 80%
+        display: flex;
+    }
+}
+
+.dropdown-menu {
+    position: relative;
+    background-color: #57A5DC;
+}
+
+
+/* TELA LOGIN */
+#form-container {
+    background-color: #FFF;
+    border-radius: 20px;
+    box-shadow: .5px 10px 15px rgba(0, 0, 0, .2);
+    margin: 15px auto;
+}
+
+@media(min-width: 768px) {
+    #form-container {
+        margin: 50px auto;
+        padding: 50px;
+    }
+}
+
+#form-container h2 {
+    font-weight: 900;
+    font-size: 23px;
+    margin-bottom: 10px;
+}
+
+#form-container a {
+    color: #222;
+    transition: .5s;
+}
+
+#form-container a:hover {
+    color: #6C63FF;
+}
+
+#form-container form {
+    padding-bottom: 10px;
+}
+
+#form-container .form-control {
+    border: none;
+    border-bottom: 1px solid #CCC;
+    border-radius: 0;
+}
+
+#form-container .form-control:focus {
+    box-shadow: none;
+}
+
+#form-container .form-floating label {
+    color: #CCC;
+}
+
+#form-container .form-floating > .form-control:focus~label {
+    color: #222;
+}
+
+#form-container input[type="submit"],
+#form-container input[type="checkbox"]:checked {
+    background-color: #6C63FF;
+    border-color: 6C3FF;
+}
+
+.btn.btn-primary {
+    width: 100%;
+    margin-top: 25px;
+}
+
+@media(min-width: 768px) {
+    .btn.btn-primary {
+        width: auto;
+    }
+}
+
+/*  IMAGE LOGIN */
+.row.align-items-center {
+    align-content: center;
+    height: 100%;
+    padding: 10px 0;
+}
+
+.col-md-6.order-md-1 {
+    padding-top: 50px;
+}
+
+@media(min-width: 768px) {
+    .col-md-6.order-md-1 {
+        padding-top: 0;
+    }
+}
+
+
+#link-new-password,
+#link-register-user {
+    text-align: center;
+    padding-top: 50px;
+}

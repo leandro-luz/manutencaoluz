@@ -34,23 +34,6 @@ def create_module(app, **kwargs):
     app.register_blueprint(auth_blueprint)
 
 
-# def authenticate(username, password):
-#     from .models import User
-#     user = User.query.filter_by(username=username).first()
-#     if not user:
-#         print("usuário não cadastrado!")
-#         return None
-#     # Do the passwords match
-#     if not user.check_password(password):
-#         print("senha errada!")
-#         return None
-#     return user
-#
-#
-# # def identity(payload):
-# #     return load_user(payload['identity'])
-#
-#
 def has_role(name):
     def real_decorator(f):
         def wraps(*args, **kwargs):
