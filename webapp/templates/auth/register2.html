@@ -5,7 +5,7 @@
     <div class="row gx-5">
         <div class="col-md-6">
             <h2>Realize o seu cadastro</h2>
-            <form action="">
+            <form action="{{ url_for('.register') }}" method="POST">
                 {{ form.hidden_tag() }}
                 <div class="form-floating mb-3">
                     {{ form.username(class="form-control") }}

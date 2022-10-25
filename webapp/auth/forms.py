@@ -2,6 +2,7 @@ from flask_wtf import FlaskForm as Form
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import DataRequired, Length, EqualTo, Email, Regexp
 from .models import User
+from flask import flash
 
 
 class LoginForm(Form):
@@ -21,12 +22,12 @@ class LoginForm(Form):
         user = User.query.filter_by(username=self.username.data).first()
 
         if not user:
-            self.username.errors.append('Usuário ou senha não válidos')
+            flash("Usuário ou senha não válidos", category="danger")
             return False
 
         # Do the passwords match
         if not user.check_password(self.password.data):
-            self.username.errors.append('Usuário ou senha não válidos')
+            flash("Usuário ou senha não válidos", category="danger")
             return False
 
         return True
@@ -55,13 +56,13 @@ class RegisterForm(Form):
         # Is the username already being used
         user = User.query.filter_by(username=self.username.data).first()
         if user:
-            self.username.errors.append("Usuário já cadastrado com este nome")
+            flash("Usuário já cadastrado com este nome", category="danger")
             return False
 
         # Is the email already being used
         user = User.query.filter_by(email=self.email.data).first()
         if user:
-            self.username.errors.append("Usuário já cadastrado com este email")
+            flash("Usuário já cadastrado com este email", category="danger")
             return False
 
         return True
@@ -113,6 +114,7 @@ class PasswordResetForm(Form):
         check_validate = super(PasswordResetForm, self).validate()
         if not check_validate:
             return False
+
         return True
 
 
@@ -126,6 +128,7 @@ class ChangeEmailForm(Form):
 
     def validate(self):
         if User.query.filter_by(email=self.email.data.lower()).first() is not None:
+            flash("Email já registrado", category="danger")
             return False
 
         return True

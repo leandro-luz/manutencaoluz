@@ -87,11 +87,11 @@ def confirm(token):
             user.set_confirmed(True)
             db.session.add(user)
             db.session.commit()
-            flash('Sua conta foi confirmada, Obrigado', category='success')
+            flash("Sua conta foi confirmada, Obrigado", category="success")
             return redirect(url_for('auth.login'))
         return redirect(url_for('main.index'))
     else:
-        flash('O link para confirmação é invalido ou está expirado!', category='error')
+        flash("O link para confirmação é invalido ou está expirado!", category="danger")
     return redirect(url_for('main.index'))
 
 
@@ -104,7 +104,7 @@ def resend_confirmation(username):
                'auth/email/confirm',
                user=user,
                token=token)
-    flash("Um novo email de confirmação foi enviado para o seu email.", category="success")
+    flash("Um novo email de confirmação foi enviado para o seu email.", category="warning")
     return redirect(url_for('main.index'))
 
 
@@ -118,10 +118,10 @@ def change_password():
             current_user.password = form.password.data
             db.session.add(current_user)
             db.session.commit()
-            flash("Sua senha foi atualizada", category="sucess")
+            flash("Sua senha foi atualizada", category="success")
             return redirect(url_for('main.index'))
         else:
-            flash('Senha inválida', category="error")
+            flash("Senha inválida", category="danger")
     return render_template("auth/change_password2.html", form=form)
 
 
@@ -140,8 +140,8 @@ def password_reset_request():
                        'auth/email/reset_password',
                        user=user,
                        token=token)
-        flash('Um email com instruções para redefinição de senha foi enviado para seu email.',
-              category="sucess")
+        flash("Um email com instruções para redefinição de senha foi enviado para seu email.",
+              category="warning")
         return redirect(url_for('auth.login'))
     return render_template('auth/request_reset_password2.html', form=form)
 
@@ -157,7 +157,7 @@ def password_reset_verify_token(token):
             return redirect(url_for('auth.password_reset', token=token))
         return redirect(url_for('main.index'))
     else:
-        flash('O link para confirmação é invalido ou está expirado!', category='error')
+        flash("O link para confirmação é invalido ou está expirado!", category="danger")
         return redirect(url_for('main.index'))
 
 
@@ -171,12 +171,12 @@ def password_reset(token):
             if user:
                 user.set_password(form.password.data)
                 db.session.commit()
-                flash('Sua senha foi atualizada.')
+                flash("Sua senha foi atualizada.", category="success")
                 return redirect(url_for('auth.login'))
             else:
                 return redirect(url_for('main.index'))
         else:
-            flash('O link para confirmação é invalido ou está expirado!', category='error')
+            flash("O link para confirmação é invalido ou está expirado!", category="danger")
             return redirect(url_for('main.index'))
     return render_template('auth/reset_password2.html', form=form, token=token)
 
@@ -195,10 +195,10 @@ def change_email_request():
                        'auth/email/change_email',
                        user=current_user,
                        token=token)
-            flash('Foi enviado um email com instruções para confirmar seu novo email.')
+            flash("Foi enviado um email com instruções para confirmar seu novo email.", category="warning")
             return redirect(url_for('main.index'))
         else:
-            flash('Email ou senha inválidos')
+            flash("Email ou senha inválidos", category="danger")
     return render_template("auth/change_email2.html", form=form, token=token)
 
 
@@ -210,7 +210,7 @@ def change_email(token):
         current_user.set_email(email)
         db.session.add(current_user)
         db.session.commit()
-        flash('Seu email foi atualizado.')
+        flash("Seu email foi atualizado.", category="success")
     else:
-        flash('O link para confirmação é invalido ou está expirado!', category='error')
+        flash("O link para confirmação é invalido ou está expirado!", category="danger")
     return redirect(url_for('main.index'))
