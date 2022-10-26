@@ -44,17 +44,15 @@ def login():
         if user.confirmed:
             login_user(user, remember=form.remember.data)
             user.ping()
-            flash("Você está dentro do sistema.", category="success")
             return redirect(url_for('sistema.index'))
-        return render_template('unconfirmed2.html', user=user)
-    return render_template('login2.html', form=form)
+        return render_template('unconfirmed.html', user=user)
+    return render_template('login.html', form=form)
 
 
 @auth_blueprint.route('/logout', methods=['GET', 'POST'])
 @login_required
 def logout():
     logout_user()
-    flash("Você saiu do sistema.", category="success")
     return redirect(url_for('main.index'))
 
 
@@ -75,7 +73,7 @@ def register():
                    token=token)
         flash("Para finalizar o cadastro, foi enviado a confirmação para o seu email.", category="success")
         return redirect(url_for('.login'))
-    return render_template('register2.html', form=form)
+    return render_template('register.html', form=form)
 
 
 @auth_blueprint.route('/confirm/<token>')
@@ -122,7 +120,7 @@ def change_password():
             return redirect(url_for('main.index'))
         else:
             flash("Senha inválida", category="danger")
-    return render_template("auth/change_password2.html", form=form)
+    return render_template("auth/change_password.html", form=form)
 
 
 # solicitação de nova senha
@@ -143,7 +141,7 @@ def password_reset_request():
         flash("Um email com instruções para redefinição de senha foi enviado para seu email.",
               category="warning")
         return redirect(url_for('auth.login'))
-    return render_template('auth/request_reset_password2.html', form=form)
+    return render_template('auth/request_reset_password.html', form=form)
 
 
 @auth_blueprint.route('/reset/<token>', methods=['GET', 'POST'])
@@ -178,7 +176,7 @@ def password_reset(token):
         else:
             flash("O link para confirmação é invalido ou está expirado!", category="danger")
             return redirect(url_for('main.index'))
-    return render_template('auth/reset_password2.html', form=form, token=token)
+    return render_template('auth/reset_password.html', form=form, token=token)
 
 
 @auth_blueprint.route('/change_email', methods=['GET', 'POST'])
@@ -199,7 +197,7 @@ def change_email_request():
             return redirect(url_for('main.index'))
         else:
             flash("Email ou senha inválidos", category="danger")
-    return render_template("auth/change_email2.html", form=form, token=token)
+    return render_template("auth/change_email.html", form=form, token=token)
 
 
 @auth_blueprint.route('/change_email/<token>')

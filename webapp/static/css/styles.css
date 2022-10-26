@@ -88,18 +88,25 @@ body {
 }
 
 
-/* TELA LOGIN */
+/* TELAS AUTH */
+
+.container {
+    margin-left: 25px;
+    margin-right: 25px;
+}
+
+
 #form-container {
     background-color: #FFF;
     border-radius: 20px;
     box-shadow: .5px 10px 15px rgba(0, 0, 0, .2);
-    margin: 15px auto;
+    margin: 25px;
 }
 
 @media(min-width: 768px) {
     #form-container {
-        margin: 50px auto;
-        padding: 50px;
+        margin: 25px auto;
+        padding: 25px;
     }
 }
 
@@ -179,4 +186,21 @@ body {
 #link-register-user {
     text-align: center;
     padding-top: 50px;
+}
+
+
+/*  TELA SISTEMA */
+
+#system-container {
+    margin-top: 25px
+}
+
+
+
+/* FOOTER */
+
+#footer-container {
+
+margin-top: 25px
+
 }

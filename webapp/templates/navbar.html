@@ -1,35 +1,57 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<nav class="navbar navbar-expand-lg primary-bg-color" id="navbar">
+    <div class="container">
+        <a class="navbar-brand" href="{{url_for('main.index')}}"> MANUTENÇÃOLUZ </a>
+        {% if current_user.is_authenticated %}
+        <a class="navbar-brand"> NOME_EMPRESA </a>
+        {% endif %}
+        <div id="navbar-items">
+            <ul class="navbar-nav">
+                {% if current_user.is_authenticated %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{url_for('sistema.index')}}">
+                        <i class="bi bi-house"></i>
+                        <b>Início</b>
+                    </a>
+                </li>
 
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav mr-auto">
-            <li class="nav-item active">
-                <a class="nav-link" href="{{url_for('main.index')}}">Manutenção e Ativos <span
-                        class="sr-only">(current)</span></a>
-            </li>
-        </ul>
-        <ul class="navbar-nav ml-auto">
-            {% if current_user.is_authenticated %}
-            <li class="dropdown">
-                <a class="nav-link" data-toggle="dropdown" href="#">
-                    {{ current_user.username }} <b class="caret"></b>
-                </a>
-                <ul class="dropdown-menu">
-                    <li><a href="#">Conta</a></li>
-                    <li><a href="{{ url_for('auth.change_password') }}">Trocar senha</a></li>
-                    <li><a href="{{ url_for('auth.change_email_request') }}">Trocar email</a></li>
-                    <li><a href="{{ url_for('auth.logout') }}">Desconectar</a></li>
-                </ul>
-            </li>
-            {% else %}
-            <li class="nav-item">
-                <a class="nav-link" href="{{url_for('auth.login')}}">
-                    <i class="fa fa-fw fa-sign-in"></i>Acessar</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{url_for('auth.register')}}">
-                    <i class="fa fa-fw fa-sign-in"></i>Registrar</a>
-            </li>
-            {% endif %}
-        </ul>
+                <li class="nav-item">
+                    <div class="dropdown ">
+                        <a class="nav-link" data-bs-toggle="dropdown" href="#">
+                            <i class="bi bi-person-circle"></i>
+                            <b>{{ current_user.username }}</b>
+                        </a>
+                        <ul aria-labelledby="dropdownMenuButton1" class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#">Conta</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('auth.change_password') }}">Trocar senha</a>
+                            </li>
+                            <li><a class="dropdown-item" href="{{ url_for('auth.change_email_request') }}">Trocar
+                                email</a>
+                            </li>
+                            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Desconectar</a></li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="bi bi-chat-left"></i>
+                        <b>Ajuda</b>
+                    </a>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{url_for('auth.login')}}">
+                        <i class="bi bi-person"></i>
+                        <b>Acessar</b>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{url_for('auth.register')}}">
+                        <i class="bi bi-person-plus"></i>
+                        <b>Cadastro</b>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
     </div>
 </nav>

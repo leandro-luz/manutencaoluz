@@ -10,5 +10,6 @@ sistema_blueprint = Blueprint(
 
 @sistema_blueprint.route('/')
 def index():
-    return render_template('sistema_home.html')
+    listas = ['a', 'b', 'c', 'd']
+    return render_template('sistema_home.html', listas=listas)
 

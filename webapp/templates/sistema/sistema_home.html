@@ -1,8 +1,83 @@
-{% extends "base2.html" %}
-{% block leftbody %}
+{% extends "base.html" %}
+{% block body %}
 
 <body>
-<h1>PÁGINA INICIAL DO SISTEMA</h1>
+
+<div class="container-fluid" id="system-container">
+    <div class="row">
+        <div class="col-sm-auto bg-light sticky-top">
+            <div class="d-flex flex-sm-column ">
+
+                <ul class="nav nav-pills flex-sm-column flex-row align-items-left">
+
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-original-title="Home" data-bs-placement="right"
+                           data-bs-toggle="tooltip"
+                           href="#" title="">
+                            <i class="bi-house-door fs-5"> Empresa</i>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="nav-link" href="#" title="">
+                            <i class="bi-people fs-5"> RH</i>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="nav-link" data-bs-original-title="Dashboard" data-bs-placement="right"
+                           data-bs-toggle="tooltip"
+                           href="#" title="">
+                            <i class="bi-box-seam fs-5"> Almoxarifado</i>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="nav-link" href="#" title="">
+                            <i class="bi-robot fs-5"> Equipamento</i>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="nav-link" href="#" title="">
+                            <i class="bi-calendar3 fs-5"> Programação</i>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="nav-link" href="#" title="">
+                            <i class="bi-wrench-adjustable-circle fs-5"> Manutenção</i>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="nav-link" href="#" title="">
+                            <i class="bi-cash fs-5"> Orçamento</i>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="nav-link" href="#" title="">
+                            <i class="bi-graph-up fs-5"> Indicadores</i>
+                        </a>
+                    </li>
+
+
+                </ul>
+
+            </div>
+        </div>
+        <div class="col-sm p-3" id="system-container-text">
+
+            testando esta lado
+
+            {% for lista in listas %}
+            <ul>
+                <li>
+                    {{ lista }} aqui
+                </li>
+            </ul>
+
+
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+
 </body>
 
 {% endblock %}

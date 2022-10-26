@@ -1,51 +1,36 @@
-{% extends "base2.html" %}
+{% extends "base.html" %}
 {% block body %}
-<div class="row">
-    <div class="col-md-4"></div>
-    <div class="col-md-4">
-        <h1 class="text">Iniciar Sessão</h1>
-        <form action="{{ url_for('.login') }}" method="POST">
-            {{ form.hidden_tag() }}
-            <div class="form-group">
-                {{ form.username.label }}
-                {% if form.username.errors %}
-                {% for e in form.username.errors %}
-                <p class="help-block">{{ e }}</p>
-                {% endfor %}
-                {% endif %}
-                {{ form.username(class_='form-control') }}
+<body>
+<div class="container col-11 col-md-11" id="form-container">
+    <div class="row align-items-center gx-5">
+        <div class="col-md-6 order-md-2">
+            <h2>Faça o login para continuar</h2>
+            <form action="{{ url_for('.login') }}" method="POST">
+                {{ form.hidden_tag() }}
+                <div class="form-floating mb-3">
+                    {{ form.username(class="form-control") }}
+                    <label class="form-label">Digite o nome</label>
+                </div>
+                <div class="form-floating mb-3">
+                    {{ form.password(class="form-control") }}
+                    <label class="form-label">Digite a sua senha</label>
+                </div>
+                <input class="btn btn-primary" type="submit" value="Entrar">
+                <div class="form-floating mb-3" id="link-new-password">
+                    <a href="{{ url_for('auth.password_reset_request') }}">Esqueci minha senha</a>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-6 order-md-1">
+            <div class="col-12">
+                <img alt="Entrar no Sistema" class="img-fluid" src="/static/img/sign_in.svg">
             </div>
-            <div class="form-group">
-                {{ form.password.label }}
-                {% if form.password.errors %}
-                {% for e in form.password.errors %}
-                <p class="help-block">{{ e }}</p>
-                {% endfor %}
-                {% endif %}
-                {{ form.password(class_='form-control') }}
+            <div class="col-12" id="link-register-user">
+                <a href="{{url_for('auth.register')}}">Ainda não tenho cadastro</a>
             </div>
-            <!--            <div class="form-group">-->
-            <!--                {{ form.remember.label }}-->
-            <!--                {% if form.remember.errors %}-->
-            <!--                {% for e in form.remember.errors %}-->
-            <!--                <p class="help-block">{{ e }}</p>-->
-            <!--                {% endfor %}-->
-            <!--                {% endif %}-->
-            <!--                {{ form.remember(class_='form-control') }}-->
-            <!--            </div>-->
-            <input class="btn btn-primary" id="login_button"
-                   type="submit" value="Acessar">
-            <p>
-            <p>Esqueceu a sua senha? <a href="{{ url_for('auth.password_reset_request') }}">Clique para resetar ela</a>.</p>
-            <p>
-            <p>Novo Usuário? <a href="{{ url_for('auth.register') }}">Clique aqui para registrar</a>.</p>
-
-        </form>
+        </div>
 
     </div>
-    <div class="col-md-4"></div>
 </div>
-<br>
-<br>
-<br>
+</body>
 {% endblock %}

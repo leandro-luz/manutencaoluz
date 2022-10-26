@@ -1,33 +1,30 @@
-{% extends "base2.html" %}
+{% extends "base.html" %}
 {% block body %}
-<div class="row">
-    <div class="col-md-4"></div>
-    <div class="col-md-4">
-        <h1 class="text">Atualizar Email</h1>
-        <form action="{{ url_for('.change_email_request', token=token) }}" method="POST">
-            {{ form.hidden_tag() }}
-            <div class="form-group">
-                {{ form.email.label }}
-                {% if form.email.errors %}
-                {% for e in form.email.errors %}
-                <p class="help-block">{{ e }}</p>
-                {% endfor %}
-                {% endif %}
-                {{ form.email(class_='form-control') }}
+<body>
+<div class="container col-11 col-md-9" id="form-container">
+    <div class="row align-items-center gx-5">
+        <div class="col-md-6 order-md-2">
+            <h2>Vamos atualizar o seu email </h2>
+            <form action="{{ url_for('.change_email_request', token=token) }}" method="POST">
+                {{ form.hidden_tag() }}
+                <div class="form-floating mb-3">
+                    {{ form.email(class="form-control") }}
+                    <label class="form-label">Digite o novo email</label>
+                </div>
+                <div class="form-floating mb-3">
+                    {{ form.password(class="form-control") }}
+                    <label class="form-label">Digite a sua senha</label>
+                </div>
+                <input class="btn btn-primary" type="submit" value="Atualizar">
+            </form>
+        </div>
+
+        <div class="col-md-6 order-md-1">
+            <div class="col-12">
+                <img alt="Entrar no Sistema" class="img-fluid" src="/static/img/change_email.svg">
             </div>
-            <div class="form-group">
-                {{ form.password.label }}
-                {% if form.password.errors %}
-                {% for e in form.password.errors %}
-                <p class="help-block">{{ e }}</p>
-                {% endfor %}
-                {% endif %}
-                {{ form.password(class_='form-control') }}
-            </div>
-            <input class="btn btn-primary" type="submit" value="Atualizar">
-        </form>
-        <hr>
+        </div>
     </div>
-    <div class="col-md-4"></div>
 </div>
+</body>
 {% endblock %}
