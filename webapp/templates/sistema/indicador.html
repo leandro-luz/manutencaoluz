@@ -1,0 +1,17 @@
+{% extends "sistema_base.html" %}
+{% block body %}
+<body>
+
+    INDICADORES
+
+    {% for indicador in indicadores %}
+    <ul>
+        <li>
+            indicador: {{ indicador }}
+        </li>
+    </ul>
+
+    {% endfor %}
+
+</body>
+{% endblock %}

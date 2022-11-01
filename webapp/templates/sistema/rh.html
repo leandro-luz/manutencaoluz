@@ -1,0 +1,17 @@
+{% extends "sistema_base.html" %}
+{% block body %}
+<body>
+
+    COLABORADOR
+
+    {% for colaborador in colaboradores %}
+    <ul>
+        <li>
+            colaborador: {{ colaborador }}
+        </li>
+    </ul>
+
+    {% endfor %}
+
+</body>
+{% endblock %}

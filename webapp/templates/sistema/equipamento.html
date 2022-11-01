@@ -1,0 +1,17 @@
+{% extends "sistema_base.html" %}
+{% block body %}
+<body>
+
+    EQUIPAMENTOS
+
+    {% for equipamento in equipamentos %}
+    <ul>
+        <li>
+            equipamento: {{ equipamento }}
+        </li>
+    </ul>
+
+    {% endfor %}
+
+</body>
+{% endblock %}

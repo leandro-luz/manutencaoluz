@@ -1,0 +1,17 @@
+{% extends "sistema_base.html" %}
+{% block body %}
+<body>
+
+    EMPRESAS
+
+    {% for empresa in empresas %}
+    <ul>
+        <li>
+            empresa: {{ empresa }}
+        </li>
+    </ul>
+
+    {% endfor %}
+
+</body>
+{% endblock %}

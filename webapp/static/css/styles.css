@@ -192,7 +192,7 @@ body {
 /*  TELA SISTEMA */
 
 #system-container {
-    margin-top: 25px
+    margin-top: 25px;
 }
 
 
@@ -200,7 +200,11 @@ body {
 /* FOOTER */
 
 #footer-container {
+    margin-top: 25px;
+    padding-top: 5px;
+    padding-left: 25px;
+}
 
-margin-top: 25px
-
+#footer {
+    color: #FFF;
 }
