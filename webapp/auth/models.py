@@ -5,11 +5,18 @@ import jwt
 import datetime
 import config
 
-roles = db.Table(
-    'role_users',
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-    db.Column('role_id', db.Integer, db.ForeignKey('role.id'))
-)
+
+class Role(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(50), unique=True)
+    description = db.Column(db.String(255))
+    user = db.relationship("User", back_populates="role")
+
+    def __init__(self, name):
+        self.name = name
+
+    def __repr__(self):
+        return '<Role {}>'.format(self.name)
 
 
 class User(db.Model):
@@ -20,16 +27,11 @@ class User(db.Model):
     confirmed = db.Column(db.Boolean, default=False)
     member_since = db.Column(db.DateTime(), nullable=True)
     last_seen = db.Column(db.DateTime(), nullable=True)
-
-    roles = db.relationship(
-        'Role',
-        secondary=roles,
-        backref=db.backref('users', lazy='dynamic')
-    )
+    role_id = db.Column(db.Integer(), db.ForeignKey("role.id"))
+    role = db.relationship("Role", back_populates="user")
 
     def __init__(self, username=""):
-        default = Role.query.filter_by(name="default").one()
-        self.roles.append(default)
+        self.role_id = Role.query.filter_by(name="default").one()
         self.username = username
 
     def __repr__(self):
@@ -106,15 +108,3 @@ class User(db.Model):
         except:
             return False, 0
         return True, data.get(tipo)
-
-
-class Role(db.Model):
-    id = db.Column(db.Integer(), primary_key=True)
-    name = db.Column(db.String(50), unique=True)
-    description = db.Column(db.String(255))
-
-    def __init__(self, name):
-        self.name = name
-
-    def __repr__(self):
-        return '<Role {}>'.format(self.name)
