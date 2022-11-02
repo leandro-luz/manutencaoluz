@@ -13,4 +13,5 @@ company_blueprint = Blueprint(
 @login_required
 def list():
     empresas = ['a', 'b', 'c', 'd']
+
     return render_template('list.html', empresas=empresas)

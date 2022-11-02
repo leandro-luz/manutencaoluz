@@ -27,6 +27,7 @@ class User(db.Model):
     confirmed = db.Column(db.Boolean, default=False)
     member_since = db.Column(db.DateTime(), nullable=True)
     last_seen = db.Column(db.DateTime(), nullable=True)
+    active = db.Column(db.Boolean, default=False)
     role_id = db.Column(db.Integer(), db.ForeignKey("role.id"))
     role = db.relationship("Role", back_populates="user")
 
