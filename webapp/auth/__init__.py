@@ -8,7 +8,6 @@ from flask_jwt_extended import JWTManager
 import bcrypt
 
 
-
 class BlogAnonymous(AnonymousUserMixin):
     def __init__(self):
         self.username = 'Guest'

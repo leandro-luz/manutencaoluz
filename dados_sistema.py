@@ -23,23 +23,29 @@ subbusiness_lista = [{'business': 'indústria', 'name': 'roupas'},
                      {'business': 'indústria', 'name': 'teste'}
                      ]
 
-company_lista = [{'name': 'empresa_teste_1', 'cnpj': '123456789',
+company_lista = [{'name': 'empresa_1', 'cnpj': '123456789',
                   'cep': '12000111', 'email': 'email@teste.com.br',
-                  'business': 'indústria', 'subbusiness': 'teste'},
-                 {'name': 'empresa_teste_2', 'cnpj': '987654321',
+                  'business': 'indústria', 'subbusiness': 'teste',
+                  'date': '1980/05/10 12:45:10'},
+                 {'name': 'empresa_2', 'cnpj': '987654321',
                   'cep': '34111222', 'email': 'empresalucratudo@teste.com.br',
-                  'business': 'comércio', 'subbusiness': 'roupas'}
+                  'business': 'comércio', 'subbusiness': 'roupas',
+                  'date': '1999/08/01 08:12:35'}
                  ]
 
 roles_lista = ['default', 'admin']
 user_lista = [{'username': 'leandro',
                'email': 'engleoluz@hotmail.com',
                'password': 'aaa11111',
-               'role': 'default'},
+               'role': 'default',
+               'date': '1980/05/10 12:45:10',
+               'company': 'empresa_1'},
               {'username': 'danylo',
                'email': 'luzdanylo@gmail.com',
                'password': '12345678',
-               'role': 'default'}
+               'role': 'default',
+               'date': '1999/08/01 08:12:35',
+               'company': 'empresa_2'}
               ]
 
 
@@ -93,13 +99,14 @@ def generate_companies():
             continue
         company = Company()
         business = Business.query.filter_by(name=item['business']).one()
-        subbusiness = Subbusiness.query.filter_by(name=item['subbusiness'], business_id=business.id).first()
+        subbusiness = Subbusiness.query.filter_by(name=item['subbusiness'], business_id=business.id).one()
         company.name = item['name']
         company.cnpj = item['cnpj']
         company.cep = item['cep']
         company.email = item['email']
         company.active = True
-        company.business_id = subbusiness.id
+        company.member_since = item['date']
+        company.subbusiness_id = subbusiness.id
         companies.append(company)
         try:
             db.session.add(company)
@@ -139,12 +146,15 @@ def generate_users():
             continue
         user = User()
         role = Role.query.filter_by(name=item['role']).one()
+        company = Company.query.filter_by(name=item['company']).one()
         user.username = item['username']
         user.email = item['email']
         user.password = item['password']
+        user.member_since = item['date']
         user.confirmed = True
         user.active = True
         user.role_id = role.id
+        user.company_id = company.id
         users.append(user)
         try:
             db.session.add(user)

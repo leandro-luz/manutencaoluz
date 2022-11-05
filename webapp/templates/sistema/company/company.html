@@ -1,0 +1,45 @@
+{% extends "sistema_base.html" %}
+{% block body %}
+<body>
+
+<h2>{{ company.name }}</h2>
+
+<ul>
+    <li>
+        id: {{ company.id }}
+    </li>
+    <li>
+        cnpj: {{ company.cnpj }}
+    </li>
+    <li>
+        cep: {{ company.cep }}
+    </li>
+    <li>
+        email: {{ company.email }}
+    </li>
+    <li>
+        ativo: {{ company.active }}
+    </li>
+    <li>
+        ramo de atividade: {{ business.name }}
+    </li>
+    <li>
+        sub-ramo de atividade: {{ subbusiness.name }}
+    </li>
+    <li>
+        cliente desde: {{ company.member_since }}
+    </li>
+</ul>
+
+<div class="col-12">
+    <a href="{{ url_for('company.list') }}">
+        Voltar
+    </a>
+    <a href="{{ url_for('company.edit', id=company.id) }}">
+        Atualizar
+    </a>
+</div>
+
+
+</body>
+{% endblock %}

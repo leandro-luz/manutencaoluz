@@ -1,0 +1,56 @@
+{% extends "sistema_base.html" %}
+{% block body %}
+<body>
+<form action="{{ url_for('company.edit', id=company.id) }}" method="POST">
+    {{form.csrf_token}}
+
+    {{form.name.label}}
+    {{form.name(size=20)}}<br>
+
+    {{form.cnpj.label}}
+    {{form.cnpj(size=20)}}<br>
+
+    {{form.cep.label}}
+    {{form.cep(size=20)}}<br>
+
+    {{form.email.label}}
+    {{form.email(size=20)}}<br>
+
+    {{form.business.label}}
+    {{form.business}}<br>
+
+    {{form.subbusiness.label}}
+    {{form.subbusiness}}<br>
+
+    {{form.active.label}}
+    {{form.active(size=20)}}<br>
+
+    <input type="submit" value="Atualizar"/>
+</form>
+
+<a href="{{ url_for('company.company', id=company.id) }}">Voltar</a>
+
+</body>
+
+
+<script>
+business_select = document.getElementById('business');
+subbusiness_select = document.getElementById('subbusiness');
+
+business_select.onchange = function() {
+    business_id = business_select.value;
+    fetch('subbusiness_list/' + business_id).then(function(response) {
+        response.json().then(function(data) {
+            optionHTML = '';
+            for (subbusiness of data.subbusiness_list) {
+                optionHTML += '<option value="' + subbusiness.id +'">' + subbusiness.name + '</option>'
+            }
+            subbusiness_select.innerHTML = optionHTML;
+        });
+    });
+    }
+</script>
+
+{% endblock %}
+
+

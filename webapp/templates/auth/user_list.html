@@ -1,0 +1,59 @@
+{% extends "sistema_base.html" %}
+{% block body %}
+<body>
+
+<h2> Usuários </h2>
+<a href="{{ url_for('company.new') }}">
+    Adicionar
+</a>
+
+
+<table class="table">
+    <thead>
+    <tr>
+        <th scope="col">NOME</th>
+        <th scope="col">EMAIL</th>
+        <th scope="col">ATIVO</th>
+        <th scope="col"></th>
+        <th scope="col"></th>
+    </tr>
+    </thead>
+
+    <tbody>
+    {% for user in users %}
+    <tr>
+        <th scope="row">{{ user.username }}</th>
+        <td scope="row">{{ user.email }}</td>
+
+        <td>
+            <a href="{{ url_for('auth.user', id=user.id) }}">
+                <span data-tooltip="Informações">
+                    <i class="bi-caret-right fs-6"></i>
+                </span>
+            </a>
+        </td>
+        {% if user.active == True %}
+        <td>
+            <a href="{{ url_for('auth.active', id=user.id) }}">
+                <span data-tooltip="Desativar">
+                    <i class="bi-caret-down fs-6"></i>
+                </span>
+            </a>
+        </td>
+        {% else %}
+        <td>
+            <a href="{{ url_for('auth.active', id=user.id) }}">
+                <span data-tooltip="Ativar">
+                    <i class="bi-caret-up fs-6"></i>
+                </span>
+            </a>
+        </td>
+        {% endif %}
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+
+</body>
+{% endblock %}

@@ -30,6 +30,8 @@ class User(db.Model):
     active = db.Column(db.Boolean, default=False)
     role_id = db.Column(db.Integer(), db.ForeignKey("role.id"))
     role = db.relationship("Role", back_populates="user")
+    company_id = db.Column(db.Integer(), db.ForeignKey("company.id"))
+    company = db.relationship("Company", back_populates="user")
 
     def __init__(self, username=""):
         self.role_id = Role.query.filter_by(name="default").one()
@@ -59,9 +61,13 @@ class User(db.Model):
         # self.password = bcrypt.generate_password_hash(password)
         self.password = password
 
+    def setActive(self, active):
+        self.active = active
+
     def check_password(self, password):
         # return bcrypt.check_password_hash(self.password, password)
         return self.password == password
+
 
     def ping(self):
         self.last_seen = datetime.datetime.now()
@@ -109,3 +115,9 @@ class User(db.Model):
         except:
             return False, 0
         return True, data.get(tipo)
+
+    def changeActive(self):
+        if self.active:
+            self.setActive(False)
+        else:
+            self.setActive(True)

@@ -25,7 +25,7 @@ def almoxarifado():
 # @login_required
 # def empresa():
 #     empresas = ['a', 'b', 'c', 'd']
-#     return render_template('list.html', empresas=empresas)
+#     return render_template('company_list.html', empresas=empresas)
 
 
 @sistema_blueprint.route('/equipamento', methods=['GET', 'POST'])

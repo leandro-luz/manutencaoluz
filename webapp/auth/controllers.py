@@ -5,7 +5,8 @@ from flask import (render_template,
                    url_for,
                    flash)
 from flask_login import login_user, logout_user, current_user, login_required
-from webapp.auth.models import db, User
+from .models import db, User
+from webapp.company.models import Company
 from webapp.email import send_email
 from .forms import LoginForm, RegisterForm, ChangePasswordForm, \
     PasswordResetRequestForm, PasswordResetForm, ChangeEmailForm
@@ -212,3 +213,49 @@ def change_email(token):
     else:
         flash("O link para confirmação é invalido ou está expirado!", category="danger")
     return redirect(url_for('main.index'))
+
+
+@auth_blueprint.route('/active/<int:id>')
+@login_required
+def active(id):
+    user = User.query.filter_by(id=id).one()
+    if user:
+        user.changeActive()
+        db.session.add(user)
+        db.session.commit()
+    return redirect(url_for('.list'))
+
+
+@auth_blueprint.route('/user/<int:id>', methods=['GET', 'POST'])
+@login_required
+def user(id):
+    user = User.query.filter_by(id=id).one()
+    # subbusiness = Subbusiness.query.filter_by(id=company_.subbusiness_id).one()
+    # business = Business.query.filter_by(id=subbusiness.business_id).one()
+    if user:
+        return render_template('user.html', user=user)
+    flash("Usuário não cadastrado", category="danger")
+
+
+@auth_blueprint.route('/user_list', methods=['GET', 'POST'])
+@login_required
+def list():
+    users = User.query.order_by(User.username.asc())
+    return render_template('user_list.html', users=users)
+
+
+@auth_blueprint.route('/edit/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit(id):
+    user = User.query.filter_by(id=id).one()
+    form = RegisterForm(obj=user)
+    # form = CompanyForm()
+    form.company.choices = [(companies.id, companies.name) for companies in Company.query.all()]
+
+    if form.validate_on_submit():
+        form.populate_obj(user)
+        db.session.add(user)
+        db.session.commit()
+        flash("Usuário atualizado", category="success")
+        return redirect(url_for("auth.user", id=user.id))
+    return render_template("user_edit.html", form=form, user=user)

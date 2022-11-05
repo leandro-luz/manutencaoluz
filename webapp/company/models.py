@@ -39,6 +39,7 @@ class Company(db.Model):
     member_since = db.Column(db.DateTime(), nullable=True)
     subbusiness_id = db.Column(db.Integer(), db.ForeignKey("subbusiness.id"))
     subbusiness = db.relationship("Subbusiness", back_populates="company")
+    user = db.relationship("User", back_populates="company")
 
     def __repr__(self):
         return '<Company {}>'.format(self.name)
@@ -46,3 +47,51 @@ class Company(db.Model):
     def __init__(self, name=""):
         self.business_id = Subbusiness.query.filter_by(name="teste").one()
         self.name = name
+
+    def setName(self, name):
+        self.name = name
+
+    def setCnpj(self, cnpj):
+        self.cnpj = cnpj
+
+    def setCep(self, cep):
+        self.cep = cep
+
+    def setEmail(self, email):
+        self.email = email
+
+    def setActive(self, active):
+        self.active = active
+
+    def setSubbsiness(self, id):
+        self.subbusiness_id = id
+
+    def setMemberSince(self):
+        self.member_since = datetime.datetime.now()
+
+    def getName(self):
+        return self.name
+
+    def getCnpj(self):
+        return self.cnpj
+
+    def getCep(self):
+        return self.cep
+
+    def getEmail(self):
+        return self.email
+
+    def getActive(self):
+        return self.active
+
+    def getSubbsiness(self):
+        return self.subbusiness_id
+
+    def getMemberSince(self):
+        return self.member_since
+
+    def changeActive(self):
+        if self.active:
+            self.setActive(False)
+        else:
+            self.setActive(True)

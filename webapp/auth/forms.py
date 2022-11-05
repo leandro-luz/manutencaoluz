@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm as Form
-from wtforms import StringField, PasswordField, BooleanField, SubmitField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField
 from wtforms.validators import DataRequired, Length, EqualTo, Email, Regexp
 from .models import User
 from flask import flash
@@ -43,6 +43,10 @@ class RegisterForm(Form):
                         render_kw={"placeholder": "Digite o seu email"})
     password = PasswordField('Senha', [DataRequired(), Length(min=8)],
                              render_kw={"placeholder": "Digite a sua senha"})
+    company = SelectField('Empresa', choices=[])
+    active = BooleanField('Ativo',
+                          render_kw={"placeholder": "Informe se a usuário está ativo"})
+
     confirm = PasswordField('Confirme a Senha', [DataRequired(), EqualTo('password')],
                             render_kw={"placeholder": "Confirme a sua senha"})
     submit = SubmitField('Registrar')
