@@ -8,9 +8,11 @@ import config
 
 class Role(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
-    name = db.Column(db.String(50), unique=True)
-    description = db.Column(db.String(255))
-    user = db.relationship("User", back_populates="role")
+    name = db.Column(db.String(50), unique=False)
+    description = db.Column(db.String(50))
+    # user = db.relationship("User", back_populates="role")
+    company_id = db.Column(db.Integer(), db.ForeignKey("company.id"))
+    company = db.relationship("Company", back_populates="role")
 
     def __init__(self, name):
         self.name = name
@@ -22,14 +24,14 @@ class Role(db.Model):
 class User(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     username = db.Column(db.String(50), nullable=False, index=True, unique=True)
-    email = db.Column(db.String(50), nullable=False, index=True, unique=True)
+    email = db.Column(db.String(50), nullable=False, unique=True)
     password = db.Column(db.String(50))
     confirmed = db.Column(db.Boolean, default=False)
     member_since = db.Column(db.DateTime(), nullable=True)
     last_seen = db.Column(db.DateTime(), nullable=True)
     active = db.Column(db.Boolean, default=False)
-    role_id = db.Column(db.Integer(), db.ForeignKey("role.id"))
-    role = db.relationship("Role", back_populates="user")
+    role_id = db.Column(db.Integer(), nullable=False)
+
     company_id = db.Column(db.Integer(), db.ForeignKey("company.id"))
     company = db.relationship("Company", back_populates="user")
 
@@ -40,12 +42,12 @@ class User(db.Model):
     def __repr__(self):
         return '<User {}>'.format(self.username)
 
-    # @cache.memoize(60)
-    def has_role(self, name):
-        for role in self.roles:
-            if role.name == name:
-                return True
-        return False
+    # # @cache.memoize(60)
+    # def has_role(self, name):
+    #     for role in self.roles:
+    #         if role.name == name:
+    #             return True
+    #     return False
 
     def get_id(self):
         return str(self.id)
@@ -61,13 +63,12 @@ class User(db.Model):
         # self.password = bcrypt.generate_password_hash(password)
         self.password = password
 
-    def setActive(self, active):
+    def set_active(self, active):
         self.active = active
 
     def check_password(self, password):
         # return bcrypt.check_password_hash(self.password, password)
         return self.password == password
-
 
     def ping(self):
         self.last_seen = datetime.datetime.now()
@@ -83,7 +84,7 @@ class User(db.Model):
 
     @property
     def is_active(self):
-        return True
+        return self.active
 
     @property
     def is_anonymous(self):
@@ -96,8 +97,7 @@ class User(db.Model):
         token = jwt.encode(
             {"id": self.id,
              "email": self.email,
-             "exp": datetime.datetime.now(tz=datetime.timezone.utc)
-                    + datetime.timedelta(seconds=expiration)},
+             "exp": datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(seconds=expiration)},
             config.Config.SECRET_KEY,
             algorithm="HS256"
         )
@@ -116,8 +116,19 @@ class User(db.Model):
             return False, 0
         return True, data.get(tipo)
 
-    def changeActive(self):
+    def change_attributes(self, form, new=False):
+        self.username = form.username.data
+        self.email = form.email.data
+        self.company_id = form.company.data
+        self.role_id = form.role.data
+        self.active = form.active.data
+        self.password = '12345678'
+        self.confirmed = True
+        if new:
+            self.member_since = datetime.datetime.now()
+
+    def change_active(self):
         if self.active:
-            self.setActive(False)
+            self.set_active(False)
         else:
-            self.setActive(True)
+            self.set_active(True)

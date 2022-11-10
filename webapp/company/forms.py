@@ -23,7 +23,9 @@ class CompanyForm(Form):
 
     def validate(self):
         # if our validators do not pass
-        check_validate = super(CompanyForm, self).validate()
-        if not check_validate:
-            return False
+        # check_validate = super(CompanyForm, self).validate()
+        # if not check_validate:
+        #     return False
+
+        # flash("Empresa não adicionada", category="danger")
         return True

@@ -1,3 +1,5 @@
+import datetime
+
 from flask import (render_template,
                    Blueprint,
                    redirect,
@@ -5,17 +7,17 @@ from flask import (render_template,
                    url_for,
                    flash)
 from flask_login import login_user, logout_user, current_user, login_required
-from .models import db, User
+from .models import db, User, Role
 from webapp.company.models import Company
 from webapp.email import send_email
 from .forms import LoginForm, RegisterForm, ChangePasswordForm, \
-    PasswordResetRequestForm, PasswordResetForm, ChangeEmailForm
+    PasswordResetRequestForm, PasswordResetForm, ChangeEmailForm, EditForm
 
 auth_blueprint = Blueprint(
     'auth',
     __name__,
     template_folder='../templates/auth',
-    url_prefix="/auth"
+    url_prefix="/system"
 )
 
 
@@ -215,12 +217,12 @@ def change_email(token):
     return redirect(url_for('main.index'))
 
 
-@auth_blueprint.route('/active/<int:id>')
+@auth_blueprint.route('/active_auth/<int:id>')
 @login_required
 def active(id):
     user = User.query.filter_by(id=id).one()
     if user:
-        user.changeActive()
+        user.change_active()
         db.session.add(user)
         db.session.commit()
     return redirect(url_for('.list'))
@@ -244,18 +246,37 @@ def list():
     return render_template('user_list.html', users=users)
 
 
-@auth_blueprint.route('/edit/<int:id>', methods=['GET', 'POST'])
+@auth_blueprint.route('/auth/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit(id):
-    user = User.query.filter_by(id=id).one()
-    form = RegisterForm(obj=user)
-    # form = CompanyForm()
-    form.company.choices = [(companies.id, companies.name) for companies in Company.query.all()]
+    if id > 0:
+        # Atualizar
+        user = User.query.filter_by(id=id).first()
+        form = EditForm(obj=user)
+        new = False
+    else:
+        # Cadastrar
+        user = User()
+        user.id = 0
+        form = EditForm()
+        new = True
 
+    # Listas
+    form.company.choices = [(companies.id, companies.name) for companies in Company.query.all()]
+    form.role.choices = [(roles.id, roles.name) for roles in Role.query.all()]
+
+    # Validação
     if form.validate_on_submit():
-        form.populate_obj(user)
+        user.change_attributes(form, new)
         db.session.add(user)
         db.session.commit()
-        flash("Usuário atualizado", category="success")
-        return redirect(url_for("auth.user", id=user.id))
+
+        # Mensagens
+        if id > 0:
+            flash("Usuário atualizado", category="success")
+        else:
+            flash("Usuário cadastrado", category="success")
+
+        return redirect(url_for("auth.list"))
     return render_template("user_edit.html", form=form, user=user)
+

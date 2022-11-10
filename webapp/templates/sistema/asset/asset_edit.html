@@ -1,0 +1,90 @@
+{% extends "sistema_base.html" %}
+{% block body %}
+<body>
+<form action="{{ url_for('asset.edit', id=asset.id) }}" method="POST">
+    {{form.csrf_token}}
+    {% if asset.id == 0 %}
+    <h2>Cadastro de Equipamento</h2>
+    {% else %}
+    <h2>Equipamento</h2>
+    {% endif %}
+
+    {{form.cod.label}}
+    {{form.cod(size=20)}}<br>
+
+    {{form.short_description.label}}
+    {{form.short_description(size=20)}}<br>
+
+    {{form.long_description.label}}
+    {{form.long_description(size=20)}}<br>
+
+    {{form.manufacturer.label}}
+    {{form.manufacturer(size=20)}}<br>
+
+    {{form.brand.label}}
+    {{form.brand(size=20)}}<br>
+
+    {{form.model.label}}
+    {{form.model}}<br>
+
+    {{form.ns.label}}
+    {{form.ns}}<br>
+
+    {{form.dimension_x.label}}
+    {{form.dimension_x}}<br>
+
+    {{form.dimension_y.label}}
+    {{form.dimension_y}}<br>
+
+    {{form.dimension_z.label}}
+    {{form.dimension_z}}<br>
+
+    {{form.weight.label}}
+    {{form.weight}}<br>
+
+    {{form.year_manufacture.label}}
+    {{form.year_manufacture}}<br>
+
+    {{form.date_acquisition.label}}
+    {{form.date_acquisition}}<br>
+
+    {{form.date_installation.label}}
+    {{form.date_installation}}<br>
+
+    {{form.cost_acquisition.label}}
+    {{form.cost_acquisition}}<br>
+
+    {{form.depreciation.label}}
+    {{form.depreciation}}<br>
+
+    {{form.tag.label}}
+    {{form.tag}}<br>
+
+    {{form.cost_center.label}}
+    {{form.cost_center}}<br>
+
+    {{form.type_id.label}}
+    {{form.type_id}}<br>
+
+    {{form.active.label}}
+    {{form.active(size=20)}}<br>
+
+    {{form.company.label}}
+    {{form.company}}<br>
+
+    {% if asset.id == 0 %}
+    <input type="submit" value="Cadastrar"/>
+    {% else %}
+    <input type="submit" value="Atualizar"/>
+    {% endif %}
+
+</form>
+
+<a href="{{ url_for('asset.list') }}">Voltar</a>
+
+</body>
+
+
+{% endblock %}
+
+

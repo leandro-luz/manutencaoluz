@@ -32,14 +32,20 @@ class Subbusiness(db.Model):
 class Company(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(50), nullable=False, index=True, unique=True)
-    cnpj = db.Column(db.Integer(), nullable=False, index=True, unique=True)
-    cep = db.Column(db.Integer(), nullable=False, index=True, unique=False)
-    email = db.Column(db.String(50), nullable=False, index=True, unique=True)
+    cnpj = db.Column(db.Integer(), nullable=False, unique=True)
+    cep = db.Column(db.Integer(), nullable=False, unique=False)
+    email = db.Column(db.String(50), nullable=False, unique=True)
     active = db.Column(db.Boolean, default=False)
     member_since = db.Column(db.DateTime(), nullable=True)
     subbusiness_id = db.Column(db.Integer(), db.ForeignKey("subbusiness.id"))
+
     subbusiness = db.relationship("Subbusiness", back_populates="company")
     user = db.relationship("User", back_populates="company")
+    role = db.relationship("Role", back_populates="company")
+    asset = db.relationship("Asset", back_populates="company")
+    type = db.relationship("Type", back_populates="company")
+
+    # supplier = db.relationship("Supplier", back_populates="company")
 
     def __repr__(self):
         return '<Company {}>'.format(self.name)
@@ -48,50 +54,18 @@ class Company(db.Model):
         self.business_id = Subbusiness.query.filter_by(name="teste").one()
         self.name = name
 
-    def setName(self, name):
-        self.name = name
+    def change_attributes(self, form, new=False):
+        self.name = form.name.data
+        self.cnpj = form.cnpj.data
+        self.cep = form.cep.data
+        self.email = form.email.data
+        self.active = form.active.data
+        self.subbusiness_id = form.subbusiness.data
+        if new:
+            self.member_since = datetime.datetime.now()
 
-    def setCnpj(self, cnpj):
-        self.cnpj = cnpj
-
-    def setCep(self, cep):
-        self.cep = cep
-
-    def setEmail(self, email):
-        self.email = email
-
-    def setActive(self, active):
-        self.active = active
-
-    def setSubbsiness(self, id):
-        self.subbusiness_id = id
-
-    def setMemberSince(self):
-        self.member_since = datetime.datetime.now()
-
-    def getName(self):
-        return self.name
-
-    def getCnpj(self):
-        return self.cnpj
-
-    def getCep(self):
-        return self.cep
-
-    def getEmail(self):
-        return self.email
-
-    def getActive(self):
-        return self.active
-
-    def getSubbsiness(self):
-        return self.subbusiness_id
-
-    def getMemberSince(self):
-        return self.member_since
-
-    def changeActive(self):
+    def change_active(self):
         if self.active:
-            self.setActive(False)
+            self.active = False
         else:
-            self.setActive(True)
+            self.active = True

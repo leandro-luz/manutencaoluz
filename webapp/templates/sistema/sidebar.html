@@ -14,15 +14,15 @@
             </a>
         </li>
         <li>
+            <a class="nav-link" href="{{ url_for('asset.list') }}" title="">
+                <i class="bi-robot fs-6"> Equipamento</i>
+            </a>
+        </li>
+        <li>
             <a class="nav-link" data-bs-original-title="Dashboard" data-bs-placement="right"
                data-bs-toggle="tooltip"
                href="{{ url_for('sistema.almoxarifado') }}" title="">
                 <i class="bi-box-seam fs-6"> Almoxarifado</i>
-            </a>
-        </li>
-        <li>
-            <a class="nav-link" href="{{ url_for('sistema.equipamento') }}" title="">
-                <i class="bi-robot fs-6"> Equipamento</i>
             </a>
         </li>
         <li>
@@ -35,6 +35,12 @@
                 <i class="bi-wrench-adjustable-circle fs-6"> Manutenção</i>
             </a>
         </li>
+         <li>
+            <a class="nav-link" href="#" title="">
+                <i class="bi-truck fs-6"> Fornecedor</i>
+            </a>
+        </li>
+
         <li>
             <a class="nav-link" href="{{ url_for('sistema.orçamento') }}" title="">
                 <i class="bi-cash fs-6"> Orçamento</i>

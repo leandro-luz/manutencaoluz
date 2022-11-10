@@ -22,11 +22,15 @@ def create_app(object_name):
     from webapp.main import create_module as main_create_module
     from webapp.sistema import create_module as sistema_create_module
     from webapp.company import create_module as company_create_module
+    from webapp.asset import create_module as asset_create_module
+    from webapp.supplier import create_module as supplier_create_module
 
     auth_create_module(app)
     main_create_module(app)
     sistema_create_module(app)
     company_create_module(app)
+    asset_create_module(app)
+    supplier_create_module(app)
 
     # app.register_error_handler(404, page_not_found)
     return app

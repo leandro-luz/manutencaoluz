@@ -4,6 +4,8 @@ from webapp import create_app
 from webapp import db
 from webapp.auth.models import Role, User
 from webapp.company.models import Company, Business, Subbusiness
+from webapp.asset.models import Asset, Type
+from webapp.supplier.models import Supplier
 
 env = os.environ.get('WEBAPP_ENV', 'dev')
 app = create_app('config.%sConfig' % env.capitalize())
@@ -33,7 +35,12 @@ company_lista = [{'name': 'empresa_1', 'cnpj': '123456789',
                   'date': '1999/08/01 08:12:35'}
                  ]
 
-roles_lista = ['default', 'admin']
+roles_lista = [{'company': 'empresa_1', 'name': 'default'},
+               {'company': 'empresa_1', 'name': 'admin'},
+               {'company': 'empresa_2', 'name': 'superadmin'},
+               {'company': 'empresa_2', 'name': 'admin'}
+               ]
+
 user_lista = [{'username': 'leandro',
                'email': 'engleoluz@hotmail.com',
                'password': 'aaa11111',
@@ -47,6 +54,25 @@ user_lista = [{'username': 'leandro',
                'date': '1999/08/01 08:12:35',
                'company': 'empresa_2'}
               ]
+
+type_lista = [{'name': 'cadeira', 'company': 'empresa_1'},
+              {'name': 'elevador', 'company': 'empresa_1'},
+              {'name': 'mesa', 'company': 'empresa_1'},
+              {'name': 'informatica', 'company': 'empresa_2'},
+              {'name': 'veículos', 'company': 'empresa_2'},
+              {'name': 'móveis', 'company': 'empresa_2'}
+              ]
+
+asset_lista = [{'cod': '000.001', 'short': 'computador', 'company': 'empresa_1'},
+               {'cod': '000.002', 'short': 'mesa', 'company': 'empresa_1'},
+               {'cod': '000.003', 'short': 'chiller', 'company': 'empresa_1'},
+               {'cod': '000.004', 'short': 'carro', 'company': 'empresa_1'},
+               {'cod': '000.011', 'short': 'caldeira', 'company': 'empresa_2'},
+               {'cod': '000.021', 'short': 'caminhão', 'company': 'empresa_2'},
+               {'cod': '000.031', 'short': 'esteira', 'company': 'empresa_2'},
+               {'cod': '000.041', 'short': 'britador', 'company': 'empresa_2'},
+               {'cod': '000.051', 'short': 'compactador', 'company': 'empresa_2'}
+               ]
 
 
 def generate_business():
@@ -120,17 +146,18 @@ def generate_companies():
 
 def generate_roles():
     roles = list()
-    for rolename in roles_lista:
-        role = Role.query.filter_by(name=rolename).first()
+    for item in roles_lista:
+        company = Company.query.filter_by(name=item['company']).one()
+        role = Role.query.filter_by(name=item['name'], company_id=company.id).first()
         if role:
             roles.append(role)
             continue
-        role = Role(rolename)
-        roles.append(role)
-        db.session.add(role)
+        role = Role(item['name'])
+        role.company_id = company.id
         try:
+            db.session.add(role)
             db.session.commit()
-            print('Regra inserida:', role.name)
+            print("Regra inserida: %s na empresa: %s" % (role.name, company.name))
         except Exception as e:
             log.error("Erro ao inserir a regra: %s, %s" % (str(role), e))
             db.session.rollback()
@@ -155,15 +182,56 @@ def generate_users():
         user.active = True
         user.role_id = role.id
         user.company_id = company.id
-        users.append(user)
         try:
             db.session.add(user)
             db.session.commit()
-            print('Usuário inserido:', user.username)
+            print("Usuário inserido: %s, na empresa: %s" % (user.username, company.name))
         except Exception as e:
             log.error("Erro ao inserir usuário: %s, %s" % (str(user), e))
             db.session.rollback()
     return users
+
+
+def generate_type():
+    types = list()
+    for item in type_lista:
+        type_ = Type.query.filter_by(name=item['name']).first()
+        if type_:
+            types.append(type_)
+            continue
+        type_ = Type(item['name'])
+        company = Company.query.filter_by(name=item['company']).one()
+        type_.company_id = company.id
+        try:
+            db.session.add(type_)
+            db.session.commit()
+            print("Tipo de equipamento inserido: %s,  na empresa: %s" % (type_.name, company.name))
+        except Exception as e:
+            log.error("Erro ao inserir o tipo do equipamento: %s, %s" % (str(type_), e))
+            db.session.rollback()
+    return types
+
+
+def generate_asset():
+    assets = list()
+    for item in asset_lista:
+        asset = Asset.query.filter_by(cod=item['cod']).first()
+        if asset:
+            assets.append(asset)
+            continue
+        asset = Asset()
+        company = Company.query.filter_by(name=item['company']).one()
+        asset.cod = item['cod']
+        asset.short_description = item['short']
+        asset.company_id = company.id
+        try:
+            db.session.add(asset)
+            db.session.commit()
+            print("Equipamento inserido: %s, na empresa: %s" % (asset.short_description, company.name))
+        except Exception as e:
+            log.error("Erro ao inserir Equipamento: %s, %s" % (str(asset), e))
+            db.session.rollback()
+    return assets
 
 
 # carregamento para as empresas
@@ -174,3 +242,7 @@ generate_companies()
 # carregamento para os usuários
 generate_roles()
 generate_users()
+
+# carregamento para os equipamentos
+generate_type()
+generate_asset()

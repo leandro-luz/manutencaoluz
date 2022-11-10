@@ -53,9 +53,9 @@ class RegisterForm(Form):
 
     def validate(self):
         # if our validators do not pass
-        check_validate = super(RegisterForm, self).validate()
-        if not check_validate:
-            return False
+        # check_validate = super(RegisterForm, self).validate()
+        # if not check_validate:
+        #     return False
 
         # Is the username already being used
         user = User.query.filter_by(username=self.username.data).first()
@@ -71,6 +71,30 @@ class RegisterForm(Form):
 
         return True
 
+
+class EditForm(Form):
+    username = StringField('Usuário', [DataRequired(), Length(max=50),
+                                       Regexp('^[A-Za-z][A-Za-z0-9_.]*$', 0,
+                                              'Nome deve conter somente letras, '
+                                              'números, ponto ou sublinha')],
+                           render_kw={"placeholder": "Digite o seu nome"})
+    email = StringField('Email', [DataRequired(), Email()],
+                        render_kw={"placeholder": "Digite o seu email"})
+    company = SelectField('Empresa', choices=[])
+    role = SelectField('Perfil', choices=[])
+    active = BooleanField('Ativo',
+                          render_kw={"placeholder": "Informe se a usuário está ativo"})
+
+
+    submit = SubmitField('Registrar')
+
+    def validate(self):
+        # if our validators do not pass
+        # check_validate = super(RegisterForm, self).validate()
+        # if not check_validate:
+        #     return False
+
+        return True
 
 class ChangePasswordForm(Form):
     old_password = PasswordField('Senha antiga', validators=[DataRequired()],
