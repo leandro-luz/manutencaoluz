@@ -1,6 +1,6 @@
 import datetime
 
-from flask import (render_template,
+from flask import (render_template, session,
                    Blueprint,
                    redirect,
                    request,
@@ -11,7 +11,8 @@ from .models import db, User, Role
 from webapp.company.models import Company
 from webapp.email import send_email
 from .forms import LoginForm, RegisterForm, ChangePasswordForm, \
-    PasswordResetRequestForm, PasswordResetForm, ChangeEmailForm, EditForm
+    PasswordResetRequestForm, PasswordResetForm, ChangeEmailForm, EditForm, \
+    RoleForm
 
 auth_blueprint = Blueprint(
     'auth',
@@ -46,7 +47,6 @@ def login():
         user = User.query.filter_by(username=form.username.data).one()
         if user.confirmed:
             login_user(user, remember=form.remember.data)
-            user.ping()
             return redirect(url_for('sistema.index'))
         return render_template('unconfirmed.html', user=user)
     return render_template('login.html', form=form)
@@ -217,9 +217,9 @@ def change_email(token):
     return redirect(url_for('main.index'))
 
 
-@auth_blueprint.route('/active_auth/<int:id>')
+@auth_blueprint.route('/auth_active/<int:id>')
 @login_required
-def active(id):
+def auth_active(id):
     user = User.query.filter_by(id=id).one()
     if user:
         user.change_active()
@@ -239,16 +239,16 @@ def user(id):
     flash("Usuário não cadastrado", category="danger")
 
 
-@auth_blueprint.route('/user_list', methods=['GET', 'POST'])
+@auth_blueprint.route('/auth_list', methods=['GET', 'POST'])
 @login_required
-def list():
+def auth_list():
     users = User.query.order_by(User.username.asc())
     return render_template('user_list.html', users=users)
 
 
-@auth_blueprint.route('/auth/<int:id>', methods=['GET', 'POST'])
+@auth_blueprint.route('/auth_edit/<int:id>', methods=['GET', 'POST'])
 @login_required
-def edit(id):
+def auth_edit(id):
     if id > 0:
         # Atualizar
         user = User.query.filter_by(id=id).first()
@@ -277,6 +277,53 @@ def edit(id):
         else:
             flash("Usuário cadastrado", category="success")
 
-        return redirect(url_for("auth.list"))
+        return redirect(url_for("auth.auth_list"))
     return render_template("user_edit.html", form=form, user=user)
 
+
+@auth_blueprint.route('/role_list', methods=['GET', 'POST'])
+@login_required
+def role_list():
+    roles = Role.query.order_by(Role.id.asc())
+    return render_template('role_list.html', roles=roles)
+
+
+@auth_blueprint.route('/role_edit/<int:id>', methods=['GET', 'POST'])
+@login_required
+def role_edit(id):
+    if id > 0:
+        # Atualizar
+        role = Role.query.filter_by(id=id).first()
+        form = RoleForm(obj=role)
+
+        # Atualizar ou Ler dados
+        if form.company.data:
+            b_d = form.company.data
+        else:
+            b_d = role.company_id
+
+    else:
+        # Cadastrar
+        role = Role()
+        role.id = 0
+        form = RoleForm()
+        b_d = 1
+
+    # Listas
+    form.company.choices = [(company.id, company.name) for company in Company.query.all()]
+    form.company.data = b_d
+
+    # Validação
+    if form.validate_on_submit():
+        role.change_attributes(form)
+        db.session.add(role)
+        db.session.commit()
+
+        # Mensagens
+        if id > 0:
+            flash("Perfil atualizado", category="success")
+        else:
+            flash("Perfil cadastrado", category="success")
+
+        return redirect(url_for("auth.role_list"))
+    return render_template("role_edit.html", form=form, role=role)

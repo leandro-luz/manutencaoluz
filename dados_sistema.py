@@ -15,7 +15,11 @@ logging.basicConfig(format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
 logging.getLogger().setLevel(logging.DEBUG)
 log = logging.getLogger(__name__)
 
-business_lista = ['indústria', 'comércio', 'serviços']
+business_lista = [{'name': 'indústria'},
+                  {'name': 'comércio'},
+                  {'name': 'serviços'}
+                  ]
+
 subbusiness_lista = [{'business': 'indústria', 'name': 'roupas'},
                      {'business': 'indústria', 'name': 'laticínios'},
                      {'business': 'comércio', 'name': 'roupas'},
@@ -77,12 +81,13 @@ asset_lista = [{'cod': '000.001', 'short': 'computador', 'company': 'empresa_1'}
 
 def generate_business():
     businesslista = list()
-    for businessname in business_lista:
-        business = Business.query.filter_by(name=businessname).first()
+    for item in business_lista:
+        business = Business.query.filter_by(name=item['name']).first()
         if business:
             businesslista.append(business)
             continue
-        business = Business(businessname)
+        business = Business()
+        business.name = item['name']
         businesslista.append(business)
         try:
             db.session.add(business)
@@ -152,7 +157,8 @@ def generate_roles():
         if role:
             roles.append(role)
             continue
-        role = Role(item['name'])
+        role = Role()
+        role.name = item['name']
         role.company_id = company.id
         try:
             db.session.add(role)

@@ -1,5 +1,9 @@
+from datetime import timedelta
+
+
 class Config(object):
     SECRET_KEY = "123"
+    PERMANENT_SESSION_LIFETIME = timedelta(hours=2)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     DEBUG_TB_INTERCEPT_REDIRECTS = False
     MAIL_SERVER = 'smtp-mail.outlook.com'

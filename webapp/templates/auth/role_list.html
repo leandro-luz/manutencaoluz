@@ -1,0 +1,40 @@
+{% extends "sistema_base.html" %}
+{% block body %}
+<body>
+
+<h2> LISTA DOS PERFIS DE ACESSO </h2>
+<a href="{{ url_for('auth.role_edit', id=0) }}">
+    Adicionar
+</a>
+
+
+<table class="table">
+    <thead>
+    <tr>
+        <th scope="col">NAME</th>
+        <th scope="col">EMPRESA</th>
+        <th scope="col"></th>
+    </tr>
+    </thead>
+
+    <tbody>
+    {% for role in roles %}
+    <tr>
+        <td>{{ role.name }}</td>
+        <td>{{ role.company_id }}</td>
+        <td>
+            <a href="{{ url_for('auth.role_edit', id=role.id) }}">
+                    <span data-tooltip="Informações">
+                        <i class="bi-caret-right fs-6"></i>
+                    </span>
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<a href="{{ url_for('auth.auth_list') }}">Voltar</a>
+
+</body>
+{% endblock %}

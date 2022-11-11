@@ -1,7 +1,7 @@
 {% extends "sistema_base.html" %}
 {% block body %}
 <body>
-<form action="{{ url_for('company.edit', id=company.id) }}" method="POST">
+<form action="{{ url_for('company.company_edit', id=company.id) }}" method="POST">
     {{form.csrf_token}}
 
     {% if company.id == 0 %}
@@ -9,6 +9,22 @@
     {% else %}
     <h2>Empresa</h2>
     {% endif %}
+
+    {{form.business.label}}
+    {{form.business}}
+    <a href="{{ url_for('company.business_list') }}">
+        <span data-tooltip="Atualizar">
+            <i class="bi-caret-down fs-6"></i>
+        </span>
+    </a> <br>
+
+    {{form.subbusiness.label}}
+    {{form.subbusiness}}
+    <a href="{{ url_for('company.subbusiness_list') }}">
+        <span data-tooltip="Atualizar">
+            <i class="bi-caret-down fs-6"></i>
+        </span>
+    </a> <br>
 
     {{form.name.label}}
     {{form.name(size=20)}}<br>
@@ -22,12 +38,6 @@
     {{form.email.label}}
     {{form.email(size=20)}}<br>
 
-    {{form.business.label}}
-    {{form.business}}<br>
-
-    {{form.subbusiness.label}}
-    {{form.subbusiness}}<br>
-
     {{form.active.label}}
     {{form.active(size=20)}}<br>
 
@@ -40,7 +50,7 @@
 
 </form>
 
-<a href="{{ url_for('company.list') }}">Voltar</a>
+<a href="{{ url_for('company.company_list') }}">Voltar</a>
 
 </body>
 
@@ -48,10 +58,9 @@
 <script>
 business_select = document.getElementById('business');
 subbusiness_select = document.getElementById('subbusiness');
-
 business_select.onchange = function() {
     business_id = business_select.value;
-    fetch('subbusiness_list/' + business_id).then(function(response) {
+    fetch('/system/company/subbusiness_list_option/' + business_id).then(function(response) {
         response.json().then(function(data) {
             optionHTML = '';
             for (subbusiness of data.subbusiness_list) {
@@ -61,6 +70,17 @@ business_select.onchange = function() {
         });
     });
     }
+
+
+
+
+
+
+
+
+
+
+
 
 
 </script>

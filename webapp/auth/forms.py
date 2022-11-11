@@ -43,7 +43,7 @@ class RegisterForm(Form):
                         render_kw={"placeholder": "Digite o seu email"})
     password = PasswordField('Senha', [DataRequired(), Length(min=8)],
                              render_kw={"placeholder": "Digite a sua senha"})
-    company = SelectField('Empresa', choices=[])
+    company = SelectField('Empresa', choices=[], coerce=int)
     active = BooleanField('Ativo',
                           render_kw={"placeholder": "Informe se a usuário está ativo"})
 
@@ -80,11 +80,10 @@ class EditForm(Form):
                            render_kw={"placeholder": "Digite o seu nome"})
     email = StringField('Email', [DataRequired(), Email()],
                         render_kw={"placeholder": "Digite o seu email"})
-    company = SelectField('Empresa', choices=[])
-    role = SelectField('Perfil', choices=[])
+    company = SelectField('Empresa', choices=[], coerce=int)
+    role = SelectField('Perfil', choices=[], coerce=int)
     active = BooleanField('Ativo',
                           render_kw={"placeholder": "Informe se a usuário está ativo"})
-
 
     submit = SubmitField('Registrar')
 
@@ -95,6 +94,7 @@ class EditForm(Form):
         #     return False
 
         return True
+
 
 class ChangePasswordForm(Form):
     old_password = PasswordField('Senha antiga', validators=[DataRequired()],
@@ -159,4 +159,16 @@ class ChangeEmailForm(Form):
             flash("Email já registrado", category="danger")
             return False
 
+        return True
+
+
+class RoleForm(Form):
+    name = StringField('Perfil', validators=[DataRequired(), Length(max=50)],
+                       render_kw={"placeholder": "Digite o nome do perfil"})
+    description = StringField('Descrição', validators=[DataRequired(), Length(max=50)],
+                              render_kw={"placeholder": "Digite a descrição do perfil"})
+    company = SelectField('Empresa', choices=[], coerce=int)
+    submit = SubmitField("Cadastrar")
+
+    def validate(self):
         return True

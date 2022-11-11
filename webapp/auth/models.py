@@ -1,5 +1,6 @@
 from webapp.auth import bcrypt, AnonymousUserMixin, jwt
 from webapp import db
+from webapp.company.models import Company
 from flask_jwt_extended import create_access_token, get_jwt_identity
 import jwt
 import datetime
@@ -14,11 +15,13 @@ class Role(db.Model):
     company_id = db.Column(db.Integer(), db.ForeignKey("company.id"))
     company = db.relationship("Company", back_populates="role")
 
-    def __init__(self, name):
-        self.name = name
-
     def __repr__(self):
         return '<Role {}>'.format(self.name)
+
+    def change_attributes(self, form):
+        self.name = form.name.data
+        self.description = form.description.data
+        self.company_id = form.company.data
 
 
 class User(db.Model):
@@ -41,6 +44,14 @@ class User(db.Model):
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
+
+    def get_role_name(self):
+        role = Role.query.filter_by(id=self.role_id).first()
+        return role.name
+
+    def get_company_name(self):
+        company = Company.query.filter_by(id=self.company_id).first()
+        return company.name
 
     # # @cache.memoize(60)
     # def has_role(self, name):

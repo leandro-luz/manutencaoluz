@@ -2,7 +2,8 @@
     <div class="container">
         <a class="navbar-brand" href="{{url_for('main.index')}}"> MANUTENÇÃOLUZ </a>
         {% if current_user.is_authenticated %}
-        <a class="navbar-brand"> {{ current_user.company_id }} </a>
+        <a class="navbar-brand"> {{ current_user.get_company_name() }} </a>
+        <a class="navbar-brand"> {{ current_user.get_role_name() }} </a>
         {% endif %}
         <div id="navbar-items">
             <ul class="navbar-nav">
@@ -21,7 +22,8 @@
                             <b>{{ current_user.username }}</b>
                         </a>
                         <ul aria-labelledby="dropdownMenuButton1" class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('auth.user', id=current_user.id) }}">Conta</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('auth.user', id=current_user.id) }}">Conta</a>
+                            </li>
                             <li><a class="dropdown-item" href="{{ url_for('auth.change_password') }}">Trocar senha</a>
                             </li>
                             <li><a class="dropdown-item" href="{{ url_for('auth.change_email_request') }}">Trocar

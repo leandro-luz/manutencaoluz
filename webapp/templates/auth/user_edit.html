@@ -1,7 +1,7 @@
 {% extends "sistema_base.html" %}
 {% block body %}
 <body>
-<form action="{{ url_for('auth.edit', id=user.id) }}" method="POST">
+<form action="{{ url_for('auth.auth_edit', id=user.id) }}" method="POST">
     {{form.csrf_token}}
 
     {% if user.id == 0 %}
@@ -21,7 +21,13 @@
     {{form.company}}<br>
 
     {{form.role.label}}
-    {{form.role}}<br>
+    {{form.role}}
+    <a href="{{ url_for('auth.role_list') }}">
+        <span data-tooltip="Atualizar">
+            <i class="bi-caret-down fs-6"></i>
+        </span>
+    </a> <br>
+
 
     {{form.active.label}}
     {{form.active(size=20)}}<br>
@@ -34,7 +40,7 @@
 
 </form>
 
-<a href="{{ url_for('auth.list') }}">Voltar</a>
+<a href="{{ url_for('auth.auth_list') }}">Voltar</a>
 
 </body>
 

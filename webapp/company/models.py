@@ -11,11 +11,12 @@ class Business(db.Model):
     name = db.Column(db.String(50), nullable=False, index=True, unique=True)
     subbusiness = db.relationship("Subbusiness", back_populates="business")
 
-    def __init__(self, name):
-        self.name = name
 
     def __repr__(self):
         return '<Business {}>'.format(self.name)
+
+    def change_attributes(self, form):
+        self.name = form.name.data
 
 
 class Subbusiness(db.Model):
@@ -27,6 +28,10 @@ class Subbusiness(db.Model):
 
     def __repr__(self):
         return '<SubBusiness {}>'.format(self.name)
+
+    def change_attributes(self, form):
+        self.name = form.name.data
+        self.business_id = form.business.data
 
 
 class Company(db.Model):

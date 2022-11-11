@@ -17,8 +17,8 @@ class CompanyForm(Form):
                         render_kw={"placeholder": "Digite o email"})
     active = BooleanField('Ativo',
                           render_kw={"placeholder": "Informe se a empresa está ativa"})
-    business = SelectField('Ramo de Negócio', choices=[])
-    subbusiness = SelectField('Sub-Ramo de Negócio', choices=[])
+    business = SelectField('Ramo de Negócio', choices=[], coerce=int)
+    subbusiness = SelectField('Sub-Ramo de Negócio', choices=[], coerce=int)
     submit = SubmitField("Cadastrar")
 
     def validate(self):
@@ -28,4 +28,23 @@ class CompanyForm(Form):
         #     return False
 
         # flash("Empresa não adicionada", category="danger")
+        return True
+
+
+class BusinessForm(Form):
+    name = StringField('Nome', validators=[DataRequired(), Length(max=50)],
+                       render_kw={"placeholder": "Digite o nome do ramo de negócios"})
+    submit = SubmitField("Cadastrar")
+
+    def validate(self):
+        return True
+
+
+class SubbusinessForm(Form):
+    name = StringField('Nome', validators=[DataRequired(), Length(max=50)],
+                       render_kw={"placeholder": "Digite o nome do sub-ramo de negócios"})
+    business = SelectField('Ramo de Negócio', choices=[], coerce=int)
+    submit = SubmitField("Cadastrar")
+
+    def validate(self):
         return True

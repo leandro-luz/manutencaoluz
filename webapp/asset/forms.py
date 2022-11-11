@@ -44,7 +44,7 @@ class AssetForm(Form):
                           render_kw={"placeholder": "Digite se está ativo"})
     type_id = IntegerField('Grupo',
                            render_kw={"placeholder": "Digite o grupo de ativos"})
-    company = SelectField('Empresa', choices=[])
+    company = SelectField('Empresa', choices=[], coerce=int)
     submit = SubmitField("Salvar")
 
     def validate(self):
