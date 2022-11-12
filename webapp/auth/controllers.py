@@ -1,6 +1,4 @@
-import datetime
-
-from flask import (render_template, session,
+from flask import (render_template,
                    Blueprint,
                    redirect,
                    request,
@@ -254,16 +252,29 @@ def auth_edit(id):
         user = User.query.filter_by(id=id).first()
         form = EditForm(obj=user)
         new = False
+
+        # Atualizar ou Ler dados
+        if form.company.data:
+            c_d = form.company.data
+            r_d = form.role.data
+        else:
+            c_d = user.company_id
+            r_d = user.role_id
+
     else:
         # Cadastrar
         user = User()
         user.id = 0
         form = EditForm()
         new = True
+        c_d = form.company.data
+        r_d = form.role.data
 
     # Listas
     form.company.choices = [(companies.id, companies.name) for companies in Company.query.all()]
+    form.company.data = c_d
     form.role.choices = [(roles.id, roles.name) for roles in Role.query.all()]
+    form.role.data = r_d
 
     # Validação
     if form.validate_on_submit():
@@ -307,7 +318,7 @@ def role_edit(id):
         role = Role()
         role.id = 0
         form = RoleForm()
-        b_d = 1
+        b_d = form.company.data
 
     # Listas
     form.company.choices = [(company.id, company.name) for company in Company.query.all()]

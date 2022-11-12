@@ -27,7 +27,7 @@ class AssetForm(Form):
     weight = IntegerField('Peso ',
                           render_kw={"placeholder": "Digite o peso"})
     year_manufacture = DateField('Ano de Fabridcação ',
-                                    render_kw={"placeholder": "Digite o ano de fabricação"})
+                                 render_kw={"placeholder": "Digite o ano de fabricação"})
     date_acquisition = DateField('Data de Aquisição ',
                                  render_kw={"placeholder": "Digite a data da aquisição"})
     date_installation = DateField('Data da Instalação ',
@@ -42,9 +42,39 @@ class AssetForm(Form):
                               render_kw={"placeholder": "Digite o centro de custo"})
     active = BooleanField('Ativo ',
                           render_kw={"placeholder": "Digite se está ativo"})
-    type_id = IntegerField('Grupo',
-                           render_kw={"placeholder": "Digite o grupo de ativos"})
+    group = SelectField('Grupo de equipamentos', choices=[], coerce=int)
+    system = SelectField('Sistemas', choices=[], coerce=int)
     company = SelectField('Empresa', choices=[], coerce=int)
+    submit = SubmitField("Salvar")
+
+    def validate(self):
+        # # if our validators do not pass
+        # check_validate = super(AssetForm, self).validate()
+        # if not check_validate:
+        #     print('False')
+        #     return False
+        return True
+
+
+class GroupForm(Form):
+    name = StringField('Nome', validators=[DataRequired(), Length(max=50)],
+                       render_kw={"placeholder": "Digite o nome do grupo"})
+    company = SelectField('Empresa', choices=[], coerce=int)
+    submit = SubmitField("Salvar")
+
+    def validate(self):
+        # # if our validators do not pass
+        # check_validate = super(AssetForm, self).validate()
+        # if not check_validate:
+        #     print('False')
+        #     return False
+        return True
+
+
+class SystemForm(Form):
+    name = StringField('Nome', validators=[DataRequired(), Length(max=50)],
+                       render_kw={"placeholder": "Digite o nome do sistema"})
+    asset = SelectField('Equipamanto', choices=[], coerce=int)
     submit = SubmitField("Salvar")
 
     def validate(self):

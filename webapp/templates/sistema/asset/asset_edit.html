@@ -1,7 +1,7 @@
 {% extends "sistema_base.html" %}
 {% block body %}
 <body>
-<form action="{{ url_for('asset.edit', id=asset.id) }}" method="POST">
+<form action="{{ url_for('asset.asset_edit', id=asset.id) }}" method="POST">
     {{form.csrf_token}}
     {% if asset.id == 0 %}
     <h2>Cadastro de Equipamento</h2>
@@ -63,8 +63,21 @@
     {{form.cost_center.label}}
     {{form.cost_center}}<br>
 
-    {{form.type_id.label}}
-    {{form.type_id}}<br>
+    {{form.group.label}}
+    {{form.group}}
+    <a href="{{ url_for('asset.group_list') }}">
+        <span data-tooltip="Atualizar">
+            <i class="bi-caret-down fs-6"></i>
+        </span>
+    </a> <br>
+
+    {{form.system.label}}
+    {{form.system}}
+    <a href="{{ url_for('asset.system_list', id=asset.id) }}">
+        <span data-tooltip="Atualizar">
+            <i class="bi-caret-down fs-6"></i>
+        </span>
+    </a> <br>
 
     {{form.active.label}}
     {{form.active(size=20)}}<br>
@@ -80,7 +93,7 @@
 
 </form>
 
-<a href="{{ url_for('asset.list') }}">Voltar</a>
+<a href="{{ url_for('asset.asset_list') }}">Voltar</a>
 
 </body>
 

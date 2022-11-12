@@ -3,7 +3,7 @@
 <body>
 
 <h2> LISTA DE EQUIPAMENTOS </h2>
-<a href="{{ url_for('asset.edit', id=0) }}">
+<a href="{{ url_for('asset.asset_edit', id=0) }}">
     Adicionar
 </a>
 
@@ -35,7 +35,7 @@
 
         <td>{{ asset.active }}</td>
         <td>
-            <a href="{{ url_for('asset.edit', id=asset.id) }}">
+            <a href="{{ url_for('asset.asset_edit', id=asset.id) }}">
                     <span data-tooltip="Informações">
                         <i class="bi-caret-right fs-6"></i>
                     </span>
@@ -43,7 +43,7 @@
         </td>
         {% if asset.active == True %}
         <td>
-            <a href="{{ url_for('asset.active', id=asset.id) }}">
+            <a href="{{ url_for('asset.asset_active', id=asset.id) }}">
                     <span data-tooltip="Desativar">
                         <i class="bi-caret-down fs-6"></i>
                     </span>
@@ -51,7 +51,7 @@
         </td>
         {% else %}
         <td>
-            <a href="{{ url_for('asset.active', id=asset.id) }}">
+            <a href="{{ url_for('asset.asset_active', id=asset.id) }}">
                     <span data-tooltip="Ativar">
                         <i class="bi-caret-up fs-6"></i>
                     </span>

@@ -68,8 +68,8 @@ def company_edit(id):
         company_.id = 0
         form = CompanyForm()
         new = True
-        sb_d = 1
-        b_d = 1
+        b_d = form.business.data
+        sb_d = form.subbusiness.data
 
     # Listas
     form.business.choices = [(business.id, business.name) for business in Business.query.all()]
@@ -156,8 +156,8 @@ def subbusiness_edit(id):
         # Cadastrar
         subbusiness = Subbusiness()
         subbusiness.id = 0
-        b_d = 1
         form = SubbusinessForm()
+        b_d = form.business.data
 
     # Listas
     form.business.choices = [(business.id, business.name) for business in Business.query.all()]

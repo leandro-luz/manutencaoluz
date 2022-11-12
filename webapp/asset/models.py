@@ -1,22 +1,32 @@
-from webapp.auth import bcrypt, AnonymousUserMixin, jwt
 from webapp import db
-from flask_jwt_extended import create_access_token, get_jwt_identity
-import jwt
-import datetime
-import config
 
 
-class Type(db.Model):
+class System(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    asset_id = db.Column(db.Integer(), db.ForeignKey("asset.id"))
+    asset = db.relationship("Asset", back_populates="system")
+
+    def __repr__(self):
+        return '<System {}>'.format(self.name)
+
+    def change_attributes(self, form):
+        self.name = form.name.data
+        self.asset_id = form.asset.data
+
+
+class Group(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(50), nullable=False)
     company_id = db.Column(db.Integer(), db.ForeignKey("company.id"))
-    company = db.relationship("Company", back_populates="type")
-
-    def __init__(self, name):
-        self.name = name
+    company = db.relationship("Company", back_populates="group")
 
     def __repr__(self):
-        return '<Type {}>'.format(self.name)
+        return '<Group {}>'.format(self.name)
+
+    def change_attributes(self, form):
+        self.name = form.name.data
+        self.company_id = form.company.data
 
 
 class Asset(db.Model):
@@ -40,10 +50,11 @@ class Asset(db.Model):
     tag = db.Column(db.Integer(), nullable=True)
     cost_center = db.Column(db.String(50), nullable=True)
     active = db.Column(db.Boolean, default=True)
-    type_id = db.Column(db.Integer(), nullable=True)
+    group_id = db.Column(db.Integer(), nullable=True)
 
     company_id = db.Column(db.Integer(), db.ForeignKey("company.id"))
     company = db.relationship("Company", back_populates="asset")
+    system = db.relationship("System", back_populates="asset")
 
     def __repr__(self):
         return '<Asset {}>'.format(self.name)
@@ -54,7 +65,7 @@ class Asset(db.Model):
     def set_active(self, active):
         self.active = active
 
-    def change_attributes(self, form, new):
+    def change_attributes(self, form):
         self.cod = form.cod.data
         self.short_description = form.short_description.data
         self.long_description = form.long_description.data
@@ -74,7 +85,7 @@ class Asset(db.Model):
         self.tag = form.tag.data
         self.cost_center = form.cost_center.data
         self.active = form.active.data
-        self.type_id = form.type_id.data
+        self.group_id = form.group.data
         self.company_id = form.company.data
 
     def change_active(self):

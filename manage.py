@@ -2,7 +2,7 @@ import os
 from webapp import db, migrate, create_app
 from webapp.auth.models import User, Role
 from webapp.company.models import Company, Subbusiness, Business
-from webapp.asset.models import Asset, Type
+from webapp.asset.models import Asset, Group, System
 from webapp.supplier.models import Supplier
 
 env = os.environ.get('WEBAPP_ENV', 'dev')
@@ -14,6 +14,6 @@ def make_shell_context():
     return dict(app=app, db=db,
                 User=User, Role=Role,
                 Company=Company, Subbusiness=Subbusiness, Business=Business,
-                Asset=Asset, Type=Type,
+                Asset=Asset, Group=Group, System = System,
                 Supplier=Supplier,
                 migrate=migrate)

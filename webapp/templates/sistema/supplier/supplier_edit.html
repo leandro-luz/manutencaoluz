@@ -1,0 +1,30 @@
+{% extends "sistema_base.html" %}
+{% block body %}
+<body>
+<form action="{{ url_for('supplier.supplier_edit', id=supplier.id) }}" method="POST">
+    {{form.csrf_token}}
+
+    {% if supplier.id == 0 %}
+    <h2>Cadastro de Fornecedores</h2>
+    {% else %}
+    <h2>Fornecedor</h2>
+    {% endif %}
+
+    {{form.name.label}}
+    {{form.name(size=20)}}<br>
+
+    {{form.company.label}}
+    {{form.company}}<br>
+
+    {% if supplier.id == 0 %}
+    <input type="submit" value="Cadastrar"/>
+    {% else %}
+    <input type="submit" value="Atualizar"/>
+    {% endif %}
+
+</form>
+
+<a href="{{ url_for('supplier.supplier_list') }}">Voltar</a>
+
+</body>
+{% endblock %}

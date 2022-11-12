@@ -4,7 +4,7 @@ from webapp import create_app
 from webapp import db
 from webapp.auth.models import Role, User
 from webapp.company.models import Company, Business, Subbusiness
-from webapp.asset.models import Asset, Type
+from webapp.asset.models import Asset, Group, System
 from webapp.supplier.models import Supplier
 
 env = os.environ.get('WEBAPP_ENV', 'dev')
@@ -59,13 +59,13 @@ user_lista = [{'username': 'leandro',
                'company': 'empresa_2'}
               ]
 
-type_lista = [{'name': 'cadeira', 'company': 'empresa_1'},
-              {'name': 'elevador', 'company': 'empresa_1'},
-              {'name': 'mesa', 'company': 'empresa_1'},
-              {'name': 'informatica', 'company': 'empresa_2'},
-              {'name': 'veículos', 'company': 'empresa_2'},
-              {'name': 'móveis', 'company': 'empresa_2'}
-              ]
+group_lista = [{'name': 'cadeira', 'company': 'empresa_1'},
+               {'name': 'elevador', 'company': 'empresa_1'},
+               {'name': 'mesa', 'company': 'empresa_1'},
+               {'name': 'informatica', 'company': 'empresa_2'},
+               {'name': 'veículos', 'company': 'empresa_2'},
+               {'name': 'móveis', 'company': 'empresa_2'}
+               ]
 
 asset_lista = [{'cod': '000.001', 'short': 'computador', 'company': 'empresa_1'},
                {'cod': '000.002', 'short': 'mesa', 'company': 'empresa_1'},
@@ -77,6 +77,23 @@ asset_lista = [{'cod': '000.001', 'short': 'computador', 'company': 'empresa_1'}
                {'cod': '000.041', 'short': 'britador', 'company': 'empresa_2'},
                {'cod': '000.051', 'short': 'compactador', 'company': 'empresa_2'}
                ]
+
+system_lista = [{'name': 'elétrico', 'cod': '000.001'},
+                {'name': 'alvenaria', 'cod': '000.002'},
+                {'name': 'hidraulico', 'cod': '000.003'},
+                {'name': 'combustão', 'cod': '000.004'},
+                {'name': 'segurança', 'cod': '000.011'},
+                {'name': 'informática', 'cod': '000.021'},
+                {'name': 'painel', 'cod': '000.031'}
+                ]
+
+supplier_lista = [{'name': 'Fornecedor_1', 'company': 'empresa_1'},
+                  {'name': 'Fornecedor_2', 'company': 'empresa_1'},
+                  {'name': 'Fornecedor_3', 'company': 'empresa_2'},
+                  {'name': 'Fornecedor_4', 'company': 'empresa_2'},
+                  {'name': 'Fornecedor_5', 'company': 'empresa_2'},
+                  {'name': 'Fornecedor_6', 'company': 'empresa_2'}
+                  ]
 
 
 def generate_business():
@@ -198,24 +215,25 @@ def generate_users():
     return users
 
 
-def generate_type():
-    types = list()
-    for item in type_lista:
-        type_ = Type.query.filter_by(name=item['name']).first()
-        if type_:
-            types.append(type_)
+def generate_group():
+    groups = list()
+    for item in group_lista:
+        group = Group.query.filter_by(name=item['name']).first()
+        if group:
+            groups.append(group)
             continue
-        type_ = Type(item['name'])
+        group = Group()
+        group.name = item['name']
         company = Company.query.filter_by(name=item['company']).one()
-        type_.company_id = company.id
+        group.company_id = company.id
         try:
-            db.session.add(type_)
+            db.session.add(group)
             db.session.commit()
-            print("Tipo de equipamento inserido: %s,  na empresa: %s" % (type_.name, company.name))
+            print("Grupo de equipamento inserido: %s,  na empresa: %s" % (group.name, company.name))
         except Exception as e:
-            log.error("Erro ao inserir o tipo do equipamento: %s, %s" % (str(type_), e))
+            log.error("Erro ao inserir o grupo do equipamento: %s, %s" % (str(group), e))
             db.session.rollback()
-    return types
+    return groups
 
 
 def generate_asset():
@@ -240,6 +258,48 @@ def generate_asset():
     return assets
 
 
+def generate_system():
+    systems = list()
+    for item in system_lista:
+        system = System.query.filter_by(name=item['name']).first()
+        if system:
+            systems.append(system)
+            continue
+        system = System()
+        asset = Asset.query.filter_by(cod=item['cod']).one()
+        system.name = item['name']
+        system.asset_id = asset.id
+        try:
+            db.session.add(system)
+            db.session.commit()
+            print("Sistema inserido: %s, no equipamento: %s" % (system.name, asset.short_description))
+        except Exception as e:
+            log.error("Erro ao inserir Sistema: %s, %s" % (str(system), e))
+            db.session.rollback()
+    return systems
+
+
+def generate_supplier():
+    suppliers = list()
+    for item in supplier_lista:
+        supplier = Supplier.query.filter_by(name=item['name']).first()
+        if supplier:
+            suppliers.append(supplier)
+            continue
+        supplier = Supplier()
+        company = Company.query.filter_by(name=item['company']).one()
+        supplier.name = item['name']
+        supplier.company_id = company.id
+        try:
+            db.session.add(supplier)
+            db.session.commit()
+            print("Fornecedor inserido: %s, na empresa: %s" % (supplier.name, company.name))
+        except Exception as e:
+            log.error("Erro ao inserir Fornecedor: %s, %s" % (str(supplier), e))
+            db.session.rollback()
+    return suppliers
+
+
 # carregamento para as empresas
 generate_business()
 generate_subbusiness()
@@ -250,5 +310,9 @@ generate_roles()
 generate_users()
 
 # carregamento para os equipamentos
-generate_type()
+generate_group()
 generate_asset()
+generate_system()
+
+# carregamento para os fornecedores
+generate_supplier()

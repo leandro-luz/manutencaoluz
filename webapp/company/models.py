@@ -1,16 +1,11 @@
-from webapp.auth import bcrypt, AnonymousUserMixin, jwt
 from webapp import db
-from flask_jwt_extended import create_access_token, get_jwt_identity
-import jwt
 import datetime
-import config
 
 
 class Business(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(50), nullable=False, index=True, unique=True)
     subbusiness = db.relationship("Subbusiness", back_populates="business")
-
 
     def __repr__(self):
         return '<Business {}>'.format(self.name)
@@ -48,9 +43,8 @@ class Company(db.Model):
     user = db.relationship("User", back_populates="company")
     role = db.relationship("Role", back_populates="company")
     asset = db.relationship("Asset", back_populates="company")
-    type = db.relationship("Type", back_populates="company")
-
-    # supplier = db.relationship("Supplier", back_populates="company")
+    group = db.relationship("Group", back_populates="company")
+    supplier = db.relationship("Supplier", back_populates="company")
 
     def __repr__(self):
         return '<Company {}>'.format(self.name)
