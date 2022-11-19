@@ -22,7 +22,7 @@ supplier_blueprint = Blueprint(
 @supplier_blueprint.route('/supplier_list', methods=['GET', 'POST'])
 @login_required
 def supplier_list():
-    suppliers = Supplier.query.order_by(Supplier.name.asc())
+    suppliers = Supplier.query.filter_by(company_id=current_user.company_id).all()
     return render_template('supplier_list.html', suppliers=suppliers)
 
 
@@ -48,7 +48,10 @@ def supplier_edit(id):
         c_d = form.company.data
 
     # Listas
-    form.company.choices = [(companies.id, companies.name) for companies in Company.query.all()]
+    form.company.choices = [(companies.id, companies.name) for companies
+                            in Company.query.filter_by(id=current_user.company_id).all()]
+    ##perfil superadmin
+    # form.company.choices = [(companies.id, companies.name) for companies in Company.query.all()]
     form.company.data = c_d
 
     # Validação

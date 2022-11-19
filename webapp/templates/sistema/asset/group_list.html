@@ -11,7 +11,6 @@
     <thead>
     <tr>
         <th scope="col">NAME</th>
-        <th scope="col">EMPRESA</th>
         <th scope="col"></th>
     </tr>
     </thead>
@@ -20,7 +19,6 @@
     {% for group in groups %}
     <tr>
         <td>{{ group.name }}</td>
-       <td>{{ group.company_id }}</td>
         <td>
             <a href="{{ url_for('asset.group_edit', id=group.id) }}">
                     <span data-tooltip="Informações">
@@ -33,7 +31,7 @@
     </tbody>
 </table>
 
-<a href="{{ url_for('asset.group_list') }}">Voltar</a>
+<a href="{{ url_for('asset.asset_list') }}">Voltar</a>
 
 </body>
 {% endblock %}

@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm as Form
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField
 from wtforms.validators import DataRequired, Length, EqualTo, Email, Regexp
-from .models import User
+from .models import User, ViewRole
 from flask import flash
 
 
@@ -168,7 +168,26 @@ class RoleForm(Form):
     description = StringField('Descrição', validators=[DataRequired(), Length(max=50)],
                               render_kw={"placeholder": "Digite a descrição do perfil"})
     company = SelectField('Empresa', choices=[], coerce=int)
+    view = SelectField('Tela', choices=[], coerce=int)
     submit = SubmitField("Cadastrar")
 
     def validate(self):
+        return True
+
+
+class ViewRoleForm(Form):
+    view = SelectField('Telas', choices=[], coerce=int)
+    role = SelectField('Perfil', choices=[], coerce=int)
+    submit = SubmitField("Cadastrar")
+
+    def validate(self):
+        # if our validators do not pass
+        # check_validate = super(CompanyForm, self).validate()
+        # if not check_validate:
+        #     return False
+
+        if ViewRole.query.filter_by(role_id=self.role.data, view_id=self.view.data).first() is not None:
+            flash("Tela já registrada para este perfil", category="danger")
+            return False
+
         return True

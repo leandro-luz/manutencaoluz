@@ -2,10 +2,11 @@ import logging
 import os
 from webapp import create_app
 from webapp import db
-from webapp.auth.models import Role, User
+from webapp.auth.models import Role, User, ViewRole
 from webapp.company.models import Company, Business, Subbusiness
 from webapp.asset.models import Asset, Group, System
 from webapp.supplier.models import Supplier
+from webapp.plan.models import Plan, View, ViewPlan
 
 env = os.environ.get('WEBAPP_ENV', 'dev')
 app = create_app('config.%sConfig' % env.capitalize())
@@ -24,75 +25,105 @@ subbusiness_lista = [{'business': 'indústria', 'name': 'roupas'},
                      {'business': 'indústria', 'name': 'laticínios'},
                      {'business': 'comércio', 'name': 'roupas'},
                      {'business': 'comércio', 'name': 'ferragens'},
-                     {'business': 'serviços', 'name': 'advocacia'},
+                     {'business': 'serviços', 'name': 'informática'},
                      {'business': 'serviços', 'name': 'odontologia'},
                      {'business': 'indústria', 'name': 'teste'}
                      ]
 
-company_lista = [{'name': 'empresa_1', 'cnpj': '123456789',
-                  'cep': '12000111', 'email': 'email@teste.com.br',
-                  'business': 'indústria', 'subbusiness': 'teste',
-                  'date': '1980/05/10 12:45:10'},
-                 {'name': 'empresa_2', 'cnpj': '987654321',
-                  'cep': '34111222', 'email': 'empresalucratudo@teste.com.br',
-                  'business': 'comércio', 'subbusiness': 'roupas',
-                  'date': '1999/08/01 08:12:35'}
+views_lista = [{'name': 'Plano', 'icon': 'bi-briefcase', 'url': 'plan.plan_list'},
+               {'name': 'Empresa', 'icon': 'bi-house-door', 'url': 'company.company_list'},
+               {'name': 'RH', 'icon': 'bi-people', 'url': 'auth.auth_list'},
+               {'name': 'Equipamento', 'icon': 'bi-robot', 'url': 'asset.asset_list'},
+               {'name': 'Almoxarifado', 'icon': 'bi-box-seam', 'url': 'sistema.almoxarifado'},
+               {'name': 'Programação', 'icon': 'bi-calendar3', 'url': 'sistema.programação'},
+               {'name': 'Manutenção', 'icon': 'bi-wrench-adjustable-circle', 'url': 'sistema.manutenção'},
+               {'name': 'Fornecedor', 'icon': 'bi-truck', 'url': 'supplier.supplier_list'},
+               {'name': 'Orçamento', 'icon': 'bi-cash', 'url': 'sistema.orçamento'},
+               {'name': 'Indicadores', 'icon': 'bi-graph-up', 'url': 'sistema.indicador'}
+               ]
+
+plans_lista = [{'name': 'basico'},
+               {'name': 'intermediário'},
+               {'name': 'completo'}
+               ]
+
+viewplans_lista = [{'plan': 'basico', 'view': 'RH'},
+                   {'plan': 'basico', 'view': 'Equipamento'},
+                   {'plan': 'basico', 'view': 'Fornecedor'},
+                   {'plan': 'intermediário', 'view': 'Plano'},
+                   {'plan': 'intermediário', 'view': 'Empresa'},
+                   {'plan': 'intermediário', 'view': 'RH'},
+                   {'plan': 'intermediário', 'view': 'Equipamento'},
+                   {'plan': 'intermediário', 'view': 'Fornecedor'},
+                   {'plan': 'intermediário', 'view': 'Almoxarifado'},
+                   {'plan': 'intermediário', 'view': 'Programação'},
+                   {'plan': 'completo', 'view': 'Plano'},
+                   {'plan': 'completo', 'view': 'Empresa'},
+                   {'plan': 'completo', 'view': 'RH'},
+                   {'plan': 'completo', 'view': 'Equipamento'},
+                   {'plan': 'completo', 'view': 'Fornecedor'},
+                   {'plan': 'completo', 'view': 'Almoxarifado'},
+                   {'plan': 'completo', 'view': 'Programação'},
+                   {'plan': 'completo', 'view': 'Manutenção'},
+                   {'plan': 'completo', 'view': 'Orçamento'},
+                   {'plan': 'completo', 'view': 'Indicadores'}
+                   ]
+
+company_lista = [{'name': 'empresa_1', 'cnpj': '111111111',
+                  'cep': '1212121212', 'email': 'empresa_1@teste.com.br',
+                  'business': 'serviços', 'subbusiness': 'informática',
+                  'date': '1980/05/10 12:45:10', 'plano': 'completo'}
                  ]
 
 roles_lista = [{'company': 'empresa_1', 'name': 'default'},
-               {'company': 'empresa_1', 'name': 'admin'},
-               {'company': 'empresa_2', 'name': 'superadmin'},
-               {'company': 'empresa_2', 'name': 'admin'}
+               {'company': 'empresa_1', 'name': 'admin'}
                ]
 
-user_lista = [{'username': 'leandro',
-               'email': 'engleoluz@hotmail.com',
-               'password': 'aaa11111',
-               'role': 'default',
-               'date': '1980/05/10 12:45:10',
-               'company': 'empresa_1'},
-              {'username': 'danylo',
-               'email': 'luzdanylo@gmail.com',
-               'password': '12345678',
-               'role': 'default',
-               'date': '1999/08/01 08:12:35',
-               'company': 'empresa_2'}
+viewroles_lista = [{'company': 'empresa_1', 'role': 'default', 'view': 'Plano'},
+                   {'company': 'empresa_1', 'role': 'default', 'view': 'Empresa'},
+                   {'company': 'empresa_1', 'role': 'default', 'view': 'RH'},
+                   {'company': 'empresa_1', 'role': 'admin', 'view': 'Plano'},
+                   {'company': 'empresa_1', 'role': 'admin', 'view': 'Empresa'},
+                   {'company': 'empresa_1', 'role': 'admin', 'view': 'RH'},
+                   {'company': 'empresa_1', 'role': 'admin', 'view': 'Equipamento'},
+                   {'company': 'empresa_1', 'role': 'admin', 'view': 'Fornecedor'},
+                   {'company': 'empresa_1', 'role': 'admin', 'view': 'Almoxarifado'},
+                   {'company': 'empresa_1', 'role': 'admin', 'view': 'Programação'},
+                   {'company': 'empresa_1', 'role': 'admin', 'view': 'Manutenção'},
+                   {'company': 'empresa_1', 'role': 'admin', 'view': 'Orçamento'},
+                   {'company': 'empresa_1', 'role': 'admin', 'view': 'Indicadores'}
+                   ]
+
+user_lista = [{'username': 'admin', 'email': 'admin@admin.com',
+               'password': 'aaa11111', 'role': 'admin',
+               'date': '1980/05/10 12:45:10', 'company': 'empresa_1'},
+              {'username': 'leandro', 'email': 'engleoluz@hotmail.com',
+               'password': 'aaa11111', 'role': 'default',
+               'date': '1980/05/10 12:45:10', 'company': 'empresa_1'},
+              {'username': 'danylo', 'email': 'danylo@gmail.com',
+               'password': '12345678', 'role': 'admin',
+               'date': '1980/05/10 12:45:10', 'company': 'empresa_1'}
               ]
 
 group_lista = [{'name': 'cadeira', 'company': 'empresa_1'},
                {'name': 'elevador', 'company': 'empresa_1'},
-               {'name': 'mesa', 'company': 'empresa_1'},
-               {'name': 'informatica', 'company': 'empresa_2'},
-               {'name': 'veículos', 'company': 'empresa_2'},
-               {'name': 'móveis', 'company': 'empresa_2'}
+               {'name': 'mesa', 'company': 'empresa_1'}
                ]
 
 asset_lista = [{'cod': '000.001', 'short': 'computador', 'company': 'empresa_1'},
                {'cod': '000.002', 'short': 'mesa', 'company': 'empresa_1'},
                {'cod': '000.003', 'short': 'chiller', 'company': 'empresa_1'},
-               {'cod': '000.004', 'short': 'carro', 'company': 'empresa_1'},
-               {'cod': '000.011', 'short': 'caldeira', 'company': 'empresa_2'},
-               {'cod': '000.021', 'short': 'caminhão', 'company': 'empresa_2'},
-               {'cod': '000.031', 'short': 'esteira', 'company': 'empresa_2'},
-               {'cod': '000.041', 'short': 'britador', 'company': 'empresa_2'},
-               {'cod': '000.051', 'short': 'compactador', 'company': 'empresa_2'}
+               {'cod': '000.004', 'short': 'carro', 'company': 'empresa_1'}
                ]
 
 system_lista = [{'name': 'elétrico', 'cod': '000.001'},
                 {'name': 'alvenaria', 'cod': '000.002'},
                 {'name': 'hidraulico', 'cod': '000.003'},
-                {'name': 'combustão', 'cod': '000.004'},
-                {'name': 'segurança', 'cod': '000.011'},
-                {'name': 'informática', 'cod': '000.021'},
-                {'name': 'painel', 'cod': '000.031'}
+                {'name': 'combustão', 'cod': '000.004'}
                 ]
 
 supplier_lista = [{'name': 'Fornecedor_1', 'company': 'empresa_1'},
-                  {'name': 'Fornecedor_2', 'company': 'empresa_1'},
-                  {'name': 'Fornecedor_3', 'company': 'empresa_2'},
-                  {'name': 'Fornecedor_4', 'company': 'empresa_2'},
-                  {'name': 'Fornecedor_5', 'company': 'empresa_2'},
-                  {'name': 'Fornecedor_6', 'company': 'empresa_2'}
+                  {'name': 'Fornecedor_2', 'company': 'empresa_1'}
                   ]
 
 
@@ -138,6 +169,72 @@ def generate_subbusiness():
     return subbusinesss
 
 
+def generate_plans():
+    planlista = list()
+    for item in plans_lista:
+        plan = Plan.query.filter_by(name=item['name']).first()
+        if plan:
+            planlista.append(plan)
+            continue
+        plan = Plan()
+        plan.name = item['name']
+        planlista.append(plan)
+        try:
+            db.session.add(plan)
+            db.session.commit()
+            print('Plano inserido:', plan.name)
+        except Exception as e:
+            log.error("Erro ao inserir o plano: %s, %s" % (str(plan), e))
+            db.session.rollback()
+    return planlista
+
+
+def generate_views():
+    viewlista = list()
+    for item in views_lista:
+        view = View.query.filter_by(name=item['name']).first()
+        if view:
+            viewlista.append(view)
+            continue
+        view = View()
+        view.name = item['name']
+        view.icon = item['icon']
+        view.url = item['url']
+        try:
+            db.session.add(view)
+            db.session.commit()
+            print('Tela inserida:', view.name)
+        except Exception as e:
+            log.error("Erro ao inserir a tela: %s, %s" % (str(view), e))
+            db.session.rollback()
+    return viewlista
+
+
+def generate_viewplans():
+    viewplanlista = list()
+    for item in viewplans_lista:
+        view = View.query.filter_by(name=item['view']).first()
+        plan = Plan.query.filter_by(name=item['plan']).first()
+        viewplan = ViewPlan.query.filter_by(view_id=view.id, plan_id=plan.id).first()
+
+        if viewplan:
+            viewplanlista.append(viewplan)
+            continue
+
+        viewplan = ViewPlan()
+        viewplan.view_id = view.id
+        viewplan.plan_id = plan.id
+        viewplan.active = True
+        try:
+            db.session.add(viewplan)
+            db.session.commit()
+            print('Tela inserida: %s no plano: %s' % (view.name, plan.name))
+        except Exception as e:
+            log.error("Erro ao inserir a tela/plano: %s, %s" % (str(view), e))
+            db.session.rollback()
+    return viewplanlista
+
+
 def generate_companies():
     companies = list()
     for item in company_lista:
@@ -148,6 +245,7 @@ def generate_companies():
         company = Company()
         business = Business.query.filter_by(name=item['business']).one()
         subbusiness = Subbusiness.query.filter_by(name=item['subbusiness'], business_id=business.id).one()
+        plan = Plan.query.filter_by(name=item['plano']).one()
         company.name = item['name']
         company.cnpj = item['cnpj']
         company.cep = item['cep']
@@ -155,6 +253,7 @@ def generate_companies():
         company.active = True
         company.member_since = item['date']
         company.subbusiness_id = subbusiness.id
+        company.plan_id = plan.id
         companies.append(company)
         try:
             db.session.add(company)
@@ -187,6 +286,32 @@ def generate_roles():
     return roles
 
 
+def generate_viewroles():
+    viewrolelista = list()
+    for item in viewroles_lista:
+        company = Company.query.filter_by(name=item['company']).one()
+        role = Role.query.filter_by(name=item['role'], company_id=company.id).one()
+        view = View.query.filter_by(name=item['view']).one()
+        viewrole = ViewRole.query.filter_by(view_id=view.id, role_id=role.id).first()
+
+        if viewrole:
+            viewrolelista.append(viewrole)
+            continue
+
+        viewrole = ViewRole()
+        viewrole.view_id = view.id
+        viewrole.role_id = role.id
+        viewrole.active = True
+        try:
+            db.session.add(viewrole)
+            db.session.commit()
+            print('Tela inserida: %s no perfil: %s' % (view.name, role.name))
+        except Exception as e:
+            log.error("Erro ao inserir a tela: %s erro: %s" % (str(viewrole), e))
+            db.session.rollback()
+    return viewrolelista
+
+
 def generate_users():
     users = list()
     for item in user_lista:
@@ -195,8 +320,8 @@ def generate_users():
             users.append(user)
             continue
         user = User()
-        role = Role.query.filter_by(name=item['role']).one()
         company = Company.query.filter_by(name=item['company']).one()
+        role = Role.query.filter_by(name=item['role'], company_id=company.id).one()
         user.username = item['username']
         user.email = item['email']
         user.password = item['password']
@@ -303,10 +428,14 @@ def generate_supplier():
 # carregamento para as empresas
 generate_business()
 generate_subbusiness()
+generate_views()
+generate_plans()
+generate_viewplans()
 generate_companies()
 
-# carregamento para os usuários
+# carregamento para os perfis e usuários
 generate_roles()
+generate_viewroles()
 generate_users()
 
 # carregamento para os equipamentos

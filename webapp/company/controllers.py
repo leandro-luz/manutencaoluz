@@ -3,8 +3,11 @@ from flask import (render_template, Blueprint,
                    jsonify, url_for,
                    flash)
 from flask_login import current_user, login_required
-from .models import db, Company, Business, Subbusiness
-from .forms import CompanyForm, BusinessForm, SubbusinessForm
+from webapp.company.models import db, Company, Business, Subbusiness
+from webapp.company.forms import CompanyForm, BusinessForm, SubbusinessForm
+from webapp.plan.models import Plan
+from webapp.auth.models import User, Role, ViewRole
+from webapp.plan.models import ViewPlan
 
 company_blueprint = Blueprint(
     'company',
@@ -54,22 +57,27 @@ def company_edit(id):
         form = CompanyForm(obj=company_)
         new = False
         subbusiness = Subbusiness.query.filter_by(id=company_.subbusiness_id).one()
+        plan = Plan.query.filter_by(id=company_.plan_id).one()
 
         # Atualizar ou Ler dados
         if form.business.data:
             b_d = form.business.data
             sb_d = form.subbusiness.data
+            p_d = form.plan.data
         else:
             b_d = subbusiness.business_id
             sb_d = subbusiness.id
+            p_d = plan.id
     else:
         # Cadastrar
         company_ = Company()
         company_.id = 0
         form = CompanyForm()
         new = True
-        b_d = form.business.data
-        sb_d = form.subbusiness.data
+        b_d = 1
+        subbusiness = Subbusiness.query.filter_by(business_id=b_d).first()
+        sb_d = subbusiness.id
+        p_d = form.plan.data
 
     # Listas
     form.business.choices = [(business.id, business.name) for business in Business.query.all()]
@@ -79,11 +87,50 @@ def company_edit(id):
     form.subbusiness.choices = [(subbusiness.id, subbusiness.name) for subbusiness in subbusiness_list]
     form.subbusiness.data = sb_d
 
+    form.plan.choices = [(plans.id, plans.name) for plans in Plan.query.all()]
+    form.plan.data = p_d
+
     # Validação
     if form.validate_on_submit():
         company_.change_attributes(form, new)
         db.session.add(company_)
         db.session.commit()
+
+        if new:
+            company_ = Company.query.filter_by(name=form.name.data).one()
+            print(company_.id)
+            #cadastro da regra
+            role = Role()
+            role.name = 'admin'
+            role.description = 'administrador'
+            role.company_id = company_.id
+            db.session.add(role)
+            db.session.commit()
+
+            role = Role.query.filter_by(name='admin', company_id=company_.id).one()
+            print(role)
+            viewplans = ViewPlan.query.filter_by(plan_id=company_.plan_id).all()
+            print(viewplans)
+            for viewplan in viewplans:
+                #cadastro de viewroles para o administrador
+                viewrole = ViewRole()
+                viewrole.active = True
+                viewrole.role_id = role.id
+                viewrole.view_id = viewplan.view_id
+                db.session.add(viewrole)
+                db.session.commit()
+
+            #cadastro do usuario admin
+            user = User()
+            user.username = 'admin_'+ company_.name
+            user.email = 'admin@admin'
+            user.password = 'aaa11111'
+            user.company_id = company_.id
+            user.role_id = role.id
+            user.confirmed = True
+            user.active = True
+            db.session.add(user)
+            db.session.commit()
 
         # Mensagens
         if id > 0:

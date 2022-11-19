@@ -2,10 +2,11 @@
 {% block body %}
 <body>
 
-<h2> LISTA DOS FORNECEDORES </h2>
-<a href="{{ url_for('supplier.supplier_edit', id=0) }}">
+<h2> LISTA DE PLANOS </h2>
+<a href="{{ url_for('plan.plan_edit', id=0) }}">
     Adicionar
 </a>
+
 
 <table class="table">
     <thead>
@@ -16,11 +17,11 @@
     </thead>
 
     <tbody>
-    {% for supplier in suppliers %}
+    {% for plan in plans %}
     <tr>
-        <td>{{ supplier.name }}</td>
+        <td>{{ plan.name }}</td>
         <td>
-            <a href="{{ url_for('supplier.supplier_edit', id=supplier.id) }}">
+            <a href="{{ url_for('plan.plan_edit', id=plan.id) }}">
                     <span data-tooltip="Informações">
                         <i class="bi-caret-right fs-6"></i>
                     </span>

@@ -19,6 +19,8 @@ class CompanyForm(Form):
                           render_kw={"placeholder": "Informe se a empresa está ativa"})
     business = SelectField('Ramo de Negócio', choices=[], coerce=int)
     subbusiness = SelectField('Sub-Ramo de Negócio', choices=[], coerce=int)
+    plan = SelectField('Plano', choices=[], coerce=int)
+
     submit = SubmitField("Cadastrar")
 
     def validate(self):

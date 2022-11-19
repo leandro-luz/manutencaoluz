@@ -16,7 +16,6 @@
         <th scope="col">DESCRIÇÃO_CURTA</th>
         <th scope="col">TAG</th>
         <th scope="col">GRUPO</th>
-        <th scope="col">EMPRESA</th>
         <th scope="col">ATIVO</th>
         <th scope="col"></th>
         <th scope="col"></th>
@@ -31,8 +30,6 @@
         <td>{{ asset.short_description }}</td>
         <td>{{ asset.tag }}</td>
         <td>{{ asset.type_id }}</td>
-        <td>{{ asset.company_id }}</td>
-
         <td>{{ asset.active }}</td>
         <td>
             <a href="{{ url_for('asset.asset_edit', id=asset.id) }}">

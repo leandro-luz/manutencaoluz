@@ -24,6 +24,7 @@ def create_app(object_name):
     from webapp.company import create_module as company_create_module
     from webapp.asset import create_module as asset_create_module
     from webapp.supplier import create_module as supplier_create_module
+    from webapp.plan import create_module as plan_create_module
 
     auth_create_module(app)
     main_create_module(app)
@@ -31,6 +32,7 @@ def create_app(object_name):
     company_create_module(app)
     asset_create_module(app)
     supplier_create_module(app)
+    plan_create_module(app)
 
     # app.register_error_handler(404, page_not_found)
     return app

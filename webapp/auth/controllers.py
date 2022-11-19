@@ -5,12 +5,13 @@ from flask import (render_template,
                    url_for,
                    flash)
 from flask_login import login_user, logout_user, current_user, login_required
-from .models import db, User, Role
+from webapp.auth.models import db, User, Role, ViewRole
+from webapp.plan.models import View, ViewPlan
 from webapp.company.models import Company
 from webapp.email import send_email
 from .forms import LoginForm, RegisterForm, ChangePasswordForm, \
     PasswordResetRequestForm, PasswordResetForm, ChangeEmailForm, EditForm, \
-    RoleForm
+    RoleForm, ViewRoleForm
 
 auth_blueprint = Blueprint(
     'auth',
@@ -240,7 +241,7 @@ def user(id):
 @auth_blueprint.route('/auth_list', methods=['GET', 'POST'])
 @login_required
 def auth_list():
-    users = User.query.order_by(User.username.asc())
+    users = User.query.filter_by(company_id=current_user.company_id).all()
     return render_template('user_list.html', users=users)
 
 
@@ -271,9 +272,15 @@ def auth_edit(id):
         r_d = form.role.data
 
     # Listas
-    form.company.choices = [(companies.id, companies.name) for companies in Company.query.all()]
+
+    form.company.choices = [(companies.id, companies.name) for companies
+                            in Company.query.filter_by(id=current_user.company_id).all()]
+    ##perfil superadmin
+    # form.company.choices = [(companies.id, companies.name) for companies in Company.query.all()]
     form.company.data = c_d
-    form.role.choices = [(roles.id, roles.name) for roles in Role.query.all()]
+
+    form.role.choices = [(roles.id, roles.name) for roles
+                         in Role.query.filter_by(company_id=current_user.company_id).all()]
     form.role.data = r_d
 
     # Validação
@@ -295,7 +302,7 @@ def auth_edit(id):
 @auth_blueprint.route('/role_list', methods=['GET', 'POST'])
 @login_required
 def role_list():
-    roles = Role.query.order_by(Role.id.asc())
+    roles = Role.query.filter_by(company_id=current_user.company_id)
     return render_template('role_list.html', roles=roles)
 
 
@@ -319,16 +326,35 @@ def role_edit(id):
         role.id = 0
         form = RoleForm()
         b_d = form.company.data
+        new = True
 
     # Listas
-    form.company.choices = [(company.id, company.name) for company in Company.query.all()]
+    form.company.choices = [(company.id, company.name)
+                            for company in Company.query.filter_by(id=current_user.company_id)]
     form.company.data = b_d
+
+    form.view.choices = [(viewroles.id, viewroles.get_name_view(viewroles.view_id))
+                         for viewroles in ViewRole.query.filter_by(role_id=id, active=True).all()]
 
     # Validação
     if form.validate_on_submit():
         role.change_attributes(form)
         db.session.add(role)
         db.session.commit()
+
+
+        if new:
+            role = Role.query.filter_by(name=form.name.data, company_id=form.company.data).one()
+            company = Company.query.filter_by(id=b_d).one()
+            viewplans = ViewPlan.query.filter_by(plan_id=company.plan_id).all()
+
+            for viewplan in viewplans:
+                viewrole = ViewRole()
+                viewrole.active = False
+                viewrole.role_id = role.id
+                viewrole.view_id = viewplan.view_id
+                db.session.add(viewrole)
+                db.session.commit()
 
         # Mensagens
         if id > 0:
@@ -338,3 +364,46 @@ def role_edit(id):
 
         return redirect(url_for("auth.role_list"))
     return render_template("role_edit.html", form=form, role=role)
+
+
+@auth_blueprint.route('/viewrole_list/<int:id>', methods=['GET', 'POST'])
+@login_required
+def viewrole_list(id):
+    viewroles = ViewRole.query.filter_by(role_id=id).all()
+    return render_template('viewrole_list.html', viewroles=viewroles)
+
+
+@auth_blueprint.route('/viewrole_edit/<int:id>', methods=['GET', 'POST'])
+@login_required
+def viewrole_edit(id):
+    form = ViewRoleForm()
+
+    # form.role.choices = [(role.id, role.name) for plans
+    #                      in Plan.query.filter_by(id=id)]
+
+    form.view.choices = [(views.id, views.name) for views in View.query.all()]
+
+    # Validação
+    if form.validate_on_submit():
+        viewplan = ViewPlan()
+        viewplan.change_attributes(form)
+        db.session.add(viewplan)
+        db.session.commit()
+
+        # Mensagens
+        if id > 0:
+            flash("Tela atualizada", category="success")
+
+        return redirect(url_for("plan.viewplan_list", id=id))
+    return render_template("viewplan_edit.html", form=form, id=id)
+
+
+@auth_blueprint.route('/viewrole_active/<int:id>', methods=['GET', 'POST'])
+@login_required
+def viewrole_active(id):
+    viewrole = ViewRole.query.filter_by(id=id).one()
+    if viewrole:
+        viewrole.change_active()
+        db.session.add(viewrole)
+        db.session.commit()
+    return redirect(url_for('auth.viewrole_list', id=viewrole.role_id))

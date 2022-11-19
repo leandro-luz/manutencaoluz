@@ -19,6 +19,14 @@
     {{form.company.label}}
     {{form.company}}<br>
 
+    {{form.view.label}}
+    {{form.view}}
+    <a href="{{ url_for('auth.viewrole_list', id=role.id) }}">
+        <span data-tooltip="Atualizar">
+            <i class="bi-caret-down fs-6"></i>
+        </span>
+    </a> <br>
+
     {% if role.id == 0 %}
     <input type="submit" value="Cadastrar"/>
     {% else %}

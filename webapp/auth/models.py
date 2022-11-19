@@ -1,6 +1,7 @@
 from webapp.auth import bcrypt, AnonymousUserMixin, jwt
 from webapp import db
 from webapp.company.models import Company
+from webapp.plan.models import View
 from flask_jwt_extended import create_access_token, get_jwt_identity
 import jwt
 import datetime
@@ -14,6 +15,7 @@ class Role(db.Model):
     # user = db.relationship("User", back_populates="role")
     company_id = db.Column(db.Integer(), db.ForeignKey("company.id"))
     company = db.relationship("Company", back_populates="role")
+    viewrole = db.relationship("ViewRole", back_populates="role")
 
     def __repr__(self):
         return '<Role {}>'.format(self.name)
@@ -37,10 +39,6 @@ class User(db.Model):
 
     company_id = db.Column(db.Integer(), db.ForeignKey("company.id"))
     company = db.relationship("Company", back_populates="user")
-
-    def __init__(self, username=""):
-        self.role_id = Role.query.filter_by(name="default").one()
-        self.username = username
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
@@ -143,3 +141,40 @@ class User(db.Model):
             self.set_active(False)
         else:
             self.set_active(True)
+
+    def get_views_role(self):
+        user = User.query.filter_by(username=self.username).one()
+        viewroles = ViewRole.query.filter_by(role_id=user.role_id, active=True).all()
+
+        views = []
+        for viewrole in viewroles:
+            view = View.query.filter_by(id=viewrole.view_id).one()
+            views.append(dict(name=view.name, url=view.url, icon=view.icon))
+        return views
+
+
+class ViewRole(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    active = db.Column(db.Boolean, default=True)
+
+    role_id = db.Column(db.Integer(), db.ForeignKey("role.id"))
+    role = db.relationship("Role", back_populates="viewrole")
+    view_id = db.Column(db.Integer(), db.ForeignKey("view.id"))
+    view = db.relationship("View", back_populates="viewrole")
+
+    def __repr__(self):
+        return '<ViewRole {}>'.format(self.id)
+
+    def change_attributes(self, form):
+        self.role_id = form.user.data
+        self.view_id = form.view.data
+
+    def get_name_view(self, id):
+        view = View.query.filter_by(id=id).first()
+        return view.get_name()
+
+    def change_active(self):
+        if self.active:
+            self.active = False
+        else:
+            self.active = True

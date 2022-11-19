@@ -1,0 +1,38 @@
+{% extends "sistema_base.html" %}
+{% block body %}
+<body>
+<form action="{{ url_for('plan.plan_edit', id=plan.id) }}" method="POST">
+    {{form.csrf_token}}
+
+    {% if plan.id == 0 %}
+    <h2>Cadastro de Plano</h2>
+
+    {{form.name.label}}
+    {{form.name(size=20)}}<br>
+
+    <input type="submit" value="Cadastrar"/>
+
+    {% else %}
+    <h2>Plano</h2>
+
+    {{form.name.label}}
+    {{form.name(size=20)}}<br>
+    <input type="submit" value="Atualizar"/>
+    <br>
+
+    {{form.view.label}}
+    <a href="{{ url_for('plan.viewplan_list', id=plan.id) }}">
+        <span data-tooltip="Atualizar">
+            <i class="bi-caret-down fs-6"></i>
+        </span>
+    </a> <br>
+
+    {% endif %}
+
+
+</form>
+
+<a href="{{ url_for('plan.plan_list') }}">Voltar</a>
+
+</body>
+{% endblock %}

@@ -1,4 +1,5 @@
 from webapp import db
+from webapp.plan.models import Plan
 import datetime
 
 
@@ -38,8 +39,10 @@ class Company(db.Model):
     active = db.Column(db.Boolean, default=False)
     member_since = db.Column(db.DateTime(), nullable=True)
     subbusiness_id = db.Column(db.Integer(), db.ForeignKey("subbusiness.id"))
-
     subbusiness = db.relationship("Subbusiness", back_populates="company")
+    plan_id = db.Column(db.Integer(), db.ForeignKey("plan.id"))
+    plan = db.relationship("Plan", back_populates="company")
+
     user = db.relationship("User", back_populates="company")
     role = db.relationship("Role", back_populates="company")
     asset = db.relationship("Asset", back_populates="company")
@@ -60,11 +63,18 @@ class Company(db.Model):
         self.email = form.email.data
         self.active = form.active.data
         self.subbusiness_id = form.subbusiness.data
+        self.plan_id = form.plan.data
         if new:
             self.member_since = datetime.datetime.now()
+
 
     def change_active(self):
         if self.active:
             self.active = False
         else:
             self.active = True
+
+    def get_name_plan(self):
+        plan = Plan.query.filter_by(id=self.plan_id).one()
+        return plan.get_name()
+

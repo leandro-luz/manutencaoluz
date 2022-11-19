@@ -1,0 +1,60 @@
+<div class="d-flex flex-sm-column ">
+
+   {{ current_user.get_views_role() }}
+    <ul class="nav nav-pills flex-sm-column flex-row align-items-left">
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('plan.plan_list') }}" title="">
+                <i class="bi-briefcase fs-6"> Plano</i>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('company.company_list') }}" title="">
+                <i class="bi-house-door fs-6"> Empresa</i>
+            </a>
+        </li>
+        <li>
+            <a class="nav-link" href="{{ url_for('auth.auth_list') }}" title="">
+                <i class="bi-people fs-6"> RH</i>
+            </a>
+        </li>
+        <li>
+            <a class="nav-link" href="{{ url_for('asset.asset_list') }}" title="">
+                <i class="bi-robot fs-6"> Equipamento</i>
+            </a>
+        </li>
+        <li>
+            <a class="nav-link" data-bs-original-title="Dashboard" data-bs-placement="right"
+               data-bs-toggle="tooltip"
+               href="{{ url_for('sistema.almoxarifado') }}" title="">
+                <i class="bi-box-seam fs-6"> Almoxarifado</i>
+            </a>
+        </li>
+        <li>
+            <a class="nav-link" href="{{ url_for('sistema.programação') }}" title="">
+                <i class="bi-calendar3 fs-6"> Programação</i>
+            </a>
+        </li>
+        <li>
+            <a class="nav-link" href="{{ url_for('sistema.manutenção') }}" title="">
+                <i class="bi-wrench-adjustable-circle fs-6"> Manutenção</i>
+            </a>
+        </li>
+        <li>
+            <a class="nav-link" href="{{ url_for('supplier.supplier_list') }}" title="">
+                <i class="bi-truck fs-6"> Fornecedor</i>
+            </a>
+        </li>
+
+        <li>
+            <a class="nav-link" href="{{ url_for('sistema.orçamento') }}" title="">
+                <i class="bi-cash fs-6"> Orçamento</i>
+            </a>
+        </li>
+        <li>
+            <a class="nav-link" href="{{ url_for('sistema.indicador') }}" title="">
+                <i class="bi-graph-up fs-6"> Indicadores</i>
+            </a>
+        </li>
+    </ul>
+
+</div>

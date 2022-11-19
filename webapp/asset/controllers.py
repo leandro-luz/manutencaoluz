@@ -20,7 +20,7 @@ asset_blueprint = Blueprint(
 @asset_blueprint.route('/asset_list', methods=['GET', 'POST'])
 @login_required
 def asset_list():
-    assets = Asset.query.order_by(Asset.id.asc())
+    assets = Asset.query.filter_by(company_id=current_user.company_id).all()
     return render_template('asset_list.html', assets=assets)
 
 
@@ -49,10 +49,17 @@ def asset_edit(id):
         g_d = form.group.data
 
     # Listas
-    form.company.choices = [(companies.id, companies.name) for companies in Company.query.all()]
+
+    form.company.choices = [(companies.id, companies.name) for companies
+                            in Company.query.filter_by(id=current_user.company_id).all()]
+    ##perfil superadmin
+    # form.company.choices = [(companies.id, companies.name) for companies in Company.query.all()]
     form.company.data = c_d
-    form.group.choices = [(groups.id, groups.name) for groups in Group.query.all()]
+
+    form.group.choices = [(groups.id, groups.name) for groups
+                          in Group.query.filter_by(company_id=current_user.company_id)]
     form.group.data = g_d
+
     form.system.choices = [(systems.id, systems.name) for systems in System.query.filter_by(asset_id=asset.id).all()]
 
     # Validação
@@ -85,7 +92,7 @@ def asset_active(id):
 @asset_blueprint.route('/group_list', methods=['GET', 'POST'])
 @login_required
 def group_list():
-    groups = Group.query.order_by(Group.name.asc())
+    groups = Group.query.filter_by(company_id=current_user.company_id).all()
     return render_template('group_list.html', groups=groups)
 
 
@@ -111,7 +118,10 @@ def group_edit(id):
         c_d = form.company.data
 
     # Listas
-    form.company.choices = [(companies.id, companies.name) for companies in Company.query.all()]
+    form.company.choices = [(companies.id, companies.name) for companies
+                            in Company.query.filter_by(id=current_user.company_id).all()]
+    ##perfil superadmin
+    # form.company.choices = [(companies.id, companies.name) for companies in Company.query.all()]
     form.company.data = c_d
 
     # Validação
