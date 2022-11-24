@@ -8,6 +8,7 @@ from flask_login import current_user, login_required
 from .models import db, Supplier
 from webapp.company.models import Company
 from webapp.email import send_email
+from webapp.auth import has_view
 
 from .forms import SupplierForm
 
@@ -21,6 +22,7 @@ supplier_blueprint = Blueprint(
 
 @supplier_blueprint.route('/supplier_list', methods=['GET', 'POST'])
 @login_required
+@has_view('Fornecedor')
 def supplier_list():
     suppliers = Supplier.query.filter_by(company_id=current_user.company_id).all()
     return render_template('supplier_list.html', suppliers=suppliers)
@@ -28,6 +30,7 @@ def supplier_list():
 
 @supplier_blueprint.route('/supplier_edit/<int:id>', methods=['GET', 'POST'])
 @login_required
+@has_view('Fornecedor')
 def supplier_edit(id):
     if id > 0:
         # Atualizar

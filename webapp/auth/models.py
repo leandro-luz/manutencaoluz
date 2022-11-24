@@ -52,11 +52,12 @@ class User(db.Model):
         return company.name
 
     # # @cache.memoize(60)
-    # def has_role(self, name):
-    #     for role in self.roles:
-    #         if role.name == name:
-    #             return True
-    #     return False
+    def has_view(self, name):
+        for viewrole in ViewRole.query.filter_by(role_id=self.role_id).all():
+            view = View.query.filter_by(id=viewrole.view_id).one()
+            if view.name == name:
+                return True
+        return False
 
     def get_id(self):
         return str(self.id)

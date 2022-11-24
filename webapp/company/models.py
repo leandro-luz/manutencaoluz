@@ -38,6 +38,7 @@ class Company(db.Model):
     email = db.Column(db.String(50), nullable=False, unique=True)
     active = db.Column(db.Boolean, default=False)
     member_since = db.Column(db.DateTime(), nullable=True)
+    manager_company_id = db.Column(db.Integer(), nullable=False)
     subbusiness_id = db.Column(db.Integer(), db.ForeignKey("subbusiness.id"))
     subbusiness = db.relationship("Subbusiness", back_populates="company")
     plan_id = db.Column(db.Integer(), db.ForeignKey("plan.id"))
@@ -56,7 +57,7 @@ class Company(db.Model):
         self.business_id = Subbusiness.query.filter_by(name="teste").one()
         self.name = name
 
-    def change_attributes(self, form, new=False):
+    def change_attributes(self, form, company_id, new=False):
         self.name = form.name.data
         self.cnpj = form.cnpj.data
         self.cep = form.cep.data
@@ -64,6 +65,7 @@ class Company(db.Model):
         self.active = form.active.data
         self.subbusiness_id = form.subbusiness.data
         self.plan_id = form.plan.data
+        self.manager_company_id = company_id
         if new:
             self.member_since = datetime.datetime.now()
 

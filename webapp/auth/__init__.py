@@ -33,16 +33,14 @@ def create_module(app, **kwargs):
     app.register_blueprint(auth_blueprint)
 
 
-def has_role(name):
+def has_view(name):
     def real_decorator(f):
         def wraps(*args, **kwargs):
-            if current_user.has_role(name):
+            if current_user.has_view(name):
                 return f(*args, **kwargs)
             else:
                 abort(403)
-
         return functools.update_wrapper(wraps, f)
-
     return real_decorator
 
 

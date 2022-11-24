@@ -8,6 +8,7 @@ from webapp.company.forms import CompanyForm, BusinessForm, SubbusinessForm
 from webapp.plan.models import Plan
 from webapp.auth.models import User, Role, ViewRole
 from webapp.plan.models import ViewPlan
+from webapp.auth import has_view
 
 company_blueprint = Blueprint(
     'company',
@@ -19,8 +20,10 @@ company_blueprint = Blueprint(
 
 @company_blueprint.route('/company_list', methods=['GET', 'POST'])
 @login_required
+@has_view('Empresa')
 def company_list():
-    companies = Company.query.order_by(Company.name.asc())
+    company_ = Company.query.filter_by(id=current_user.company_id).one()
+    companies = Company.query.filter_by(manager_company_id=company_.id)
     return render_template('company_list.html', companies=companies)
 
 
@@ -39,6 +42,7 @@ def subbusiness_list_option(id):
 
 @company_blueprint.route('/company_active/<int:id>', methods=['GET', 'POST'])
 @login_required
+@has_view('Empresa')
 def company_active(id):
     company_ = Company.query.filter_by(id=id).one()
     if company_:
@@ -50,6 +54,7 @@ def company_active(id):
 
 @company_blueprint.route('/company_edit/<int:id>', methods=['GET', 'POST'])
 @login_required
+@has_view('Empresa')
 def company_edit(id):
     if id > 0:
         # Ler
@@ -92,14 +97,13 @@ def company_edit(id):
 
     # Validação
     if form.validate_on_submit():
-        company_.change_attributes(form, new)
+        company_.change_attributes(form, current_user.company_id, new)
         db.session.add(company_)
         db.session.commit()
 
         if new:
             company_ = Company.query.filter_by(name=form.name.data).one()
-            print(company_.id)
-            #cadastro da regra
+            # cadastro da regra
             role = Role()
             role.name = 'admin'
             role.description = 'administrador'
@@ -108,11 +112,9 @@ def company_edit(id):
             db.session.commit()
 
             role = Role.query.filter_by(name='admin', company_id=company_.id).one()
-            print(role)
             viewplans = ViewPlan.query.filter_by(plan_id=company_.plan_id).all()
-            print(viewplans)
             for viewplan in viewplans:
-                #cadastro de viewroles para o administrador
+                # cadastro de viewroles para o administrador
                 viewrole = ViewRole()
                 viewrole.active = True
                 viewrole.role_id = role.id
@@ -120,10 +122,10 @@ def company_edit(id):
                 db.session.add(viewrole)
                 db.session.commit()
 
-            #cadastro do usuario admin
+            # cadastro do usuario admin
             user = User()
-            user.username = 'admin_'+ company_.name
-            user.email = 'admin@admin'
+            user.username = 'admin_' + company_.name
+            user.email = 'admin' + company_.name + '@admin'
             user.password = 'aaa11111'
             user.company_id = company_.id
             user.role_id = role.id
@@ -144,6 +146,7 @@ def company_edit(id):
 
 @company_blueprint.route('/business_list', methods=['GET', 'POST'])
 @login_required
+@has_view('Empresa')
 def business_list():
     businesss = Business.query.order_by(Business.name.asc())
     return render_template('business_list.html', businesss=businesss)
@@ -151,6 +154,7 @@ def business_list():
 
 @company_blueprint.route('/business/<int:id>', methods=['GET', 'POST'])
 @login_required
+@has_view('Empresa')
 def business_edit(id):
     if id > 0:
         # Atualizar
@@ -180,6 +184,7 @@ def business_edit(id):
 
 @company_blueprint.route('/subbusiness_list', methods=['GET', 'POST'])
 @login_required
+@has_view('Empresa')
 def subbusiness_list():
     subbusinesss = Subbusiness.query.order_by(Subbusiness.business_id.asc())
     return render_template('subbusiness_list.html', subbusinesss=subbusinesss)
@@ -187,6 +192,7 @@ def subbusiness_list():
 
 @company_blueprint.route('/subbusiness/<int:id>', methods=['GET', 'POST'])
 @login_required
+@has_view('Empresa')
 def subbusiness_edit(id):
     if id > 0:
         # Atualizar

@@ -12,6 +12,7 @@ from webapp.email import send_email
 from .forms import LoginForm, RegisterForm, ChangePasswordForm, \
     PasswordResetRequestForm, PasswordResetForm, ChangeEmailForm, EditForm, \
     RoleForm, ViewRoleForm
+from webapp.auth import has_view
 
 auth_blueprint = Blueprint(
     'auth',
@@ -231,8 +232,6 @@ def auth_active(id):
 @login_required
 def user(id):
     user = User.query.filter_by(id=id).one()
-    # subbusiness = Subbusiness.query.filter_by(id=company_.subbusiness_id).one()
-    # business = Business.query.filter_by(id=subbusiness.business_id).one()
     if user:
         return render_template('user.html', user=user)
     flash("Usuário não cadastrado", category="danger")
@@ -240,6 +239,7 @@ def user(id):
 
 @auth_blueprint.route('/auth_list', methods=['GET', 'POST'])
 @login_required
+@has_view('RH')
 def auth_list():
     users = User.query.filter_by(company_id=current_user.company_id).all()
     return render_template('user_list.html', users=users)
@@ -247,6 +247,7 @@ def auth_list():
 
 @auth_blueprint.route('/auth_edit/<int:id>', methods=['GET', 'POST'])
 @login_required
+@has_view('RH')
 def auth_edit(id):
     if id > 0:
         # Atualizar
@@ -301,6 +302,7 @@ def auth_edit(id):
 
 @auth_blueprint.route('/role_list', methods=['GET', 'POST'])
 @login_required
+@has_view('RH')
 def role_list():
     roles = Role.query.filter_by(company_id=current_user.company_id)
     return render_template('role_list.html', roles=roles)
@@ -308,6 +310,7 @@ def role_list():
 
 @auth_blueprint.route('/role_edit/<int:id>', methods=['GET', 'POST'])
 @login_required
+@has_view('RH')
 def role_edit(id):
     if id > 0:
         # Atualizar
@@ -342,7 +345,6 @@ def role_edit(id):
         db.session.add(role)
         db.session.commit()
 
-
         if new:
             role = Role.query.filter_by(name=form.name.data, company_id=form.company.data).one()
             company = Company.query.filter_by(id=b_d).one()
@@ -368,6 +370,7 @@ def role_edit(id):
 
 @auth_blueprint.route('/viewrole_list/<int:id>', methods=['GET', 'POST'])
 @login_required
+@has_view('RH')
 def viewrole_list(id):
     viewroles = ViewRole.query.filter_by(role_id=id).all()
     return render_template('viewrole_list.html', viewroles=viewroles)
@@ -375,6 +378,7 @@ def viewrole_list(id):
 
 @auth_blueprint.route('/viewrole_edit/<int:id>', methods=['GET', 'POST'])
 @login_required
+@has_view('RH')
 def viewrole_edit(id):
     form = ViewRoleForm()
 
@@ -400,6 +404,7 @@ def viewrole_edit(id):
 
 @auth_blueprint.route('/viewrole_active/<int:id>', methods=['GET', 'POST'])
 @login_required
+@has_view('RH')
 def viewrole_active(id):
     viewrole = ViewRole.query.filter_by(id=id).one()
     if viewrole:

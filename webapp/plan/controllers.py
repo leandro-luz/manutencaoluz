@@ -7,6 +7,7 @@ from flask import (render_template,
 from flask_login import current_user, login_required
 from .models import db, Plan, View, ViewPlan
 from .forms import PlanForm, ViewForm, ViewPlanForm
+from webapp.auth import has_view
 
 plan_blueprint = Blueprint(
     'plan',
@@ -18,6 +19,7 @@ plan_blueprint = Blueprint(
 
 @plan_blueprint.route('/viewplan_active/<int:id>')
 @login_required
+@has_view('Plano')
 def viewplan_active(id):
     viewplan = ViewPlan.query.filter_by(id=id).one()
     if viewplan:
@@ -29,6 +31,7 @@ def viewplan_active(id):
 
 @plan_blueprint.route('/plan_list', methods=['GET', 'POST'])
 @login_required
+@has_view('Plano')
 def plan_list():
     plans = Plan.query.order_by(Plan.name.asc())
     return render_template('plan_list.html', plans=plans)
@@ -36,6 +39,7 @@ def plan_list():
 
 @plan_blueprint.route('/plan_edit/<int:id>', methods=['GET', 'POST'])
 @login_required
+@has_view('Plano')
 def plan_edit(id):
     if id > 0:
         # Atualizar
@@ -72,6 +76,7 @@ def plan_edit(id):
 
 @plan_blueprint.route('/viewplan_list/<int:id>', methods=['GET', 'POST'])
 @login_required
+@has_view('Plano')
 def viewplan_list(id):
     plan = Plan.query.filter_by(id=id).one()
     viewplans = ViewPlan.query.filter_by(plan_id=id).all()
@@ -80,6 +85,7 @@ def viewplan_list(id):
 
 @plan_blueprint.route('/viewplan_edit/<int:id>', methods=['GET', 'POST'])
 @login_required
+@has_view('Plano')
 def viewplan_edit(id):
     form = ViewPlanForm()
 
@@ -105,6 +111,7 @@ def viewplan_edit(id):
 
 @plan_blueprint.route('/view_list', methods=['GET', 'POST'])
 @login_required
+@has_view('Plano')
 def view_list():
     views = View.query.order_by(View.plan_id.asc())
     return render_template('view_list.html', views=views)
@@ -112,6 +119,7 @@ def view_list():
 
 @plan_blueprint.route('/view_edit/<int:id>', methods=['GET', 'POST'])
 @login_required
+@has_view('Plano')
 def view_edit(id):
     if id > 0:
         # Atualizar

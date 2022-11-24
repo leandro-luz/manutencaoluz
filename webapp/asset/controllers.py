@@ -8,6 +8,7 @@ from flask_login import current_user, login_required
 from .models import db, Asset, Group, System
 from webapp.company.models import Company
 from .forms import AssetForm, GroupForm, SystemForm
+from webapp.auth import has_view
 
 asset_blueprint = Blueprint(
     'asset',
@@ -19,6 +20,7 @@ asset_blueprint = Blueprint(
 
 @asset_blueprint.route('/asset_list', methods=['GET', 'POST'])
 @login_required
+@has_view('Equipamento')
 def asset_list():
     assets = Asset.query.filter_by(company_id=current_user.company_id).all()
     return render_template('asset_list.html', assets=assets)
@@ -26,6 +28,7 @@ def asset_list():
 
 @asset_blueprint.route('/asset_edit/<int:id>', methods=['GET', 'POST'])
 @login_required
+@has_view('Equipamento')
 def asset_edit(id):
     if id > 0:
         # Atualizar
@@ -80,6 +83,7 @@ def asset_edit(id):
 
 @asset_blueprint.route('/asset_active/<int:id>', methods=['GET', 'POST'])
 @login_required
+@has_view('Equipamento')
 def asset_active(id):
     asset_ = Asset.query.filter_by(id=id).one()
     if asset_:
@@ -91,6 +95,7 @@ def asset_active(id):
 
 @asset_blueprint.route('/group_list', methods=['GET', 'POST'])
 @login_required
+@has_view('Equipamento')
 def group_list():
     groups = Group.query.filter_by(company_id=current_user.company_id).all()
     return render_template('group_list.html', groups=groups)
@@ -98,6 +103,7 @@ def group_list():
 
 @asset_blueprint.route('/group_edit/<int:id>', methods=['GET', 'POST'])
 @login_required
+@has_view('Equipamento')
 def group_edit(id):
     if id > 0:
         # Atualizar
@@ -142,6 +148,7 @@ def group_edit(id):
 
 @asset_blueprint.route('/system_list/<int:id>', methods=['GET', 'POST'])
 @login_required
+@has_view('Equipamento')
 def system_list(id):
     systems = System.query.filter_by(asset_id=id).all()
     return render_template('system_list.html', systems=systems, id=id)
@@ -149,6 +156,7 @@ def system_list(id):
 
 @asset_blueprint.route('/system_edit/<int:id>', methods=['GET', 'POST'])
 @login_required
+@has_view('Equipamento')
 def system_edit(id):
     if id > 0:
         # Atualizar
