@@ -1,10 +1,10 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
+# from flask_migrate import Migrate
 from flask_mail import Mail
 
 db = SQLAlchemy()
-migrate = Migrate()
+# migrate = Migrate()
 # debug_toolbar = DebugToolbarExtension()
 mail = Mail()
 
@@ -14,7 +14,7 @@ def create_app(object_name):
     app.config.from_object(object_name)
 
     db.init_app(app)
-    migrate.init_app(app, db)
+    # migrate.init_app(app, db)
     mail.init_app(app)
     # debug_toolbar.init_app(app)
 
