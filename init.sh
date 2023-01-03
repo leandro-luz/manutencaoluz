@@ -8,12 +8,12 @@ fi
 source venv/Scripts/activate
 pip install -r requirements.txt
 
-export FLASK_APP=main.py
+export FLASK_APP=app.py
 if [ ! -d "migrations" ]; then
     echo --------------------
     echo INIT THE migrations folder
     echo --------------------
-    export FLASK_APP=main.py; flask db init
+    export FLASK_APP=app.py; flask db init
 fi
 echo --------------------
 echo Generate migration DDL code
