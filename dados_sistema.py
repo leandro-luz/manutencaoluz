@@ -8,7 +8,7 @@ from webapp.asset.models import Asset, Group, System
 from webapp.supplier.models import Supplier
 from webapp.plan.models import Plan, View, ViewPlan
 
-env = os.environ.get('WEBAPP_ENV', 'dev')
+env = os.environ.get('WEBAPP_ENV', 'prod')
 app = create_app('config.%sConfig' % env.capitalize())
 app.app_context().push()
 

@@ -16,7 +16,13 @@ class Config(object):
 
 
 class ProdConfig(Config):
-    SQLALCHEMY_DATABASE_URI = 'mysql://bbc6cd19f46ca6:866f1a3b@us-cdbr-east-06.cleardb.net/heroku_dd95a3d8007484b'
+    SQLALCHEMY_DATABASE_URI = 'mysql://{username}:{password}@{hostname}/{databasename}'.format(
+        username="manutencaoluz",
+        password="aaa11111",
+        hostname="manutencaoluz.mysql.pythonanywhere-services.com",
+        databasename="manutencaoluz$manutencaoluz_prod",
+    )
+    SQLALCHMEY_POOL_RECYCLE = 299
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
