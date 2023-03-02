@@ -8,7 +8,8 @@ from webapp.asset.models import Asset, Group, System
 from webapp.supplier.models import Supplier
 from webapp.plan.models import Plan, View, ViewPlan
 
-env = os.environ.get('WEBAPP_ENV', 'prod')
+
+env = os.environ.get('WEBAPP_ENV', 'dev')
 app = create_app('config.%sConfig' % env.capitalize())
 app.app_context().push()
 
@@ -69,48 +70,67 @@ viewplans_lista = [{'plan': 'basico', 'view': 'RH'},
                    {'plan': 'completo', 'view': 'Indicadores'}
                    ]
 
-company_lista = [{'name': 'empresa_1', 'cnpj': '111111111',
-                  'cep': '011111111', 'email': 'empresa_1@teste.com.br',
+company_lista = [{'name': 'empresa_1', 'cnpj': '39.262.527/0001-20',
+                  'cep': '65058864',
+                  'logradouro': 'Rua Aderson Lago', 'bairro': 'Vila Janaína',
+                  'municipio': 'São Luís', 'uf' : 'MA',
+                  'numero': '0', 'complemento': 'qd05 lt05',
+                  'email': 'empresa_1@teste.com.br',
                   'business': 'serviços', 'subbusiness': 'informática',
                   'date': '1980/05/10 12:45:10', 'plano': 'completo',
                   'manager': 'empresa_1'},
 
-                 {'name': 'empresa_2', 'cnpj': '22222222',
-                  'cep': '02222222222', 'email': 'empresa_2@teste.com.br',
+                 {'name': 'empresa_2', 'cnpj': '10.540.017/0001-95',
+                  'cep': '69921728',
+                  'logradouro': 'Rua São Francisco', 'bairro': 'Tancredo Neves',
+                  'municipio': 'Rio Branco', 'uf' : 'AC',
+                  'numero': '59', 'complemento': '',
+                  'email': 'empresa_2@teste.com.br',
                   'business': 'serviços', 'subbusiness': 'informática',
                   'date': '1980/05/10 12:45:10', 'plano': 'completo',
                   'manager': 'empresa_1'},
 
-                 {'name': 'empresa_21', 'cnpj': '21212121',
-                  'cep': '02121212121', 'email': 'empresa_21@teste.com.br',
+                 {'name': 'empresa_21', 'cnpj': '88.496.773/0001-51',
+                  'cep': '78717650',
+                  'logradouro': 'Avenida José Agostinho Neto', 'bairro': 'Jardim São Bento',
+                  'municipio': 'Rondonópolis', 'uf' : 'MT',
+                  'numero': '45', 'complemento': 'qd45',
+                  'email': 'empresa_21@teste.com.br',
                   'business': 'serviços', 'subbusiness': 'informática',
                   'date': '1980/05/10 12:45:10', 'plano': 'basico',
                   'manager': 'empresa_2'},
 
-                 {'name': 'empresa_22', 'cnpj': '2323232323',
-                  'cep': '0232323232', 'email': 'empresa_22@teste.com.br',
+                 {'name': 'empresa_22', 'cnpj': '50.201.802/0001-38',
+                  'cep': '69037097',
+                  'logradouro': 'Alameda Namíbia', 'bairro': 'Ponta Negra',
+                  'municipio': 'Manaus', 'uf' : 'AM',
+                  'numero': '789', 'complemento': '',
+                  'email': 'empresa_22@teste.com.br',
                   'business': 'serviços', 'subbusiness': 'informática',
                   'date': '1980/05/10 12:45:10', 'plano': 'basico',
                   'manager': 'empresa_2'},
 
-                 {'name': 'empresa_3', 'cnpj': '333333333',
-                  'cep': '033333333', 'email': 'empresa_3@teste.com.br',
+                 {'name': 'empresa_3', 'cnpj': '01.021.781/0001-63',
+                  'cep': '58360974',
+                  'logradouro': 'Rua José Xavier 54', 'bairro': 'Centro',
+                  'municipio': 'Itabaiana', 'uf' : 'PB',
+                  'numero': '0', 'complemento': '',
+                  'email': 'empresa_3@teste.com.br',
                   'business': 'serviços', 'subbusiness': 'informática',
                   'date': '1980/05/10 12:45:10', 'plano': 'basico',
                   'manager': 'empresa_1'},
-
                  ]
 
-roles_lista = [{'company': 'empresa_1', 'name': 'default'},
-               {'company': 'empresa_1', 'name': 'admin'},
-               {'company': 'empresa_2', 'name': 'default'},
-               {'company': 'empresa_2', 'name': 'admin'},
-               {'company': 'empresa_21', 'name': 'default'},
-               {'company': 'empresa_21', 'name': 'admin'},
-               {'company': 'empresa_22', 'name': 'default'},
-               {'company': 'empresa_22', 'name': 'admin'},
-               {'company': 'empresa_3', 'name': 'default'},
-               {'company': 'empresa_3', 'name': 'admin'},
+roles_lista = [{'company': 'empresa_1', 'name': 'default', 'description': 'padrão'},
+               {'company': 'empresa_1', 'name': 'admin', 'description': 'administrador'},
+               {'company': 'empresa_2', 'name': 'default', 'description': 'padrão'},
+               {'company': 'empresa_2', 'name': 'admin', 'description': 'administrador'},
+               {'company': 'empresa_21', 'name': 'default', 'description': 'padrão'},
+               {'company': 'empresa_21', 'name': 'admin', 'description': 'administrador'},
+               {'company': 'empresa_22', 'name': 'default', 'description': 'padrão'},
+               {'company': 'empresa_22', 'name': 'admin', 'description': 'administrador'},
+               {'company': 'empresa_3', 'name': 'default', 'description': 'padrão'},
+               {'company': 'empresa_3', 'name': 'admin', 'description': 'administrador'},
                ]
 
 viewroles_lista = [{'company': 'empresa_1', 'role': 'default', 'view': 'Plano'},
@@ -360,6 +380,12 @@ def generate_companies():
         company.name = item['name']
         company.cnpj = item['cnpj']
         company.cep = item['cep']
+        company.logradouro = item['logradouro']
+        company.bairro = item['bairro']
+        company.municipio = item['municipio']
+        company.uf = item['uf']
+        company.numero = item['numero']
+        company.complemento = item['complemento']
         company.email = item['email']
         company.active = True
         company.member_since = item['date']
@@ -385,12 +411,9 @@ def generate_roles():
         if role:
             roles.append(role)
             continue
-        role = Role()
-        role.name = item['name']
-        role.company_id = company.id
+        role = Role(name=item['name'], description=item['description'], company_id=company.id)
         try:
-            db.session.add(role)
-            db.session.commit()
+            role.save()
             print("Regra inserida: %s na empresa: %s" % (role.name, company.name))
         except Exception as e:
             log.error("Erro ao inserir a regra: %s, %s" % (str(role), e))
@@ -410,13 +433,9 @@ def generate_viewroles():
             viewrolelista.append(viewrole)
             continue
 
-        viewrole = ViewRole()
-        viewrole.view_id = view.id
-        viewrole.role_id = role.id
-        viewrole.active = True
+        viewrole = ViewRole(role_id=role.id, view_id=view.id, active=True)
         try:
-            db.session.add(viewrole)
-            db.session.commit()
+            viewrole.save()
             print('Tela inserida: %s no perfil: %s' % (view.name, role.name))
         except Exception as e:
             log.error("Erro ao inserir a tela: %s erro: %s" % (str(viewrole), e))
@@ -443,8 +462,9 @@ def generate_users():
         user.role_id = role.id
         user.company_id = company.id
         try:
-            db.session.add(user)
-            db.session.commit()
+            user.save()
+            # db.session.add(user)
+            # db.session.commit()
             print("Usuário inserido: %s, na empresa: %s" % (user.username, company.name))
         except Exception as e:
             log.error("Erro ao inserir usuário: %s, %s" % (str(user), e))

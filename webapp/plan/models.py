@@ -1,23 +1,23 @@
 from webapp import db
+from flask import flash
 
 
 class Plan(db.Model):
+    """    Classe o Plano de Assinaturas   """
     id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(50), nullable=False)
     company = db.relationship("Company", back_populates="plan")
     viewplan = db.relationship("ViewPlan", back_populates="plan")
 
-    def __repr__(self):
-        return '<Plan {}>'.format(self.name)
+    def __repr__(self) -> str:
+        return f'<Plan {self.name}>'
 
-    def change_attributes(self, form):
+    def change_attributes(self, form) -> None:
         self.name = form.name.data
-
-    def get_name(self):
-        return self.name
 
 
 class View(db.Model):
+    """    Classe das telas    """
     id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(50), nullable=False)
     icon = db.Column(db.String(50), nullable=False)
@@ -25,21 +25,18 @@ class View(db.Model):
     viewplan = db.relationship("ViewPlan", back_populates="view")
     viewrole = db.relationship("ViewRole", back_populates="view")
 
-    def __repr__(self):
-        return '<View {}>'.format(self.name)
+    def __repr__(self) -> str:
+        return f'<View {self.name}>'
 
-    def change_attributes(self, form):
+    def change_attributes(self, form) -> None:
+        """    Altera os valores dos atributos da tela     """
         self.name = form.name.data
         self.icon = form.icon.data
         self.url = form.url.data
 
-    def get_name(self):
-        return self.name
-
-
-
 
 class ViewPlan(db.Model):
+    """    Classe Relacionando Telas e Planos    """
     id = db.Column(db.Integer(), primary_key=True)
     active = db.Column(db.Boolean, default=False)
 
@@ -49,21 +46,18 @@ class ViewPlan(db.Model):
     view = db.relationship("View", back_populates="viewplan")
 
     def __repr__(self):
-        return '<ViewPlan {}>'.format(self.id)
+        return f'<ViewPlan {self.id}>'
 
-    def change_attributes(self, form):
+    def change_attributes(self, form) -> None:
+        """    Altera os valores do plano e tela    """
         self.plan_id = form.plan.data
         self.view_id = form.view.data
 
-    def get_name_view(self, id):
-        view = View.query.filter_by(id=id).first()
-        return view.get_name()
-
-    def change_active(self):
+    def change_active(self) -> None:
+        """    Altera em ativo e inativo a tela do plano de assinatura    """
         if self.active:
             self.active = False
+            flash("Plano desativado com sucesso", category="success")
         else:
             self.active = True
-
-
-
+            flash("Plano ativado com sucesso", category="success")

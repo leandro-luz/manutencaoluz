@@ -8,7 +8,7 @@ class System(db.Model):
     asset = db.relationship("Asset", back_populates="system")
 
     def __repr__(self):
-        return '<System {}>'.format(self.name)
+        return f'<System {self.name}>'
 
     def change_attributes(self, form):
         self.name = form.name.data
@@ -22,7 +22,7 @@ class Group(db.Model):
     company = db.relationship("Company", back_populates="group")
 
     def __repr__(self):
-        return '<Group {}>'.format(self.name)
+        return f'<Group {self.name}>'
 
     def change_attributes(self, form):
         self.name = form.name.data
@@ -57,7 +57,7 @@ class Asset(db.Model):
     system = db.relationship("System", back_populates="asset")
 
     def __repr__(self):
-        return '<Asset {}>'.format(self.name)
+        return f'<Asset {self.name}>'
 
     def get_active(self):
         return self.active

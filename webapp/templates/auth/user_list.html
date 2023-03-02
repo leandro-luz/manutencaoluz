@@ -3,7 +3,7 @@
 <body>
 
 <h2> LISTA DE USUÁRIOS </h2>
-<a href="{{ url_for('auth.auth_edit', id=0) }}">
+<a href="{{ url_for('auth.auth_edit', user_id=0) }}">
     Adicionar
 </a>
 
@@ -24,7 +24,7 @@
         <th scope="row">{{ user.username }}</th>
         <td scope="row">{{ user.email }}</td>
         <td>
-            <a href="{{ url_for('auth.auth_edit', id=user.id) }}">
+            <a href="{{ url_for('auth.auth_edit', user_id=user.id) }}">
                 <span data-tooltip="Informações">
                     <i class="bi-caret-right fs-6"></i>
                 </span>
@@ -32,7 +32,7 @@
         </td>
         {% if user.active == True %}
         <td>
-            <a href="{{ url_for('auth.auth_active', id=user.id) }}">
+            <a href="{{ url_for('auth.auth_active', user_id=user.id) }}">
                 <span data-tooltip="Desativar">
                     <i class="bi-caret-down fs-6"></i>
                 </span>
@@ -40,7 +40,7 @@
         </td>
         {% else %}
         <td>
-            <a href="{{ url_for('auth.auth_active', id=user.id) }}">
+            <a href="{{ url_for('auth.auth_active', user_id=user.id) }}">
                 <span data-tooltip="Ativar">
                     <i class="bi-caret-up fs-6"></i>
                 </span>

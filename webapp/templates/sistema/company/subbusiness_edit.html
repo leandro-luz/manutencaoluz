@@ -1,7 +1,7 @@
 {% extends "sistema_base.html" %}
 {% block body %}
 <body>
-<form action="{{ url_for('company.subbusiness_edit', id=subbusiness.id) }}" method="POST">
+<form action="{{ url_for('company.subbusiness_edit', subbusiness_id=subbusiness.id) }}" method="POST">
     {{form.csrf_token}}
 
     {% if subbusiness.id == 0 %}

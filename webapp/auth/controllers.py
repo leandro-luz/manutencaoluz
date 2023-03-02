@@ -44,7 +44,7 @@ def unconfirmed():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).one()
+        user = User.query.filter_by(username=form.username.data).one_or_none()
         if user.confirmed:
             login_user(user, remember=form.remember.data)
             return redirect(url_for('sistema.index'))
@@ -217,21 +217,23 @@ def change_email(token):
     return redirect(url_for('main.index'))
 
 
-@auth_blueprint.route('/auth_active/<int:id>')
+@auth_blueprint.route('/auth_active/<int:user_id>')
 @login_required
-def auth_active(id):
-    user = User.query.filter_by(id=id).one()
-    if user:
-        user.change_active()
-        db.session.add(user)
-        db.session.commit()
+def auth_active(user_id):
+    """    Função que ativa/inativa um usuário"""
+    user_ = User.query.filter_by(id=user_id).one()  # retorna o usuário com o user_id
+    if user_:  # se o usuário existir
+        user_.change_active()  # grava as informações vindas do formulário
+        user_.save()  # grava as informações no banco de dados
+    else:  # se o usuário não existir
+        flash("Usuário não cadastrado", category="danger")
     return redirect(url_for('.list'))
 
 
 @auth_blueprint.route('/user/<int:id>', methods=['GET', 'POST'])
 @login_required
 def user(id):
-    user = User.query.filter_by(id=id).one()
+    user = User.query.filter_by(id=id).one_or_none()
     if user:
         return render_template('user.html', user=user)
     flash("Usuário não cadastrado", category="danger")
@@ -240,22 +242,25 @@ def user(id):
 @auth_blueprint.route('/auth_list', methods=['GET', 'POST'])
 @login_required
 @has_view('RH')
-def auth_list():
-    users = User.query.filter_by(company_id=current_user.company_id).all()
+def auth_list() -> str:
+    """    Função que retorna uma lista de usuários    """
+    users = User.query.filter_by(company_id=current_user.company_id).all()  # retorna uma lista de usuários com base
+    # nas empresas do usuário
     return render_template('user_list.html', users=users)
 
 
-@auth_blueprint.route('/auth_edit/<int:id>', methods=['GET', 'POST'])
+@auth_blueprint.route('/auth_edit/<int:user_id>', methods=['GET', 'POST'])
 @login_required
 @has_view('RH')
-def auth_edit(id):
-    if id > 0:
-        # Atualizar
-        user = User.query.filter_by(id=id).first()
-        form = EditForm(obj=user)
-        new = False
+def auth_edit(user_id):
+    """    Função atualiza as informações do usuário    """
+    if user_id > 0:  # se o user_id foi passado com parâmetro
+        # --------- ATUALIZAR
+        user = User.query.filter_by(id=user_id).first()  # instância um usuário com base no user_id
+        form = EditForm(obj=user)  # instância um formulário com as informações do usuário
+        new = False  # não é um usuário novo
 
-        # Atualizar ou Ler dados
+        # --------- ATUALIZAR/LER OS DADOS
         if form.company.data:
             c_d = form.company.data
             r_d = form.role.data
@@ -264,15 +269,15 @@ def auth_edit(id):
             r_d = user.role_id
 
     else:
-        # Cadastrar
-        user = User()
+        # --------- CADASTRAR
+        user = User()  # instância um usuário em branco
         user.id = 0
-        form = EditForm()
-        new = True
+        form = EditForm()  # instância um formulário em branco
+        new = True  # é um usuário novo
         c_d = form.company.data
         r_d = form.role.data
 
-    # Listas
+    # --------- LISTAS
 
     form.company.choices = [(companies.id, companies.name) for companies
                             in Company.query.filter_by(id=current_user.company_id).all()]
@@ -284,14 +289,13 @@ def auth_edit(id):
                          in Role.query.filter_by(company_id=current_user.company_id).all()]
     form.role.data = r_d
 
-    # Validação
+    # --------- VALIDAÇÕES
     if form.validate_on_submit():
         user.change_attributes(form, new)
-        db.session.add(user)
-        db.session.commit()
+        user.save()
 
-        # Mensagens
-        if id > 0:
+        # --------- MENSAGENS
+        if user_id > 0:
             flash("Usuário atualizado", category="success")
         else:
             flash("Usuário cadastrado", category="success")
@@ -308,13 +312,13 @@ def role_list():
     return render_template('role_list.html', roles=roles)
 
 
-@auth_blueprint.route('/role_edit/<int:id>', methods=['GET', 'POST'])
+@auth_blueprint.route('/role_edit/<int:role_id>', methods=['GET', 'POST'])
 @login_required
 @has_view('RH')
-def role_edit(id):
-    if id > 0:
+def role_edit(role_id):
+    if role_id > 0:
         # Atualizar
-        role = Role.query.filter_by(id=id).first()
+        role = Role.query.filter_by(id=role_id).first()
         form = RoleForm(obj=role)
 
         # Atualizar ou Ler dados
@@ -336,8 +340,8 @@ def role_edit(id):
                             for company in Company.query.filter_by(id=current_user.company_id)]
     form.company.data = b_d
 
-    form.view.choices = [(viewroles.id, viewroles.get_name_view(viewroles.view_id))
-                         for viewroles in ViewRole.query.filter_by(role_id=id, active=True).all()]
+    form.view.choices = [(viewroles.id, viewroles.view.name)
+                         for viewroles in ViewRole.query.filter_by(role_id=role_id, active=True).all()]
 
     # Validação
     if form.validate_on_submit():
@@ -359,7 +363,7 @@ def role_edit(id):
                 db.session.commit()
 
         # Mensagens
-        if id > 0:
+        if role_id > 0:
             flash("Perfil atualizado", category="success")
         else:
             flash("Perfil cadastrado", category="success")
@@ -368,24 +372,24 @@ def role_edit(id):
     return render_template("role_edit.html", form=form, role=role)
 
 
-@auth_blueprint.route('/viewrole_list/<int:id>', methods=['GET', 'POST'])
+@auth_blueprint.route('/viewrole_list/<int:role_id>', methods=['GET', 'POST'])
 @login_required
 @has_view('RH')
-def viewrole_list(id):
-    viewroles = ViewRole.query.filter_by(role_id=id).all()
-    return render_template('viewrole_list.html', viewroles=viewroles)
+def viewrole_list(role_id):
+    viewroles = ViewRole.query.filter_by(role_id=role_id, active=True).all()
+    return render_template('viewrole_list.html', viewroles=viewroles, role_id=role_id)
 
 
-@auth_blueprint.route('/viewrole_edit/<int:id>', methods=['GET', 'POST'])
+@auth_blueprint.route('/viewrole_edit/<int:role_id>', methods=['GET', 'POST'])
 @login_required
 @has_view('RH')
-def viewrole_edit(id):
+def viewrole_edit(role_id):
     form = ViewRoleForm()
 
-    # form.role.choices = [(role.id, role.name) for plans
-    #                      in Plan.query.filter_by(id=id)]
+    form.role.choices = [(roles.id, roles.name) for roles in Role.query.filter_by(id=role_id)]
 
-    form.view.choices = [(views.id, views.name) for views in View.query.all()]
+    form.view.choices = [(viewplans.view.id, viewplans.view.name)
+                         for viewplans in ViewPlan.query.filter_by(plan_id=current_user.company.plan_id, active=True)]
 
     # Validação
     if form.validate_on_submit():
@@ -395,20 +399,20 @@ def viewrole_edit(id):
         db.session.commit()
 
         # Mensagens
-        if id > 0:
+        if role_id > 0:
             flash("Tela atualizada", category="success")
 
-        return redirect(url_for("plan.viewplan_list", id=id))
-    return render_template("viewplan_edit.html", form=form, id=id)
+        return redirect(url_for("auth.viewrole_list", role_id=role_id))
+    return render_template("viewrole_edit.html", form=form, role_id=role_id)
 
 
-@auth_blueprint.route('/viewrole_active/<int:id>', methods=['GET', 'POST'])
+@auth_blueprint.route('/viewrole_active/<int:role_id>', methods=['GET', 'POST'])
 @login_required
 @has_view('RH')
-def viewrole_active(id):
-    viewrole = ViewRole.query.filter_by(id=id).one()
+def viewrole_active(role_id):
+    viewrole = ViewRole.query.filter_by(id=role_id).one()
     if viewrole:
         viewrole.change_active()
         db.session.add(viewrole)
         db.session.commit()
-    return redirect(url_for('auth.viewrole_list', id=viewrole.role_id))
+    return redirect(url_for('auth.viewrole_list', role_id=viewrole.role_id))

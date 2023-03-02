@@ -1,7 +1,6 @@
 from flask import (render_template,
                    Blueprint,
                    redirect,
-                   request,
                    url_for,
                    flash)
 from flask_login import current_user, login_required
@@ -22,6 +21,7 @@ asset_blueprint = Blueprint(
 @login_required
 @has_view('Equipamento')
 def asset_list():
+    """Retorna a lista de equipamentos"""
     assets = Asset.query.filter_by(company_id=current_user.company_id).all()
     return render_template('asset_list.html', assets=assets)
 

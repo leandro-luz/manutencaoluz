@@ -1,7 +1,7 @@
 {% extends "sistema_base.html" %}
 {% block body %}
 <body>
-<form action="{{ url_for('plan.plan_edit', id=plan.id) }}" method="POST">
+<form action="{{ url_for('plan.plan_edit', plan_id=plan.id) }}" method="POST">
     {{form.csrf_token}}
 
     {% if plan.id == 0 %}
@@ -21,7 +21,7 @@
     <br>
 
     {{form.view.label}}
-    <a href="{{ url_for('plan.viewplan_list', id=plan.id) }}">
+    <a href="{{ url_for('plan.viewplan_list', plan_id=plan.id) }}">
         <span data-tooltip="Atualizar">
             <i class="bi-caret-down fs-6"></i>
         </span>

@@ -3,7 +3,7 @@
 <body>
 
 <h2> EMPRESAS </h2>
-<a href="{{ url_for('company.company_edit', id=0) }}">
+<a href="{{ url_for('company.company_edit', company_id=0) }}">
     Adicionar
 </a>
 
@@ -25,10 +25,10 @@
     <tr>
         <th scope="row">{{ company.cnpj }}</th>
         <td>{{ company.name }}</td>
-        <td>{{ company.get_name_plan() }}</td>
+        <td>{{ company.plan.name }}</td>
         <td>{{ company.active }}</td>
         <td>
-            <a href="{{ url_for('company.company_edit', id=company.id) }}">
+            <a href="{{ url_for('company.company_edit', company_id=company.id) }}">
                     <span data-tooltip="Informações">
                         <i class="bi-caret-right fs-6"></i>
                     </span>
@@ -36,7 +36,7 @@
         </td>
         {% if company.active == True %}
         <td>
-            <a href="{{ url_for('company.company_active', id=company.id) }}">
+            <a href="{{ url_for('company.company_active', company_id=company.id) }}">
                     <span data-tooltip="Desativar">
                         <i class="bi-caret-down fs-6"></i>
                     </span>
@@ -44,7 +44,7 @@
         </td>
         {% else %}
         <td>
-            <a href="{{ url_for('company.company_active', id=company.id) }}">
+            <a href="{{ url_for('company.company_active', company_id=company.id) }}">
                     <span data-tooltip="Ativar">
                         <i class="bi-caret-up fs-6"></i>
                     </span>

@@ -3,8 +3,8 @@
 <body>
 
 
-<h2> LISTA DAS TELAS PARA O PLANO {{ plan.get_name() }}</h2>
-<a href="{{ url_for('plan.viewplan_edit', id=plan.id) }}">
+<h2> LISTA DAS TELAS PARA O PLANO {{ plan.name }}</h2>
+<a href="{{ url_for('plan.viewplan_edit', plan_id=plan.id) }}">
     Adicionar
 </a>
 
@@ -21,11 +21,11 @@
     <tbody>
     {% for viewplan in viewplans %}
     <tr>
-        <td>{{ viewplan.get_name_view(viewplan.view_id) }}</td>
+        <td>{{ viewplan.view.name }}</td>
 
         {% if viewplan.active == True %}
         <td>
-            <a href="{{ url_for('plan.viewplan_active', id=viewplan.id) }}">
+            <a href="{{ url_for('plan.viewplan_active', viewplan_id=viewplan.id) }}">
                 <span data-tooltip="Desativar">
                     <i class="bi-caret-down fs-6"></i>
                 </span>
@@ -33,7 +33,7 @@
         </td>
         {% else %}
         <td>
-            <a href="{{ url_for('plan.viewplan_active', id=viewplan.id) }}">
+            <a href="{{ url_for('plan.viewplan_active', viewplan_id=viewplan.id) }}">
                 <span data-tooltip="Ativar">
                     <i class="bi-caret-up fs-6"></i>
                 </span>

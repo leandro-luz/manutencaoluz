@@ -9,10 +9,10 @@ migrate = Migrate()
 mail = Mail()
 
 
-def create_app(object_name):
+def create_app(object_name: str) -> Flask:
+    """Criar a aplicação com os recursos"""
     app = Flask(__name__)
     app.config.from_object(object_name)
-
     db.init_app(app)
     migrate.init_app(app, db)
     mail.init_app(app)

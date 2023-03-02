@@ -2,8 +2,8 @@
     <div class="container">
         <a class="navbar-brand" href="{{url_for('main.index')}}"> MANUTENÇÃOLUZ </a>
         {% if current_user.is_authenticated %}
-        <a class="navbar-brand"> {{ current_user.get_company_name() }} </a>
-        <a class="navbar-brand"> {{ current_user.get_role_name() }} </a>
+        <a class="navbar-brand"> {{ current_user.company.name }} </a>
+        <a class="navbar-brand"> {{ current_user.role.name }} </a>
         {% endif %}
         <div id="navbar-items">
             <ul class="navbar-nav">

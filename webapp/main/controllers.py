@@ -1,5 +1,4 @@
-import git
-from flask import Blueprint, redirect, url_for, render_template
+from flask import Blueprint, render_template
 
 main_blueprint = Blueprint(
     'main',
@@ -10,5 +9,5 @@ main_blueprint = Blueprint(
 
 @main_blueprint.route('/')
 def index():
+    """Retorna a página inicial"""
     return render_template('home.html')
-

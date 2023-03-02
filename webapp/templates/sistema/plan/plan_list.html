@@ -3,7 +3,7 @@
 <body>
 
 <h2> LISTA DE PLANOS </h2>
-<a href="{{ url_for('plan.plan_edit', id=0) }}">
+<a href="{{ url_for('plan.plan_edit', plan_id=0) }}">
     Adicionar
 </a>
 
@@ -21,7 +21,7 @@
     <tr>
         <td>{{ plan.name }}</td>
         <td>
-            <a href="{{ url_for('plan.plan_edit', id=plan.id) }}">
+            <a href="{{ url_for('plan.plan_edit', plan_id=plan.id) }}">
                     <span data-tooltip="Informações">
                         <i class="bi-caret-right fs-6"></i>
                     </span>

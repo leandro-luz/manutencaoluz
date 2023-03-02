@@ -3,7 +3,7 @@
 <body>
 
 <h2> LISTA DE SUB-RAMOS DE NEGÓCIOS </h2>
-<a href="{{ url_for('company.subbusiness_edit', id=0) }}">
+<a href="{{ url_for('company.subbusiness_edit', subbusiness_id=0) }}">
     Adicionar
 </a>
 
@@ -21,9 +21,9 @@
     {% for subbusiness in subbusinesss %}
     <tr>
         <td>{{ subbusiness.name }}</td>
-        <td>{{ subbusiness.business_id }}</td>
+        <td>{{ subbusiness.business.name }}</td>
         <td>
-            <a href="{{ url_for('company.subbusiness_edit', id=subbusiness.id) }}">
+            <a href="{{ url_for('company.subbusiness_edit', subbusiness_id=subbusiness.id) }}">
                     <span data-tooltip="Informações">
                         <i class="bi-caret-right fs-6"></i>
                     </span>

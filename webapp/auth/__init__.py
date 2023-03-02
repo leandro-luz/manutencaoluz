@@ -24,7 +24,8 @@ login_manager.login_message_category = "info"
 login_manager.anonymous_user = BlogAnonymous
 
 
-def create_module(app, **kwargs):
+def create_module(app, **kwargs) -> None:
+    """    Cria o módulo para controlador Auth - controlde de acessos    """
     bcrypt.init_app(app)
     login_manager.init_app(app)
     jwt.init_app(app)
@@ -45,6 +46,7 @@ def has_view(name):
 
 
 @login_manager.user_loader
-def load_user(userid):
+def load_user(userid: int) -> int:
+    """     Retorna o id do usuário     """
     from .models import User
     return User.query.get(userid)

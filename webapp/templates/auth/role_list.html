@@ -3,7 +3,7 @@
 <body>
 
 <h2> LISTA DOS PERFIS DE ACESSO </h2>
-<a href="{{ url_for('auth.role_edit', id=0) }}">
+<a href="{{ url_for('auth.role_edit', role_id=0) }}">
     Adicionar
 </a>
 
@@ -21,9 +21,9 @@
     {% for role in roles %}
     <tr>
         <td>{{ role.name }}</td>
-        <td>{{ role.company_id }}</td>
+        <td>{{ role.company.name }}</td>
         <td>
-            <a href="{{ url_for('auth.role_edit', id=role.id) }}">
+            <a href="{{ url_for('auth.role_edit', role_id=role.id) }}">
                     <span data-tooltip="Informações">
                         <i class="bi-caret-right fs-6"></i>
                     </span>

@@ -1,7 +1,7 @@
 {% extends "sistema_base.html" %}
 {% block body %}
 <body>
-<form action="{{ url_for('plan.viewplan_edit', id=id) }}" method="POST">
+<form action="{{ url_for('plan.viewplan_edit', plan_id=id) }}" method="POST">
     {{form.csrf_token}}
 
     <h2>Inclusão de Telas</h2>
@@ -16,7 +16,7 @@
 
 </form>
 
-<a href="{{ url_for('plan.viewplan_list', id=id) }}">Voltar</a>
+<a href="{{ url_for('plan.viewplan_list', plan_id=id) }}">Voltar</a>
 
 </body>
 {% endblock %}

@@ -9,7 +9,7 @@ class Supplier(db.Model):
     company = db.relationship("Company", back_populates="supplier")
 
     def __repr__(self):
-        return '<Supplier {}>'.format(self.name)
+        return f'<Supplier {self.name}>'
 
     def change_attributes(self, form):
         self.name = form.name.data

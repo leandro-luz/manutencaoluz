@@ -1,16 +1,16 @@
 from flask_wtf import FlaskForm as Form
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField
-from wtforms.validators import DataRequired, Length, EqualTo, Email, Regexp
-from .models import User, ViewRole
+from wtforms.validators import InputRequired, Length, EqualTo, Email, Regexp
+from webapp.auth.models import User, ViewRole
 from flask import flash
 
 
 class LoginForm(Form):
-    username = StringField('Usuário', validators=[DataRequired(), Length(max=255)],
+    username = StringField('Usuário', validators=[InputRequired(), Length(max=255)],
                            render_kw={"placeholder": "Digite o seu nome"})
-    email = StringField('Email', validators=[DataRequired(), Email()],
+    email = StringField('Email', validators=[InputRequired(), Email()],
                         render_kw={"placeholder": "Digite o seu email"})
-    password = PasswordField('Senha', validators=[DataRequired()],
+    password = PasswordField('Senha', validators=[InputRequired()],
                              render_kw={"placeholder": "Digite a sua senha"})
     remember = BooleanField("Me lembre")
     submit = SubmitField("Enviar")
@@ -34,20 +34,20 @@ class LoginForm(Form):
 
 
 class RegisterForm(Form):
-    username = StringField('Usuário', [DataRequired(), Length(max=50),
+    username = StringField('Usuário', [InputRequired(), Length(max=50),
                                        Regexp('^[A-Za-z][A-Za-z0-9_.]*$', 0,
                                               'Nome deve conter somente letras, '
                                               'números, ponto ou sublinha')],
                            render_kw={"placeholder": "Digite o seu nome"})
-    email = StringField('Email', [DataRequired(), Email()],
+    email = StringField('Email', [InputRequired(), Email()],
                         render_kw={"placeholder": "Digite o seu email"})
-    password = PasswordField('Senha', [DataRequired(), Length(min=8)],
+    password = PasswordField('Senha', [InputRequired(), Length(min=8)],
                              render_kw={"placeholder": "Digite a sua senha"})
     company = SelectField('Empresa', choices=[], coerce=int)
     active = BooleanField('Ativo',
                           render_kw={"placeholder": "Informe se a usuário está ativo"})
 
-    confirm = PasswordField('Confirme a Senha', [DataRequired(), EqualTo('password')],
+    confirm = PasswordField('Confirme a Senha', [InputRequired(), EqualTo('password')],
                             render_kw={"placeholder": "Confirme a sua senha"})
     submit = SubmitField('Registrar')
 
@@ -73,12 +73,12 @@ class RegisterForm(Form):
 
 
 class EditForm(Form):
-    username = StringField('Usuário', [DataRequired(), Length(max=50),
+    username = StringField('Usuário', [InputRequired(), Length(max=50),
                                        Regexp('^[A-Za-z][A-Za-z0-9_.]*$', 0,
                                               'Nome deve conter somente letras, '
                                               'números, ponto ou sublinha')],
                            render_kw={"placeholder": "Digite o seu nome"})
-    email = StringField('Email', [DataRequired(), Email()],
+    email = StringField('Email', [InputRequired(), Email()],
                         render_kw={"placeholder": "Digite o seu email"})
     company = SelectField('Empresa', choices=[], coerce=int)
     role = SelectField('Perfil', choices=[], coerce=int)
@@ -97,13 +97,13 @@ class EditForm(Form):
 
 
 class ChangePasswordForm(Form):
-    old_password = PasswordField('Senha antiga', validators=[DataRequired()],
+    old_password = PasswordField('Senha antiga', validators=[InputRequired()],
                                  render_kw={"placeholder": "Digite a senha antiga"})
     password = PasswordField('Nova senha', validators=[
-        DataRequired(), EqualTo('password2', message='As senhas devem ser iguais!')],
+        InputRequired(), EqualTo('password2', message='As senhas devem ser iguais!')],
                              render_kw={"placeholder": "Digite a nova senha"})
     password2 = PasswordField('Confirme a nova senha',
-                              validators=[DataRequired()],
+                              validators=[InputRequired()],
                               render_kw={"placeholder": "Confirme a nova senha"})
     submit = SubmitField('Atualizar')
 
@@ -117,7 +117,7 @@ class ChangePasswordForm(Form):
 
 
 class PasswordResetRequestForm(Form):
-    email = StringField('Email', validators=[DataRequired(), Length(1, 64),
+    email = StringField('Email', validators=[InputRequired(), Length(1, 64),
                                              Email()],
                         render_kw={"placeholder": "Digite o seu email"})
     submit = SubmitField('Reset Password')
@@ -133,8 +133,8 @@ class PasswordResetRequestForm(Form):
 
 class PasswordResetForm(Form):
     password = PasswordField('Nova Senha', validators=[
-        DataRequired(), EqualTo('password2', message='As senhas devem ser iguais')])
-    password2 = PasswordField('Confirme a Senha', validators=[DataRequired()])
+        InputRequired(), EqualTo('password2', message='As senhas devem ser iguais')])
+    password2 = PasswordField('Confirme a Senha', validators=[InputRequired()])
     submit = SubmitField('Reset Password')
 
     def validate(self):
@@ -147,10 +147,10 @@ class PasswordResetForm(Form):
 
 
 class ChangeEmailForm(Form):
-    email = StringField('Novo Email', validators=[DataRequired(), Length(1, 64),
+    email = StringField('Novo Email', validators=[InputRequired(), Length(1, 64),
                                                   Email()],
                         render_kw={"placeholder": "Digite o novo email"})
-    password = PasswordField('Senha', validators=[DataRequired()],
+    password = PasswordField('Senha', validators=[InputRequired()],
                              render_kw={"placeholder": "Digite a sua senha"})
     submit = SubmitField('Atualizar')
 
@@ -163,9 +163,9 @@ class ChangeEmailForm(Form):
 
 
 class RoleForm(Form):
-    name = StringField('Perfil', validators=[DataRequired(), Length(max=50)],
+    name = StringField('Perfil', validators=[InputRequired(), Length(max=50)],
                        render_kw={"placeholder": "Digite o nome do perfil"})
-    description = StringField('Descrição', validators=[DataRequired(), Length(max=50)],
+    description = StringField('Descrição', validators=[InputRequired(), Length(max=50)],
                               render_kw={"placeholder": "Digite a descrição do perfil"})
     company = SelectField('Empresa', choices=[], coerce=int)
     view = SelectField('Tela', choices=[], coerce=int)

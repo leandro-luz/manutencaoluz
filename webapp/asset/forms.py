@@ -1,14 +1,14 @@
 from flask_wtf import FlaskForm as Form
 from wtforms import IntegerField, StringField, DateField, PasswordField, BooleanField, SubmitField, SelectField
-from wtforms.validators import DataRequired, Length, EqualTo, Email, Regexp
+from wtforms.validators import InputRequired, Length, EqualTo, Email, Regexp
 from .models import Asset
 from flask import flash
 
 
 class AssetForm(Form):
-    cod = StringField('Código', validators=[DataRequired(), Length(max=50)],
+    cod = StringField('Código', validators=[InputRequired(), Length(max=50)],
                       render_kw={"placeholder": "Digite o código"})
-    short_description = StringField('Descrição Curta', validators=[DataRequired()],
+    short_description = StringField('Descrição Curta', validators=[InputRequired()],
                                     render_kw={"placeholder": "Digite a descrição curta"})
     long_description = StringField('Descrição Longa', render_kw={"placeholder": "Digite a descrição longa"})
     manufacturer = StringField('Fabrica', render_kw={"placeholder": "Digite o nome da Fabrica"})
@@ -57,7 +57,7 @@ class AssetForm(Form):
 
 
 class GroupForm(Form):
-    name = StringField('Nome', validators=[DataRequired(), Length(max=50)],
+    name = StringField('Nome', validators=[InputRequired(), Length(max=50)],
                        render_kw={"placeholder": "Digite o nome do grupo"})
     company = SelectField('Empresa', choices=[], coerce=int)
     submit = SubmitField("Salvar")
@@ -72,7 +72,7 @@ class GroupForm(Form):
 
 
 class SystemForm(Form):
-    name = StringField('Nome', validators=[DataRequired(), Length(max=50)],
+    name = StringField('Nome', validators=[InputRequired(), Length(max=50)],
                        render_kw={"placeholder": "Digite o nome do sistema"})
     asset = SelectField('Equipamanto', choices=[], coerce=int)
     submit = SubmitField("Salvar")

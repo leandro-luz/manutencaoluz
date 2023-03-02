@@ -1,7 +1,7 @@
 {% extends "sistema_base.html" %}
 {% block body %}
 <body>
-<form action="{{ url_for('auth.viewrole_edit', id=id) }}" method="POST">
+<form action="{{ url_for('auth.viewrole_edit', role_id=role_id) }}" method="POST">
     {{form.csrf_token}}
 
     <h2>Inclusão de Telas</h2>
@@ -16,7 +16,7 @@
 
 </form>
 
-<a href="{{ url_for('auth.viewrole_list', id=id) }}">Voltar</a>
+<a href="{{ url_for('auth.viewrole_list', role_id=role_id) }}">Voltar</a>
 
 </body>
 {% endblock %}

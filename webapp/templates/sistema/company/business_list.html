@@ -3,7 +3,7 @@
 <body>
 
 <h2> LISTA DE RAMOS DE NEGÓCIOS </h2>
-<a href="{{ url_for('company.business_edit', id=0) }}">
+<a href="{{ url_for('company.business_edit', business_id=0) }}">
     Adicionar
 </a>
 
@@ -21,7 +21,7 @@
     <tr>
         <td>{{ business.name }}</td>
         <td>
-            <a href="{{ url_for('company.business_edit', id=business.id) }}">
+            <a href="{{ url_for('company.business_edit', business_id=business.id) }}">
                     <span data-tooltip="Informações">
                         <i class="bi-caret-right fs-6"></i>
                     </span>
