@@ -2,34 +2,29 @@
 {% block body %}
 <body>
 
-<h2>{{ user.username }}</h2>
+<h2>Dados Cadastrais</h2>
 
 <ul>
     <li>
-        id: {{ user.id }}
+        nome: {{ user.username }}
     </li>
     <li>
         email: {{ user.email }}
     </li>
     <li>
+        cliente desde: {{ user.member_since }}
+    </li>
+    <li>
         ativo: {{ user.active }}
     </li>
     <li>
-        empresa:
+        empresa: {{ user.company.name }}
     </li>
     <li>
-        cliente desde: {{ user.member_since }}
+        perfil: {{ user.role.name }}
     </li>
 </ul>
 
-<div class="col-12">
-    <a href="{{ url_for('auth.list') }}">
-        Voltar
-    </a>
-    <a href="{{ url_for('auth.edit', id=user.id) }}">
-        Atualizar
-    </a>
-</div>
 
 </body>
 

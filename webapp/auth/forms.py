@@ -2,6 +2,7 @@ from flask_wtf import FlaskForm as Form
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField
 from wtforms.validators import InputRequired, Length, EqualTo, Email, Regexp
 from webapp.auth.models import User, ViewRole
+from webapp.company.models import Company
 from flask import flash
 
 
@@ -19,15 +20,20 @@ class LoginForm(Form):
         check_validate = super(LoginForm, self).validate()
 
         # Does our user exist
-        user = User.query.filter_by(username=self.username.data).first()
+        user = User.query.filter_by(username=self.username.data).one_or_none()
 
         if not user:
-            flash("Usuário ou senha não válidos", category="danger")
+            flash("Usuário ou senha não válidos!", category="danger")
             return False
 
         # Do the passwords match
         if not user.check_password(self.password.data):
-            flash("Usuário ou senha não válidos", category="danger")
+            flash("Usuário ou senha não válidos!", category="danger")
+            return False
+
+        company = Company.query.filter_by(id=user.company_id).one_or_none()
+        if not company.active:
+            flash("Empresa não está ativa!", category="danger")
             return False
 
         return True

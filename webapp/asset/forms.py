@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm as Form
 from wtforms import IntegerField, StringField, DateField, PasswordField, BooleanField, SubmitField, SelectField
-from wtforms.validators import InputRequired, Length, EqualTo, Email, Regexp
+from wtforms.validators import InputRequired, Length, Optional, EqualTo, Email, Regexp
 from .models import Asset
 from flask import flash
 
@@ -26,7 +26,7 @@ class AssetForm(Form):
                                render_kw={"placeholder": "Digite a altura"})
     weight = IntegerField('Peso ',
                           render_kw={"placeholder": "Digite o peso"})
-    year_manufacture = DateField('Ano de Fabridcação ',
+    year_manufacture = DateField('Ano de Fabricação ',
                                  render_kw={"placeholder": "Digite o ano de fabricação"})
     date_acquisition = DateField('Data de Aquisição ',
                                  render_kw={"placeholder": "Digite a data da aquisição"})
@@ -42,7 +42,7 @@ class AssetForm(Form):
                               render_kw={"placeholder": "Digite o centro de custo"})
     active = BooleanField('Ativo ',
                           render_kw={"placeholder": "Digite se está ativo"})
-    group = SelectField('Grupo de equipamentos', choices=[], coerce=int)
+    group = SelectField('Grupo de equipamentos',validators=[Optional()], choices=[], coerce=int)
     system = SelectField('Sistemas', choices=[], coerce=int)
     company = SelectField('Empresa', choices=[], coerce=int)
     submit = SubmitField("Salvar")

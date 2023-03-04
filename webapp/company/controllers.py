@@ -1,13 +1,18 @@
+import datetime
+
+import config
 from flask import (render_template, Blueprint,
                    redirect, jsonify, url_for,
                    flash)
 from flask_login import current_user, login_required
-from webapp.company.models import db, Company, Business, Subbusiness
-from webapp.company.forms import CompanyForm, BusinessForm, SubbusinessForm
+from webapp.company.models import db, Lead, Company, Business, Subbusiness
+from webapp.company.forms import CompanyForm, BusinessForm, SubbusinessForm, RegisterForm
 from webapp.plan.models import Plan
 from webapp.auth.models import User, Role, ViewRole
 from webapp.plan.models import ViewPlan
 from webapp.auth import has_view
+from webapp.utils.email import send_email
+from webapp.utils.tools import create_token, verify_token
 
 company_blueprint = Blueprint(
     'company',
@@ -61,7 +66,8 @@ def company_edit(company_id):
     """   Função que altera os valores    """
     if company_id > 0:  # se o identificador foi passado como parâmetro
         # --------- LER
-        company_ = Company.query.filter_by(id=company_id).first()  # instância uma empresa com base no idenfificador
+        # instância uma empresa com base no idenfificador
+        company_ = Company.query.filter_by(id=company_id).first()
         form = CompanyForm(obj=company_)  # instânciar o formulário
         new = False  # não é uma empresa nova
 
@@ -109,20 +115,7 @@ def company_edit(company_id):
 
         if new:
             company_ = Company.query.filter_by(name=form.name.data).one()
-            # cadastro da regra
-            role = Role(name='admin', description='administrador', company_id=company_.id)
-            role.save()
-            viewplans = ViewPlan.query.filter_by(plan_id=company_.plan_id).all()
-            for viewplan in viewplans:
-                # cadastro de viewroles para o administrador
-                viewrole = ViewRole(role_id=role.id, view_id=viewplan.view_id, active=viewplan.active)
-                viewrole.save()
-
-            # cadastro do usuario admin
-            user = User()  # instância um novo objeto usuário
-            user.user_admin(company_name=company_.name, company_id=company_.id, role_id=role.id)  # altera os dados _
-            # para administrador
-            user.save()  # salva no banco de dados
+            new_admin(company_)
 
         # --------- MENSAGENS
         if company_id > 0:
@@ -132,6 +125,28 @@ def company_edit(company_id):
 
         return redirect(url_for("company.company_list"))
     return render_template("company_edit.html", form=form, company=company_)
+
+
+def new_admin(company: [Company]):
+    """    Função para cadastrar os administradores do sistema das empresas    """
+    # lista dos administradores
+    lista = (('admin_', company.email), ('adminluz_', config.Config.MAIL_USERNAME))
+    # laço de repetição
+    for valor in lista:
+        # cadastro da regra
+        role = Role(name='admin', description='administrador', company_id=company.id)
+        role.save()
+        # busca a lista de telas liberadas para a empresa
+        viewplans = ViewPlan.query.filter_by(plan_id=company.plan_id).all()
+        for viewplan in viewplans:
+            # cadastro de viewroles para o administrador
+            viewrole = ViewRole(role_id=role.id, view_id=viewplan.view_id, active=viewplan.active)
+            viewrole.save()
+        # instância um novo objeto usuário
+        user = User()
+        # cria um usuário administrador do sistema para a nova empresa
+        user.user_admin(name=valor[0]+company.name, email=valor[1], company_id=company.id, role_id=role.id)
+        user.save()
 
 
 @company_blueprint.route('/business_list', methods=['GET', 'POST'])
@@ -178,7 +193,8 @@ def business_edit(business_id):
 @has_view('Empresa')
 def subbusiness_list() -> str:
     """    Função que retorna uma lista com subnegócios     """
-    subbusinesss = Subbusiness.query.order_by(Subbusiness.business_id.asc())  # retorna uma lista de subnegócios
+    # retorna uma lista de subnegócios
+    subbusinesss = Subbusiness.query.order_by(Subbusiness.business_id.asc())
     return render_template('subbusiness_list.html', subbusinesss=subbusinesss)
 
 
@@ -189,9 +205,11 @@ def subbusiness_edit(subbusiness_id: int):
     """    Função que edita as informações do subnegócio    """
     if subbusiness_id > 0:  # se o identificador foi passado como parâmetro
         #  --------- ATUALIZAR
-        subbusiness = Subbusiness.query.filter_by(id=subbusiness_id).first()  # retorna uma lista de subnegócio com base
+        # retorna uma lista de subnegócio com base
+        subbusiness = Subbusiness.query.filter_by(id=subbusiness_id).first()
         # no subbusiness_id
-        form = SubbusinessForm(obj=subbusiness)  # instância um formulário e coloca as informações do formulário
+        # instância um formulário e coloca as informações do formulário
+        form = SubbusinessForm(obj=subbusiness)
 
         # Atualizar ou Ler dados
         if form.business.data:
@@ -224,3 +242,101 @@ def subbusiness_edit(subbusiness_id: int):
 
         return redirect(url_for("company.subbusiness_list"))
     return render_template("subbusiness_edit.html", form=form, subbusiness=subbusiness)
+
+
+@company_blueprint.route('/request', methods=['GET', 'POST'])
+def request():
+    form = RegisterForm()
+    if form.validate_on_submit():
+        lead = Lead()
+        lead.change_attributes(form)
+        lead.save()
+        return redirect(url_for('main.index'))
+    return render_template('company_request.html', form=form)
+
+
+@company_blueprint.route('/lead_list', methods=['GET', 'POST'])
+@login_required
+@has_view('Empresa')
+def lead_list() -> str:
+    """    Função que retorna uma lista com interessados     """
+    # retorna uma lista de interessados
+    leads = Lead.query.order_by(Lead.data_solicitacao.desc())
+    return render_template('lead_list.html', leads=leads)
+
+
+@company_blueprint.route('/enviar_link/<int:lead_id>', methods=['GET', 'POST'])
+@login_required
+@has_view('Empresa')
+def enviar_link(lead_id):
+    leads = Lead.query.order_by(Lead.data_solicitacao.desc())
+    lead = Lead.query.filter_by(id=lead_id).first()
+    try:
+        token = create_token(lead.id, lead.email)
+        send_email(lead.email,
+                   'Solicitação de acesso',
+                   'company/email/proposta',
+                   lead=lead,
+                   token=token)
+        flash(f'Foi enviado para o email as propostas de cadastro para a empresa {lead.name}', category="success")
+    except:
+        flash("Erro ao enviar o link para o lead", category="danger")
+    return render_template('lead_list.html', leads=leads)
+
+
+@company_blueprint.route('/lead_confirm/<token>', methods=['GET', 'POST'])
+def lead_confirm(token):
+    """    Função de confirmação do token do lead    """
+    # consulta as informações do token enviado
+    result, lead_id = verify_token("id", token)
+    # se o token está válido
+    if result:
+        # instância um novo lead
+        lead = Lead.query.filter_by(id=lead_id).one_or_none()
+        # cria um novo token de segurança
+        token = create_token(lead.id, lead.email)
+        # cria uma empresa e importa as informações do lead
+        company = Company()
+        company.import_lead(lead)
+        # instânciar o formulário com as informações inicias do interessado
+        form = CompanyForm(obj=company)
+        # --------- LISTAS
+        form.business.choices = [(business.id, business.name) for business in Business.query.all()]
+        form.subbusiness.choices = [(subbusiness.id, subbusiness.name)
+                                    for subbusiness in Subbusiness.query.filter_by(business_id=1)]
+        form.plan.choices = [(plans.id, plans.name) for plans in Plan.query.all()]
+
+        # redireciona para a tela de registro de empresa, usando token
+        return render_template('company_register.html', form=form, token=token)
+    else:
+        flash("O link para confirmação é invalido ou está expirado!", category="danger")
+    return redirect(url_for('main.index'))
+
+
+@company_blueprint.route('/company_register/<token>', methods=['GET', 'POST'])
+def company_register(token):
+    """    Função que grava as informações de um cadastro empresa externo    """
+    # consulta as informações do token enviado
+    result, lead_id = verify_token("id", token)
+    form = CompanyForm()
+    # se o token está válido
+    if result:
+        if form.validate_on_submit():
+            new = True
+            company_ = Company()
+            company_.change_attributes(form, 1, new)
+            if company_.save():
+                # instância um lead
+                lead = Lead.query.filter_by(id=lead_id).one_or_none()
+                # registra o lead como cadastrado
+                lead.registred()
+                # criar os admnistradores para a empresa
+                new_admin(company_)
+                flash("Cadastro realizado com sucesso. As informações para acesso foram enviadas no email!",
+                      category="success")
+                return redirect(url_for('auth.login'))
+        else:
+            flash("O cadastro não foi realizado", category="danger")
+    else:
+        flash("O link para confirmação é invalido ou está expirado!", category="danger")
+    return redirect(url_for('main.index'))

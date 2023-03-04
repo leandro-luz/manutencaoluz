@@ -1,13 +1,11 @@
 from flask import (render_template,
                    Blueprint,
                    redirect,
-                   request,
                    url_for,
                    flash)
 from flask_login import current_user, login_required
 from .models import db, Supplier
 from webapp.company.models import Company
-from webapp.email import send_email
 from webapp.auth import has_view
 
 from .forms import SupplierForm

@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm as Form
 from wtforms import StringField, IntegerField, SelectField, BooleanField, SubmitField, ValidationError
-from wtforms.validators import InputRequired, Length, Email, NumberRange
-from webapp.company.models import Company, Business, Subbusiness
+from wtforms.validators import InputRequired, Length, Email, NumberRange, Regexp
+from webapp.company.models import Lead, Company, Business, Subbusiness
 from flask import flash
 import re
 
@@ -21,6 +21,8 @@ class CompanyForm(Form):
                        render_kw={"placeholder": "Digite o cnpj"})
     email = StringField('Email', validators=[InputRequired(), Email()],
                         render_kw={"placeholder": "Digite o email"})
+    telefone = StringField('Telefone', validators=[InputRequired()],
+                        render_kw={"placeholder": "Digite o telefone"})
     cep = StringField('Cep', validators=[InputRequired(), Length(min=8, max=8)],
                       render_kw={"placeholder": "Digite o cep"})
 
@@ -130,6 +132,42 @@ class SubbusinessForm(Form):
                 return False
         else:
             flash("Subnegócio não válidado", category="danger")
+            return False
+
+        return True
+
+
+class RegisterForm(Form):
+    name = StringField('Nome da Empresa', [InputRequired(), Length(max=50)],
+                       render_kw={"placeholder": "Digite o nome da empresa"})
+    cnpj = StringField('Cnpj', validators=[InputRequired(), Length(min=18, max=18), cnpj_validate],
+                       render_kw={"placeholder": "00.000.000/0000-00"})
+    email = StringField('Email', [InputRequired(), Email()],
+                        render_kw={"placeholder": "email@domínio.com"})
+    telefone = StringField('Telefone', [InputRequired(), Length(max=20)],
+                           render_kw={"placeholder": "(00) 0 0000-0000"})
+
+    submit = SubmitField('Solicitar')
+
+    def validate(self, **kwargs):
+        # if our validators do not pass
+        check_validate = super(RegisterForm, self).validate()
+
+        if check_validate:
+            # verifica se o nome da empresa já foi solicitado
+            lead = Lead.query.filter_by(name=self.name.data).first()
+            if lead:
+                flash("Já foi solicitado acesso para esta empresa", category="danger")
+                return False
+            # verifica se o cnpj já foi solicitado
+            lead = Lead.query.filter_by(cnpj=self.cnpj.data).first()
+            if lead:
+                flash("Já foi solicitado acesso com este cnpj", category="danger")
+                return False
+
+        else:
+            for error in self.errors:
+                print(error)
             return False
 
         return True

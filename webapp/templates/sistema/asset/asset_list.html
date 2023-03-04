@@ -29,7 +29,7 @@
         <td>{{ asset.cod }}</td>
         <td>{{ asset.short_description }}</td>
         <td>{{ asset.tag }}</td>
-        <td>{{ asset.type_id }}</td>
+        <td>{{ asset.group.name }}</td>
         <td>{{ asset.active }}</td>
         <td>
             <a href="{{ url_for('asset.asset_edit', id=asset.id) }}">

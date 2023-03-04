@@ -8,6 +8,7 @@ from .models import db, Asset, Group, System
 from webapp.company.models import Company
 from .forms import AssetForm, GroupForm, SystemForm
 from webapp.auth import has_view
+from webapp.utils.files import file_standard
 
 asset_blueprint = Blueprint(
     'asset',
@@ -35,47 +36,35 @@ def asset_edit(id):
         asset = Asset.query.filter_by(id=id).first()
         form = AssetForm(obj=asset)
 
-        # Atualizar ou Ler dados
-        if form.company.data:
-            c_d = form.company.data
+        # # Atualizar ou Ler dados
+        if form.group.data:
             g_d = form.group.data
         else:
-            c_d = asset.company_id
             g_d = asset.group_id
-
     else:
         # Cadastrar
         asset = Asset()
         asset.id = 0
         form = AssetForm()
-        c_d = form.company.data
         g_d = form.group.data
 
     # Listas
-
-    form.company.choices = [(companies.id, companies.name) for companies
-                            in Company.query.filter_by(id=current_user.company_id).all()]
-    ##perfil superadmin
-    # form.company.choices = [(companies.id, companies.name) for companies in Company.query.all()]
-    form.company.data = c_d
-
     form.group.choices = [(groups.id, groups.name) for groups
                           in Group.query.filter_by(company_id=current_user.company_id)]
     form.group.data = g_d
 
-    form.system.choices = [(systems.id, systems.name) for systems in System.query.filter_by(asset_id=asset.id).all()]
+    form.system.choices = [(systems.id, systems.name) for systems
+                           in System.query.filter_by(asset_id=asset.id).all()]
 
     # Validação
     if form.validate_on_submit():
         asset.change_attributes(form)
-        db.session.add(asset)
-        db.session.commit()
-
-        # Mensagens
-        if id > 0:
-            flash("Equipamento atualizado", category="success")
-        else:
-            flash("Equipamento cadastrado", category="success")
+        if asset.save():
+            # Mensagens
+            if id > 0:
+                flash("Equipamento atualizado", category="success")
+            else:
+                flash("Equipamento cadastrado", category="success")
 
         return redirect(url_for("asset.asset_list"))
     return render_template("asset_edit.html", form=form, asset=asset)
@@ -91,6 +80,19 @@ def asset_active(id):
         db.session.add(asset_)
         db.session.commit()
     return redirect(url_for('asset.asset_list'))
+
+
+@asset_blueprint.route('/asset_file_out/', methods=['GET', 'POST'])
+@login_required
+@has_view('Equipamento')
+def asset_file_out():
+    result, path = file_standard(file_name=Asset.file_name,titles=Asset.titles)
+    if result:
+        flash(f'Foi gerado o arquivo padrão no caminho: {path}', category="success")
+        return redirect(url_for("asset.asset_list"))
+    else:
+        flash("Não foi gerado o arquivo padrão", category="dander")
+        return redirect(url_for("asset.asset_list"))
 
 
 @asset_blueprint.route('/group_list', methods=['GET', 'POST'])
@@ -195,3 +197,5 @@ def system_edit(id):
 
         return redirect(url_for("asset.system_list", id=id))
     return render_template("system_edit.html", form=form, system=system, id=id)
+
+

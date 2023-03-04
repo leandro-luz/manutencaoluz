@@ -1,12 +1,16 @@
+import datetime
+import config
+import logging
+from flask import flash
 from webapp.auth import bcrypt, AnonymousUserMixin, jwt
 from webapp import db
 from webapp.plan.models import View
 from flask_jwt_extended import create_access_token, get_jwt_identity
-import jwt
-import datetime
-import config
-from flask import flash
+from webapp.utils.tools import password_random
 
+logging.basicConfig(format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
+logging.getLogger().setLevel(logging.DEBUG)
+log = logging.getLogger(__name__)
 
 class Role(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
@@ -19,17 +23,23 @@ class Role(db.Model):
     viewrole = db.relationship("ViewRole", back_populates="role")
 
     def __repr__(self) -> str:
-        return f'<Role {self.name}>'
+        return f'<Role: {self.id}-{self.name}>'
 
     def __init__(self, name: str, description: str, company_id: int) -> None:
         self.name = name
         self.description = description
         self.company_id = company_id
 
-    def save(self) -> None:
+    def save(self) -> bool:
         """    Função para salvar no banco de dados o objeto"""
-        db.session.add(self)
-        db.session.commit()
+        try:
+            db.session.add(self)
+            db.session.commit()
+            return True
+        except Exception as e:
+            log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
+            db.session.rollback()
+            return False
 
     def change_attributes(self, form):
         self.name = form.name.data
@@ -57,30 +67,29 @@ class User(db.Model):
     company = db.relationship("Company", back_populates="user")
 
     def __repr__(self):
-        return f'<User {self.username}>'
+        return f'<User: {self.id}-{self.username}>'
 
-    def user_admin(self, company_name: str, company_id: int, role_id: int) -> None:
+    def user_admin(self, name: str,email: str, company_id: int, role_id: int) -> None:
         """    Função para cadastrar as informações de administrador     """
-        self.username = 'admin_' + company_name
-        self.email = 'admin_' + company_name + '@admin'
-        self.password = 'aaa11111'
+        self.username = name
+        self.email = email
+        self.password = password_random()
         self.company_id = company_id
         self.role_id = role_id
         self.confirmed = True
         self.active = True
+        self.member_since = datetime.datetime.now()
 
-    def save(self):
+    def save(self) -> bool:
         """    Função para salvar no banco de dados o objeto    """
-        db.session.add(self)
-        db.session.commit()
-
-    # def get_role_name(self):
-    #     role = Role.query.filter_by(id=self.role_id).first()
-    #     return role.name
-
-    # def get_company_name(self):
-    #     company = Company.query.filter_by(id=self.company_id).first()
-    #     return company.name
+        try:
+            db.session.add(self)
+            db.session.commit()
+            return True
+        except Exception as e:
+            log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
+            db.session.rollback()
+            return False
 
     # # @cache.memoize(60)
     def has_view(self, name: str) -> bool:
@@ -146,19 +155,19 @@ class User(db.Model):
             algorithm="HS256"
         )
         return token
-
-    @staticmethod
-    def verify_token(tipo, token):
-        try:
-            data = jwt.decode(
-                token,
-                config.Config.SECRET_KEY,
-                leeway=datetime.timedelta(seconds=10),
-                algorithms=["HS256"]
-            )
-        except:
-            return False, 0
-        return True, data.get(tipo)
+    #
+    # @staticmethod
+    # def verify_token(tipo, token):
+    #     try:
+    #         data = jwt.decode(
+    #             token,
+    #             config.Config.SECRET_KEY,
+    #             leeway=datetime.timedelta(seconds=10),
+    #             algorithms=["HS256"]
+    #         )
+    #     except:
+    #         return False, 0
+    #     return True, data.get(tipo)
 
     def change_attributes(self, form, new=False):
         self.username = form.username.data
@@ -166,7 +175,7 @@ class User(db.Model):
         self.company_id = form.company.data
         self.role_id = form.role.data
         self.active = form.active.data
-        self.password = '12345678'
+        self.password = password_random()
         self.confirmed = True
         if new:
             self.member_since = datetime.datetime.now()
@@ -188,6 +197,7 @@ class User(db.Model):
 
 
 class ViewRole(db.Model):
+    """    Classe relacionamento entre Tela e Perfil    """
     id = db.Column(db.Integer(), primary_key=True)
     active = db.Column(db.Boolean, default=True)
 
@@ -197,17 +207,23 @@ class ViewRole(db.Model):
     view = db.relationship("View", back_populates="viewrole")
 
     def __repr__(self) -> str:
-        return f'<ViewRole {self.id}>'
+        return f'<ViewRole: {self.id}-{self.id}>'
 
     def __init__(self, role_id: int, view_id: int, active: bool) -> None:
         self.role_id = role_id
         self.view_id = view_id
         self.active = active
 
-    def save(self) -> None:
+    def save(self) -> bool:
         """    Função para salvar no banco de dados o objeto    """
-        db.session.add(self)
-        db.session.commit()
+        try:
+            db.session.add(self)
+            db.session.commit()
+            return True
+        except Exception as e:
+            log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
+            db.session.rollback()
+            return False
 
     def change_attributes(self, form):
         self.role_id = form.user.data
@@ -229,7 +245,6 @@ class ViewRole(db.Model):
 
     @staticmethod
     def save_change(active: bool, kwargs) -> None:
-        print(kwargs['role_name'], kwargs['role_id'], kwargs['view_id'])
         viewrole = ViewRole.query.filter_by(role_id=kwargs['role_id'], view_id=kwargs['view_id']).one_or_none()
 
         if viewrole:  # se exister a tela para o perfil

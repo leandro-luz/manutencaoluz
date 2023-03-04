@@ -6,14 +6,14 @@ from flask import (render_template,
                    flash)
 from flask_login import login_user, logout_user, current_user, login_required
 from webapp.auth.models import db, User, Role, ViewRole
-from webapp.plan.models import View, ViewPlan
+from webapp.plan.models import ViewPlan
 from webapp.company.models import Company
-from webapp.email import send_email
-from .forms import LoginForm, RegisterForm, ChangePasswordForm, \
+from .forms import LoginForm, ChangePasswordForm, \
     PasswordResetRequestForm, PasswordResetForm, ChangeEmailForm, EditForm, \
     RoleForm, ViewRoleForm
 from webapp.auth import has_view
-
+from webapp.utils.email import send_email
+from webapp.utils.tools import create_token, verify_token
 auth_blueprint = Blueprint(
     'auth',
     __name__,
@@ -42,13 +42,16 @@ def unconfirmed():
 
 @auth_blueprint.route('/login', methods=['GET', 'POST'])
 def login():
+    """    Função para logar o usuário no sistema    """
+    # instância um formulário vazio
     form = LoginForm()
+    # valida as informações passadas
     if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).one_or_none()
-        if user.confirmed:
-            login_user(user, remember=form.remember.data)
+        user_ = User.query.filter_by(username=form.username.data).one_or_none()
+        if user_.confirmed:
+            login_user(user_, remember=form.remember.data)
             return redirect(url_for('sistema.index'))
-        return render_template('unconfirmed.html', user=user)
+        return render_template('unconfirmed.html', user=user_)
     return render_template('login.html', form=form)
 
 
@@ -59,51 +62,51 @@ def logout():
     return redirect(url_for('main.index'))
 
 
-@auth_blueprint.route('/register', methods=['GET', 'POST'])
-def register():
-    form = RegisterForm()
-    if form.validate_on_submit():
-        new_user = User(form.username.data.lower())
-        new_user.set_email(form.email.data.lower())
-        new_user.set_password(form.password.data)
-        db.session.add(new_user)
-        db.session.commit()
-        token = new_user.create_token()
-        send_email(new_user.email,
-                   'Confirmação de Conta',
-                   'auth/email/confirm',
-                   user=new_user,
-                   token=token)
-        flash("Para finalizar o cadastro, foi enviado a confirmação para o seu email.", category="success")
-        return redirect(url_for('.login'))
-    return render_template('register.html', form=form)
+# @auth_blueprint.route('/register', methods=['GET', 'POST'])
+# def register():
+#     form = RegisterForm()
+#     if form.validate_on_submit():
+#         new_user = User(form.username.data.lower())
+#         new_user.set_email(form.email.data.lower())
+#         new_user.set_password(form.password.data)
+#         db.session.add(new_user)
+#         db.session.commit()
+#         token = new_user.create_token()
+#         send_email(new_user.email,
+#                    'Confirmação de Conta',
+#                    'auth/email/confirm',
+#                    user=new_user,
+#                    token=token)
+#         flash("Para finalizar o cadastro, foi enviado a confirmação para o seu email.", category="success")
+#         return redirect(url_for('.login'))
+#     return render_template('register.html', form=form)
 
 
-@auth_blueprint.route('/confirm/<token>')
-def confirm(token):
-    result, user_id = User.verify_token("id", token)
-    if result:
-        user = User.query.filter_by(id=user_id).one()
-        if user is not None and not user.confirmed:
-            user.set_confirmed(True)
-            db.session.add(user)
-            db.session.commit()
-            flash("Sua conta foi confirmada, Obrigado", category="success")
-            return redirect(url_for('auth.login'))
-        return redirect(url_for('main.index'))
-    else:
-        flash("O link para confirmação é invalido ou está expirado!", category="danger")
-    return redirect(url_for('main.index'))
+# @auth_blueprint.route('/confirm/<token>')
+# def confirm(token):
+#     result, user_id = verify_token("id", token)
+#     if result:
+#         user_ = User.query.filter_by(id=user_id).one()
+#         if user_ is not None and not user_.confirmed:
+#             user.set_confirmed(True)
+#             db.session.add(user_)
+#             db.session.commit()
+#             flash("Sua conta foi confirmada, Obrigado", category="success")
+#             return redirect(url_for('auth.login'))
+#         return redirect(url_for('main.index'))
+#     else:
+#         flash("O link para confirmação é invalido ou está expirado!", category="danger")
+#     return redirect(url_for('main.index'))
 
 
 @auth_blueprint.route('/<string:username>/confirm', methods=['GET', 'POST'])
 def resend_confirmation(username):
-    user = User.query.filter_by(username=username).one()
-    token = user.create_token()
-    send_email(user.email,
+    user_ = User.query.filter_by(username=username).one()
+    token = create_token(user_.id, user_.email)
+    send_email(user_.email,
                'Confirmação de Conta',
                'auth/email/confirm',
-               user=user,
+               user=user_,
                token=token)
     flash("Um novo email de confirmação foi enviado para o seu email.", category="warning")
     return redirect(url_for('main.index'))
@@ -133,13 +136,13 @@ def password_reset_request():
         return redirect(url_for('main.index'))
     form = PasswordResetRequestForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data.lower()).first()
-        if user:
-            token = user.create_token()
-            send_email(user.email,
+        user_ = User.query.filter_by(email=form.email.data.lower()).first()
+        if user_:
+            token = create_token(user_.id, user_.email)
+            send_email(user_.email,
                        'Redefinição de Senha',
                        'auth/email/reset_password',
-                       user=user,
+                       user=user_,
                        token=token)
         flash("Um email com instruções para redefinição de senha foi enviado para seu email.",
               category="warning")
@@ -151,10 +154,10 @@ def password_reset_request():
 def password_reset_verify_token(token):
     if not current_user.is_anonymous:
         return redirect(url_for('main.index'))
-    result, user_id = User.verify_token("id", token)
+    result, user_id = verify_token("id", token)
     if result:
-        user = User.query.filter_by(id=user_id).one()
-        if user:
+        user_ = User.query.filter_by(id=user_id).one()
+        if user_:
             return redirect(url_for('auth.password_reset', token=token))
         return redirect(url_for('main.index'))
     else:
@@ -166,11 +169,11 @@ def password_reset_verify_token(token):
 def password_reset(token):
     form = PasswordResetForm()
     if form.validate_on_submit():
-        result, user_id = User.verify_token("id", token)
+        result, user_id = verify_token("id", token)
         if result:
-            user = User.query.filter_by(id=user_id).one()
-            if user:
-                user.set_password(form.password.data)
+            user_ = User.query.filter_by(id=user_id).one()
+            if user_:
+                user_.set_password(form.password.data)
                 db.session.commit()
                 flash("Sua senha foi atualizada.", category="success")
                 return redirect(url_for('auth.login'))
@@ -190,7 +193,7 @@ def change_email_request():
     if form.validate_on_submit():
         if current_user.check_password(form.password.data):
             current_user.set_email(form.email.data.lower())
-            token = current_user.create_token()
+            token = create_token(current_user.id, current_user.email)
             send_email(form.email.data.lower(),
                        'Confirme seu novo email',
                        'auth/email/change_email',
@@ -206,12 +209,12 @@ def change_email_request():
 @auth_blueprint.route('/change_email/<token>')
 @login_required
 def change_email(token):
-    result, email = current_user.verify_token("email", token)
+    result, email = verify_token("email", token)
     if result:
-        current_user.set_email(email)
-        db.session.add(current_user)
-        db.session.commit()
-        flash("Seu email foi atualizado.", category="success")
+        user = User.query.filter_by(id=current_user.id).one_or_none()
+        user.set_email(email)
+        if user.save():
+            flash("Seu email foi atualizado.", category="success")
     else:
         flash("O link para confirmação é invalido ou está expirado!", category="danger")
     return redirect(url_for('main.index'))
@@ -221,7 +224,7 @@ def change_email(token):
 @login_required
 def auth_active(user_id):
     """    Função que ativa/inativa um usuário"""
-    user_ = User.query.filter_by(id=user_id).one()  # retorna o usuário com o user_id
+    user_ = User.query.filter_by(id=user_id).one()  # retorna o usuário com o identificador
     if user_:  # se o usuário existir
         user_.change_active()  # grava as informações vindas do formulário
         user_.save()  # grava as informações no banco de dados
@@ -233,9 +236,9 @@ def auth_active(user_id):
 @auth_blueprint.route('/user/<int:id>', methods=['GET', 'POST'])
 @login_required
 def user(id):
-    user = User.query.filter_by(id=id).one_or_none()
-    if user:
-        return render_template('user.html', user=user)
+    user_ = User.query.filter_by(id=id).one_or_none()
+    if user_:
+        return render_template('user.html', user=user_)
     flash("Usuário não cadastrado", category="danger")
 
 
@@ -244,8 +247,10 @@ def user(id):
 @has_view('RH')
 def auth_list() -> str:
     """    Função que retorna uma lista de usuários    """
-    users = User.query.filter_by(company_id=current_user.company_id).all()  # retorna uma lista de usuários com base
-    # nas empresas do usuário
+    # retorna uma lista de usuários da empresa, exceto os adminluz(administradores de sistema)
+    users = User.query.filter_by(company_id=current_user.company_id).\
+        filter(User.username.notlike("%adminluz%")).all()
+
     return render_template('user_list.html', users=users)
 
 
@@ -254,10 +259,10 @@ def auth_list() -> str:
 @has_view('RH')
 def auth_edit(user_id):
     """    Função atualiza as informações do usuário    """
-    if user_id > 0:  # se o user_id foi passado com parâmetro
+    if user_id > 0:  # se o identificador foi passado com parâmetro
         # --------- ATUALIZAR
-        user = User.query.filter_by(id=user_id).first()  # instância um usuário com base no user_id
-        form = EditForm(obj=user)  # instância um formulário com as informações do usuário
+        user_ = User.query.filter_by(id=user_id).first()  # instância um usuário com base no identificador
+        form = EditForm(obj=user_)  # instância um formulário com as informações do usuário
         new = False  # não é um usuário novo
 
         # --------- ATUALIZAR/LER OS DADOS
@@ -265,13 +270,13 @@ def auth_edit(user_id):
             c_d = form.company.data
             r_d = form.role.data
         else:
-            c_d = user.company_id
-            r_d = user.role_id
+            c_d = user_.company_id
+            r_d = user_.role_id
 
     else:
         # --------- CADASTRAR
-        user = User()  # instância um usuário em branco
-        user.id = 0
+        user_ = User()  # instância um usuário em branco
+        user_.id = 0
         form = EditForm()  # instância um formulário em branco
         new = True  # é um usuário novo
         c_d = form.company.data
@@ -281,7 +286,7 @@ def auth_edit(user_id):
 
     form.company.choices = [(companies.id, companies.name) for companies
                             in Company.query.filter_by(id=current_user.company_id).all()]
-    ##perfil superadmin
+    # perfil superadmin
     # form.company.choices = [(companies.id, companies.name) for companies in Company.query.all()]
     form.company.data = c_d
 
@@ -291,8 +296,8 @@ def auth_edit(user_id):
 
     # --------- VALIDAÇÕES
     if form.validate_on_submit():
-        user.change_attributes(form, new)
-        user.save()
+        user_.change_attributes(form, new)
+        user_.save()
 
         # --------- MENSAGENS
         if user_id > 0:
@@ -301,7 +306,7 @@ def auth_edit(user_id):
             flash("Usuário cadastrado", category="success")
 
         return redirect(url_for("auth.auth_list"))
-    return render_template("user_edit.html", form=form, user=user)
+    return render_template("user_edit.html", form=form, user=user_)
 
 
 @auth_blueprint.route('/role_list', methods=['GET', 'POST'])

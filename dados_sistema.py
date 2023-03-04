@@ -1,9 +1,10 @@
 import logging
+import datetime
 import os
 from webapp import create_app
 from webapp import db
 from webapp.auth.models import Role, User, ViewRole
-from webapp.company.models import Company, Business, Subbusiness
+from webapp.company.models import Lead, Company, Business, Subbusiness
 from webapp.asset.models import Asset, Group, System
 from webapp.supplier.models import Supplier
 from webapp.plan.models import Plan, View, ViewPlan
@@ -31,7 +32,8 @@ subbusiness_lista = [{'business': 'indústria', 'name': 'roupas'},
                      {'business': 'indústria', 'name': 'teste'}
                      ]
 
-views_lista = [{'name': 'Plano', 'icon': 'bi-briefcase', 'url': 'plan.plan_list'},
+views_lista = [{'name': 'Lead', 'icon': 'bi-card-list', 'url': 'company.lead_list'},
+               {'name': 'Plano', 'icon': 'bi-briefcase', 'url': 'plan.plan_list'},
                {'name': 'Empresa', 'icon': 'bi-house-door', 'url': 'company.company_list'},
                {'name': 'RH', 'icon': 'bi-people', 'url': 'auth.auth_list'},
                {'name': 'Equipamento', 'icon': 'bi-robot', 'url': 'asset.asset_list'},
@@ -58,6 +60,7 @@ viewplans_lista = [{'plan': 'basico', 'view': 'RH'},
                    {'plan': 'intermediário', 'view': 'Fornecedor'},
                    {'plan': 'intermediário', 'view': 'Almoxarifado'},
                    {'plan': 'intermediário', 'view': 'Programação'},
+                   {'plan': 'completo', 'view': 'Lead'},
                    {'plan': 'completo', 'view': 'Plano'},
                    {'plan': 'completo', 'view': 'Empresa'},
                    {'plan': 'completo', 'view': 'RH'},
@@ -70,12 +73,18 @@ viewplans_lista = [{'plan': 'basico', 'view': 'RH'},
                    {'plan': 'completo', 'view': 'Indicadores'}
                    ]
 
+lead_lista = [{'name': 'empresa_oi', 'cnpj': '96.207.052/0001-02',
+               'email': 'empresa_oi@empoi.com.br', 'telefone': '(45)9 9874-4578'},
+              {'name': 'empresa_by', 'cnpj': '24.885.627/0001-35',
+               'email': 'empresa_by@empby', 'telefone': '(78)3245-6578'},
+              ]
+
 company_lista = [{'name': 'empresa_1', 'cnpj': '39.262.527/0001-20',
                   'cep': '65058864',
                   'logradouro': 'Rua Aderson Lago', 'bairro': 'Vila Janaína',
                   'municipio': 'São Luís', 'uf' : 'MA',
                   'numero': '0', 'complemento': 'qd05 lt05',
-                  'email': 'empresa_1@teste.com.br',
+                  'email': 'empresa_1@teste.com.br', 'telefone': '(45)9 9876-5432',
                   'business': 'serviços', 'subbusiness': 'informática',
                   'date': '1980/05/10 12:45:10', 'plano': 'completo',
                   'manager': 'empresa_1'},
@@ -85,7 +94,7 @@ company_lista = [{'name': 'empresa_1', 'cnpj': '39.262.527/0001-20',
                   'logradouro': 'Rua São Francisco', 'bairro': 'Tancredo Neves',
                   'municipio': 'Rio Branco', 'uf' : 'AC',
                   'numero': '59', 'complemento': '',
-                  'email': 'empresa_2@teste.com.br',
+                  'email': 'empresa_2@teste.com.br', 'telefone': '(78)9 9876-5432',
                   'business': 'serviços', 'subbusiness': 'informática',
                   'date': '1980/05/10 12:45:10', 'plano': 'completo',
                   'manager': 'empresa_1'},
@@ -95,7 +104,7 @@ company_lista = [{'name': 'empresa_1', 'cnpj': '39.262.527/0001-20',
                   'logradouro': 'Avenida José Agostinho Neto', 'bairro': 'Jardim São Bento',
                   'municipio': 'Rondonópolis', 'uf' : 'MT',
                   'numero': '45', 'complemento': 'qd45',
-                  'email': 'empresa_21@teste.com.br',
+                  'email': 'empresa_21@teste.com.br', 'telefone': '(98)9 9876-5432',
                   'business': 'serviços', 'subbusiness': 'informática',
                   'date': '1980/05/10 12:45:10', 'plano': 'basico',
                   'manager': 'empresa_2'},
@@ -105,7 +114,7 @@ company_lista = [{'name': 'empresa_1', 'cnpj': '39.262.527/0001-20',
                   'logradouro': 'Alameda Namíbia', 'bairro': 'Ponta Negra',
                   'municipio': 'Manaus', 'uf' : 'AM',
                   'numero': '789', 'complemento': '',
-                  'email': 'empresa_22@teste.com.br',
+                  'email': 'empresa_22@teste.com.br', 'telefone': '(12)9 9876-5432',
                   'business': 'serviços', 'subbusiness': 'informática',
                   'date': '1980/05/10 12:45:10', 'plano': 'basico',
                   'manager': 'empresa_2'},
@@ -115,7 +124,7 @@ company_lista = [{'name': 'empresa_1', 'cnpj': '39.262.527/0001-20',
                   'logradouro': 'Rua José Xavier 54', 'bairro': 'Centro',
                   'municipio': 'Itabaiana', 'uf' : 'PB',
                   'numero': '0', 'complemento': '',
-                  'email': 'empresa_3@teste.com.br',
+                  'email': 'empresa_3@teste.com.br', 'telefone': '(15)9 9876-5432',
                   'business': 'serviços', 'subbusiness': 'informática',
                   'date': '1980/05/10 12:45:10', 'plano': 'basico',
                   'manager': 'empresa_1'},
@@ -123,19 +132,25 @@ company_lista = [{'name': 'empresa_1', 'cnpj': '39.262.527/0001-20',
 
 roles_lista = [{'company': 'empresa_1', 'name': 'default', 'description': 'padrão'},
                {'company': 'empresa_1', 'name': 'admin', 'description': 'administrador'},
+               {'company': 'empresa_1', 'name': 'adminluz', 'description': 'administrador do sistema'},
                {'company': 'empresa_2', 'name': 'default', 'description': 'padrão'},
                {'company': 'empresa_2', 'name': 'admin', 'description': 'administrador'},
+               {'company': 'empresa_2', 'name': 'adminluz', 'description': 'administrador do sistema'},
                {'company': 'empresa_21', 'name': 'default', 'description': 'padrão'},
                {'company': 'empresa_21', 'name': 'admin', 'description': 'administrador'},
+               {'company': 'empresa_21', 'name': 'adminluz', 'description': 'administrador do sistema'},
                {'company': 'empresa_22', 'name': 'default', 'description': 'padrão'},
                {'company': 'empresa_22', 'name': 'admin', 'description': 'administrador'},
+               {'company': 'empresa_22', 'name': 'adminluz', 'description': 'administrador do sistema'},
                {'company': 'empresa_3', 'name': 'default', 'description': 'padrão'},
                {'company': 'empresa_3', 'name': 'admin', 'description': 'administrador'},
+               {'company': 'empresa_3', 'name': 'adminluz', 'description': 'administrador do sistema'},
                ]
 
 viewroles_lista = [{'company': 'empresa_1', 'role': 'default', 'view': 'Plano'},
                    {'company': 'empresa_1', 'role': 'default', 'view': 'Empresa'},
                    {'company': 'empresa_1', 'role': 'default', 'view': 'RH'},
+                   {'company': 'empresa_1', 'role': 'admin', 'view': 'Lead'},
                    {'company': 'empresa_1', 'role': 'admin', 'view': 'Plano'},
                    {'company': 'empresa_1', 'role': 'admin', 'view': 'Empresa'},
                    {'company': 'empresa_1', 'role': 'admin', 'view': 'RH'},
@@ -146,6 +161,18 @@ viewroles_lista = [{'company': 'empresa_1', 'role': 'default', 'view': 'Plano'},
                    {'company': 'empresa_1', 'role': 'admin', 'view': 'Manutenção'},
                    {'company': 'empresa_1', 'role': 'admin', 'view': 'Orçamento'},
                    {'company': 'empresa_1', 'role': 'admin', 'view': 'Indicadores'},
+                   {'company': 'empresa_1', 'role': 'adminluz', 'view': 'Lead'},
+                   {'company': 'empresa_1', 'role': 'adminluz', 'view': 'Plano'},
+                   {'company': 'empresa_1', 'role': 'adminluz', 'view': 'Empresa'},
+                   {'company': 'empresa_1', 'role': 'adminluz', 'view': 'RH'},
+                   {'company': 'empresa_1', 'role': 'adminluz', 'view': 'Equipamento'},
+                   {'company': 'empresa_1', 'role': 'adminluz', 'view': 'Fornecedor'},
+                   {'company': 'empresa_1', 'role': 'adminluz', 'view': 'Almoxarifado'},
+                   {'company': 'empresa_1', 'role': 'adminluz', 'view': 'Programação'},
+                   {'company': 'empresa_1', 'role': 'adminluz', 'view': 'Manutenção'},
+                   {'company': 'empresa_1', 'role': 'adminluz', 'view': 'Orçamento'},
+                   {'company': 'empresa_1', 'role': 'adminluz', 'view': 'Indicadores'},
+
 
                    {'company': 'empresa_2', 'role': 'default', 'view': 'Plano'},
                    {'company': 'empresa_2', 'role': 'default', 'view': 'Empresa'},
@@ -160,6 +187,17 @@ viewroles_lista = [{'company': 'empresa_1', 'role': 'default', 'view': 'Plano'},
                    {'company': 'empresa_2', 'role': 'admin', 'view': 'Manutenção'},
                    {'company': 'empresa_2', 'role': 'admin', 'view': 'Orçamento'},
                    {'company': 'empresa_2', 'role': 'admin', 'view': 'Indicadores'},
+                   {'company': 'empresa_2', 'role': 'adminluz', 'view': 'Lead'},
+                   {'company': 'empresa_2', 'role': 'adminluz', 'view': 'Plano'},
+                   {'company': 'empresa_2', 'role': 'adminluz', 'view': 'Empresa'},
+                   {'company': 'empresa_2', 'role': 'adminluz', 'view': 'RH'},
+                   {'company': 'empresa_2', 'role': 'adminluz', 'view': 'Equipamento'},
+                   {'company': 'empresa_2', 'role': 'adminluz', 'view': 'Fornecedor'},
+                   {'company': 'empresa_2', 'role': 'adminluz', 'view': 'Almoxarifado'},
+                   {'company': 'empresa_2', 'role': 'adminluz', 'view': 'Programação'},
+                   {'company': 'empresa_2', 'role': 'adminluz', 'view': 'Manutenção'},
+                   {'company': 'empresa_2', 'role': 'adminluz', 'view': 'Orçamento'},
+                   {'company': 'empresa_2', 'role': 'adminluz', 'view': 'Indicadores'},
 
                    {'company': 'empresa_21', 'role': 'default', 'view': 'Plano'},
                    {'company': 'empresa_21', 'role': 'default', 'view': 'Empresa'},
@@ -174,6 +212,17 @@ viewroles_lista = [{'company': 'empresa_1', 'role': 'default', 'view': 'Plano'},
                    {'company': 'empresa_21', 'role': 'admin', 'view': 'Manutenção'},
                    {'company': 'empresa_21', 'role': 'admin', 'view': 'Orçamento'},
                    {'company': 'empresa_21', 'role': 'admin', 'view': 'Indicadores'},
+                   {'company': 'empresa_21', 'role': 'adminluz', 'view': 'Lead'},
+                   {'company': 'empresa_21', 'role': 'adminluz', 'view': 'Plano'},
+                   {'company': 'empresa_21', 'role': 'adminluz', 'view': 'Empresa'},
+                   {'company': 'empresa_21', 'role': 'adminluz', 'view': 'RH'},
+                   {'company': 'empresa_21', 'role': 'adminluz', 'view': 'Equipamento'},
+                   {'company': 'empresa_21', 'role': 'adminluz', 'view': 'Fornecedor'},
+                   {'company': 'empresa_21', 'role': 'adminluz', 'view': 'Almoxarifado'},
+                   {'company': 'empresa_21', 'role': 'adminluz', 'view': 'Programação'},
+                   {'company': 'empresa_21', 'role': 'adminluz', 'view': 'Manutenção'},
+                   {'company': 'empresa_21', 'role': 'adminluz', 'view': 'Orçamento'},
+                   {'company': 'empresa_21', 'role': 'adminluz', 'view': 'Indicadores'},
 
                    {'company': 'empresa_22', 'role': 'default', 'view': 'Plano'},
                    {'company': 'empresa_22', 'role': 'default', 'view': 'Empresa'},
@@ -188,6 +237,17 @@ viewroles_lista = [{'company': 'empresa_1', 'role': 'default', 'view': 'Plano'},
                    {'company': 'empresa_22', 'role': 'admin', 'view': 'Manutenção'},
                    {'company': 'empresa_22', 'role': 'admin', 'view': 'Orçamento'},
                    {'company': 'empresa_22', 'role': 'admin', 'view': 'Indicadores'},
+                   {'company': 'empresa_22', 'role': 'adminluz', 'view': 'Lead'},
+                   {'company': 'empresa_22', 'role': 'adminluz', 'view': 'Plano'},
+                   {'company': 'empresa_22', 'role': 'adminluz', 'view': 'Empresa'},
+                   {'company': 'empresa_22', 'role': 'adminluz', 'view': 'RH'},
+                   {'company': 'empresa_22', 'role': 'adminluz', 'view': 'Equipamento'},
+                   {'company': 'empresa_22', 'role': 'adminluz', 'view': 'Fornecedor'},
+                   {'company': 'empresa_22', 'role': 'adminluz', 'view': 'Almoxarifado'},
+                   {'company': 'empresa_22', 'role': 'adminluz', 'view': 'Programação'},
+                   {'company': 'empresa_22', 'role': 'adminluz', 'view': 'Manutenção'},
+                   {'company': 'empresa_22', 'role': 'adminluz', 'view': 'Orçamento'},
+                   {'company': 'empresa_22', 'role': 'adminluz', 'view': 'Indicadores'},
 
                    {'company': 'empresa_3', 'role': 'default', 'view': 'Plano'},
                    {'company': 'empresa_3', 'role': 'default', 'view': 'Empresa'},
@@ -201,7 +261,18 @@ viewroles_lista = [{'company': 'empresa_1', 'role': 'default', 'view': 'Plano'},
                    {'company': 'empresa_3', 'role': 'admin', 'view': 'Programação'},
                    {'company': 'empresa_3', 'role': 'admin', 'view': 'Manutenção'},
                    {'company': 'empresa_3', 'role': 'admin', 'view': 'Orçamento'},
-                   {'company': 'empresa_3', 'role': 'admin', 'view': 'Indicadores'}
+                   {'company': 'empresa_3', 'role': 'admin', 'view': 'Indicadores'},
+                   {'company': 'empresa_3', 'role': 'adminluz', 'view': 'Lead'},
+                   {'company': 'empresa_3', 'role': 'adminluz', 'view': 'Plano'},
+                   {'company': 'empresa_3', 'role': 'adminluz', 'view': 'Empresa'},
+                   {'company': 'empresa_3', 'role': 'adminluz', 'view': 'RH'},
+                   {'company': 'empresa_3', 'role': 'adminluz', 'view': 'Equipamento'},
+                   {'company': 'empresa_3', 'role': 'adminluz', 'view': 'Fornecedor'},
+                   {'company': 'empresa_3', 'role': 'adminluz', 'view': 'Almoxarifado'},
+                   {'company': 'empresa_3', 'role': 'adminluz', 'view': 'Programação'},
+                   {'company': 'empresa_3', 'role': 'adminluz', 'view': 'Manutenção'},
+                   {'company': 'empresa_3', 'role': 'adminluz', 'view': 'Orçamento'},
+                   {'company': 'empresa_3', 'role': 'adminluz', 'view': 'Indicadores'},
                    ]
 
 user_lista = [{'username': 'admin', 'email': 'admin@admin.com',
@@ -362,6 +433,30 @@ def generate_viewplans():
     return viewplanlista
 
 
+def generate_leads():
+    leads = list()
+    for item in lead_lista:
+        lead = Lead.query.filter_by(name=item['name']).first()
+        if lead:
+            leads.append(lead)
+            continue
+        lead = Lead()
+        lead.name = item['name']
+        lead.cnpj = item['cnpj']
+        lead.email = item['email']
+        lead.telefone = item['telefone']
+        lead.data_solicitacao = datetime.datetime.now()
+        leads.append(lead)
+        try:
+            db.session.add(lead)
+            db.session.commit()
+            print('Lead inserido:', lead.name)
+        except Exception as e:
+            log.error("Erro ao inserir lead: %s, %s" % (str(lead), e))
+            db.session.rollback()
+    return leads
+
+
 def generate_companies():
     companies = list()
     for item in company_lista:
@@ -387,6 +482,7 @@ def generate_companies():
         company.numero = item['numero']
         company.complemento = item['complemento']
         company.email = item['email']
+        company.telefone = item['telefone']
         company.active = True
         company.member_since = item['date']
 
@@ -563,6 +659,7 @@ generate_subbusiness()
 generate_views()
 generate_plans()
 generate_viewplans()
+generate_leads()
 generate_companies()
 
 # carregamento para os perfis e usuários
