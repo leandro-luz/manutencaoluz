@@ -1,14 +1,12 @@
-import datetime
-
 import config
 from flask import (render_template, Blueprint,
                    redirect, jsonify, url_for,
                    flash)
 from flask_login import current_user, login_required
-from webapp.company.models import db, Lead, Company, Business, Subbusiness
+from webapp.company.models import db, Lead, Companytype, Company, Business, Subbusiness
 from webapp.company.forms import CompanyForm, BusinessForm, SubbusinessForm, RegisterForm
 from webapp.plan.models import Plan
-from webapp.auth.models import User, Role, ViewRole
+from webapp.auth.models import Password, User, Role, ViewRole
 from webapp.plan.models import ViewPlan
 from webapp.auth import has_view
 from webapp.utils.email import send_email
@@ -108,6 +106,10 @@ def company_edit(company_id):
     form.plan.choices = [(plans.id, plans.name) for plans in Plan.query.all()]
     form.plan.data = p_d
 
+    # atribuindo o tipo "Cliente" para a empresa
+    companytype = Companytype.query.filter_by(name='Cliente').one_or_none
+    company_.companytype_id = companytype.id
+
     # --------- VALIDAÇÕES E AÇÕES
     if form.validate_on_submit():
         company_.change_attributes(form, current_user.company_id, new)
@@ -116,7 +118,9 @@ def company_edit(company_id):
         if new:
             company_ = Company.query.filter_by(name=form.name.data).one()
             new_admin(company_)
-
+            flash("Usuário cadastrado com sucesso, informações de acesso enviadas ao email", category="success")
+            # else:
+            #     flash("Erro ao cadastrar o usuário do sistema", category="danger")
         # --------- MENSAGENS
         if company_id > 0:
             flash("Empresa atualizada", category="success")
@@ -130,23 +134,47 @@ def company_edit(company_id):
 def new_admin(company: [Company]):
     """    Função para cadastrar os administradores do sistema das empresas    """
     # lista dos administradores
-    lista = (('admin_', company.email), ('adminluz_', config.Config.MAIL_USERNAME))
+    lista = [{'name': 'admin_', 'email': company.email, 'temporary': True},
+             {'name': 'adminluz_', 'email': config.Config.MAIL_USERNAME, 'temporary': False},
+             ]
     # laço de repetição
     for valor in lista:
         # cadastro da regra
         role = Role(name='admin', description='administrador', company_id=company.id)
         role.save()
+
         # busca a lista de telas liberadas para a empresa
         viewplans = ViewPlan.query.filter_by(plan_id=company.plan_id).all()
         for viewplan in viewplans:
             # cadastro de viewroles para o administrador
             viewrole = ViewRole(role_id=role.id, view_id=viewplan.view_id, active=viewplan.active)
             viewrole.save()
+
+        # instância um novo objeto password_
+        password_ = Password()
+        if valor['temporary']:
+            # informa a senha de administrador do sistema, a senha não expira
+            password_.set_password(Password.password_random())
+            password_.set_expirate(False)
+        else:
+            # informa uma senha temporária para o administrador da empresa, e informa a data de expiração da senha
+            password_.set_password(Password.password_adminluz())
+            password_.set_expiration_date()
+            password_.set_temporary(False)
+        password_.save()
+
         # instância um novo objeto usuário
         user = User()
-        # cria um usuário administrador do sistema para a nova empresa
-        user.user_admin(name=valor[0]+company.name, email=valor[1], company_id=company.id, role_id=role.id)
-        user.save()
+        # cria os usuários administradores do sistema para a nova empresa
+        user.user_admin(name=valor['name']+company.name, email=valor['email'], company_id=company.id,
+                        role_id=role.id, password_=password_.id)
+
+        if user.save():
+            # envia o email com as informações de login
+            send_email(valor['email'],
+                       'Manutenção Luz - Informações para login',
+                       'auth/email/confirm',
+                       user=user)
 
 
 @company_blueprint.route('/business_list', methods=['GET', 'POST'])
@@ -205,9 +233,8 @@ def subbusiness_edit(subbusiness_id: int):
     """    Função que edita as informações do subnegócio    """
     if subbusiness_id > 0:  # se o identificador foi passado como parâmetro
         #  --------- ATUALIZAR
-        # retorna uma lista de subnegócio com base
+        # retorna uma lista de subnegócio com base no subbusiness_id
         subbusiness = Subbusiness.query.filter_by(id=subbusiness_id).first()
-        # no subbusiness_id
         # instância um formulário e coloca as informações do formulário
         form = SubbusinessForm(obj=subbusiness)
 
@@ -250,7 +277,9 @@ def request():
     if form.validate_on_submit():
         lead = Lead()
         lead.change_attributes(form)
-        lead.save()
+        if lead.save():
+            flash("Informações enviadas com sucesso, em breve vamos lhe atender", category="success")
+
         return redirect(url_for('main.index'))
     return render_template('company_request.html', form=form)
 
@@ -269,7 +298,6 @@ def lead_list() -> str:
 @login_required
 @has_view('Empresa')
 def enviar_link(lead_id):
-    leads = Lead.query.order_by(Lead.data_solicitacao.desc())
     lead = Lead.query.filter_by(id=lead_id).first()
     try:
         token = create_token(lead.id, lead.email)
@@ -281,7 +309,7 @@ def enviar_link(lead_id):
         flash(f'Foi enviado para o email as propostas de cadastro para a empresa {lead.name}', category="success")
     except:
         flash("Erro ao enviar o link para o lead", category="danger")
-    return render_template('lead_list.html', leads=leads)
+    return redirect(url_for('company.lead_list'))
 
 
 @company_blueprint.route('/lead_confirm/<token>', methods=['GET', 'POST'])
@@ -325,6 +353,10 @@ def company_register(token):
             new = True
             company_ = Company()
             company_.change_attributes(form, 1, new)
+            # atribuindo o tipo "Cliente" para a empresa
+            companytype = Companytype.query.filter_by(name='Cliente').one_or_none()
+            company_.companytype_id = companytype.id
+
             if company_.save():
                 # instância um lead
                 lead = Lead.query.filter_by(id=lead_id).one_or_none()
@@ -332,9 +364,11 @@ def company_register(token):
                 lead.registred()
                 # criar os admnistradores para a empresa
                 new_admin(company_)
-                flash("Cadastro realizado com sucesso. As informações para acesso foram enviadas no email!",
-                      category="success")
+                flash("Usuário cadastrado com sucesso, informações de acesso enviadas ao email", category="success")
                 return redirect(url_for('auth.login'))
+                # else:
+                #     flash("Erro ao cadastrar o usuário do sistema", category="danger")
+                #     return redirect(url_for('main.index'))
         else:
             flash("O cadastro não foi realizado", category="danger")
     else:

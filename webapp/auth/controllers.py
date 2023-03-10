@@ -5,7 +5,7 @@ from flask import (render_template,
                    url_for,
                    flash)
 from flask_login import login_user, logout_user, current_user, login_required
-from webapp.auth.models import db, User, Role, ViewRole
+from webapp.auth.models import db, Password, User, Role, ViewRole
 from webapp.plan.models import ViewPlan
 from webapp.company.models import Company
 from .forms import LoginForm, ChangePasswordForm, \
@@ -26,18 +26,18 @@ auth_blueprint = Blueprint(
 def before_request():
     if current_user.is_authenticated:
         current_user.ping()
-        if not current_user.confirmed \
-                and request.endpoint \
-                and request.blueprint != 'auth' \
-                and request.endpoint != 'static':
-            return redirect(url_for('auth.unconfirmed'))
+        # if not current_user.confirmed \
+        #         and request.endpoint \
+        #         and request.blueprint != 'auth' \
+        #         and request.endpoint != 'static':
+        #     return redirect(url_for('auth.unconfirmed'))
 
 
-@auth_blueprint.route('/unconfirmed')
-def unconfirmed():
-    if current_user.is_anonymous or current_user.confirmed:
-        return redirect(url_for('main.index'))
-    return redirect(url_for('auth.login'))
+# @auth_blueprint.route('/unconfirmed')
+# def unconfirmed():
+#     if current_user.is_anonymous or current_user.confirmed:
+#         return redirect(url_for('main.index'))
+#     return redirect(url_for('auth.login'))
 
 
 @auth_blueprint.route('/login', methods=['GET', 'POST'])
@@ -48,10 +48,11 @@ def login():
     # valida as informações passadas
     if form.validate_on_submit():
         user_ = User.query.filter_by(username=form.username.data).one_or_none()
-        if user_.confirmed:
-            login_user(user_, remember=form.remember.data)
+        if user_:
+            login_user(user_)
             return redirect(url_for('sistema.index'))
-        return render_template('unconfirmed.html', user=user_)
+        else:
+            flash("Erro ao logar o usuário no sistema.", category="danger")
     return render_template('login.html', form=form)
 
 
@@ -116,16 +117,29 @@ def resend_confirmation(username):
 @auth_blueprint.route('/change_password', methods=['GET', 'POST'])
 @login_required
 def change_password():
+    """    Função para alteração de senha de acesso do usuário logado   """
     form = ChangePasswordForm()
     if form.validate_on_submit():
-        if current_user.check_password(form.old_password.data):
-            current_user.password = form.password.data
-            db.session.add(current_user)
-            db.session.commit()
-            flash("Sua senha foi atualizada", category="success")
-            return redirect(url_for('main.index'))
+        # coleta a senha do usuário logado
+        password = Password.query.filter_by(id=current_user.password.id).one_or_none()
+        if password:
+            # realiza as alterações
+            password.change_attributes(form)
+            if password.save():
+
+                # enviar email com a senha atualizada
+                send_email(current_user.email,
+                           'Alteração de Senha',
+                           'auth/email/change_password',
+                           user=current_user)
+
+                flash("Sua senha foi atualizada", category="success")
+                return redirect(url_for('main.index'))
+            else:
+                flash("Erro ao alterar senha no banco de dados", category="danger")
         else:
-            flash("Senha inválida", category="danger")
+            flash("Erro ao alterar senha", category="danger")
+
     return render_template("auth/change_password.html", form=form)
 
 
@@ -168,20 +182,29 @@ def password_reset_verify_token(token):
 @auth_blueprint.route('/password_reset/<token>', methods=['GET', 'POST'])
 def password_reset(token):
     form = PasswordResetForm()
-    if form.validate_on_submit():
-        result, user_id = verify_token("id", token)
-        if result:
-            user_ = User.query.filter_by(id=user_id).one()
-            if user_:
-                user_.set_password(form.password.data)
-                db.session.commit()
-                flash("Sua senha foi atualizada.", category="success")
-                return redirect(url_for('auth.login'))
-            else:
-                return redirect(url_for('main.index'))
-        else:
-            flash("O link para confirmação é invalido ou está expirado!", category="danger")
+    result, user_id = verify_token("id", token)
+    if result:
+        if form.validate_on_submit():
+            user_ = User.query.filter_by(id=user_id).one_or_none()
+            password = Password.query.filter_by(id=user_id).one_or_none()
+            if password:
+                password.change_attributes(form)
+                if password.save():
+                    # enviar email com a senha atualizada
+                    send_email(user_.email,
+                               'Alteração de Senha',
+                               'auth/email/change_password',
+                               user=user_)
+
+                    flash("Sua senha foi atualizada.", category="success")
+                    return redirect(url_for('auth.login'))
+                else:
+                    flash("Ocorreu um erro ao tentar atualizar a senha.", category="danger")
+
             return redirect(url_for('main.index'))
+    else:
+        flash("O link para confirmação é invalido ou está expirado!", category="danger")
+        return redirect(url_for('main.index'))
     return render_template('auth/reset_password.html', form=form, token=token)
 
 
@@ -211,9 +234,9 @@ def change_email_request():
 def change_email(token):
     result, email = verify_token("email", token)
     if result:
-        user = User.query.filter_by(id=current_user.id).one_or_none()
-        user.set_email(email)
-        if user.save():
+        user_ = User.query.filter_by(id=current_user.id).one_or_none()
+        user_.set_email(email)
+        if user_.save():
             flash("Seu email foi atualizado.", category="success")
     else:
         flash("O link para confirmação é invalido ou está expirado!", category="danger")
@@ -291,19 +314,34 @@ def auth_edit(user_id):
     form.company.data = c_d
 
     form.role.choices = [(roles.id, roles.name) for roles
-                         in Role.query.filter_by(company_id=current_user.company_id).all()]
+                         in Role.query.filter_by(company_id=current_user.company_id).
+                             filter(Role.name.notlike("%adminluz%")).all()]
     form.role.data = r_d
 
     # --------- VALIDAÇÕES
     if form.validate_on_submit():
+
+        if new:
+            # instância um novo objeto password_
+            password_ = Password()
+            password_.set_password(Password.password_random())
+            password_.set_expiration_date()
+            password_.save()
+            user_.password_id = password_.id
+        # grava as informações do formulário no objeto usuário
         user_.change_attributes(form, new)
         user_.save()
-
-        # --------- MENSAGENS
-        if user_id > 0:
-            flash("Usuário atualizado", category="success")
-        else:
+        if new:
+            # envia o email com as informações de login
+            send_email(user_.email,
+                       'Manutenção Luz - Informações para login',
+                       'auth/email/confirm',
+                       user=user_)
             flash("Usuário cadastrado", category="success")
+        else:
+            flash("Usuário atualizado", category="success")
+        # else:
+        #     flash("Erro ao cadastrar/atualizar usuário", category="danger")
 
         return redirect(url_for("auth.auth_list"))
     return render_template("user_edit.html", form=form, user=user_)
@@ -325,6 +363,7 @@ def role_edit(role_id):
         # Atualizar
         role = Role.query.filter_by(id=role_id).first()
         form = RoleForm(obj=role)
+        new = False
 
         # Atualizar ou Ler dados
         if form.company.data:

@@ -3,8 +3,8 @@ import datetime
 import os
 from webapp import create_app
 from webapp import db
-from webapp.auth.models import Role, User, ViewRole
-from webapp.company.models import Lead, Company, Business, Subbusiness
+from webapp.auth.models import Role, Password, User, ViewRole
+from webapp.company.models import Lead, Companytype, Company, Business, Subbusiness
 from webapp.asset.models import Asset, Group, System
 from webapp.supplier.models import Supplier
 from webapp.plan.models import Plan, View, ViewPlan
@@ -79,55 +79,58 @@ lead_lista = [{'name': 'empresa_oi', 'cnpj': '96.207.052/0001-02',
                'email': 'empresa_by@empby', 'telefone': '(78)3245-6578'},
               ]
 
+company_type_lista = [{'name': 'Cliente'}, {'name': 'Fornecedor'}, {'name': 'Parceiro'}]
+
+
 company_lista = [{'name': 'empresa_1', 'cnpj': '39.262.527/0001-20',
                   'cep': '65058864',
                   'logradouro': 'Rua Aderson Lago', 'bairro': 'Vila Janaína',
-                  'municipio': 'São Luís', 'uf' : 'MA',
+                  'municipio': 'São Luís', 'uf': 'MA',
                   'numero': '0', 'complemento': 'qd05 lt05',
                   'email': 'empresa_1@teste.com.br', 'telefone': '(45)9 9876-5432',
                   'business': 'serviços', 'subbusiness': 'informática',
                   'date': '1980/05/10 12:45:10', 'plano': 'completo',
-                  'manager': 'empresa_1'},
+                  'manager': 'empresa_1', 'tipo': 'Cliente'},
 
                  {'name': 'empresa_2', 'cnpj': '10.540.017/0001-95',
                   'cep': '69921728',
                   'logradouro': 'Rua São Francisco', 'bairro': 'Tancredo Neves',
-                  'municipio': 'Rio Branco', 'uf' : 'AC',
+                  'municipio': 'Rio Branco', 'uf': 'AC',
                   'numero': '59', 'complemento': '',
                   'email': 'empresa_2@teste.com.br', 'telefone': '(78)9 9876-5432',
                   'business': 'serviços', 'subbusiness': 'informática',
                   'date': '1980/05/10 12:45:10', 'plano': 'completo',
-                  'manager': 'empresa_1'},
+                  'manager': 'empresa_1', 'tipo': 'Cliente'},
 
                  {'name': 'empresa_21', 'cnpj': '88.496.773/0001-51',
                   'cep': '78717650',
                   'logradouro': 'Avenida José Agostinho Neto', 'bairro': 'Jardim São Bento',
-                  'municipio': 'Rondonópolis', 'uf' : 'MT',
+                  'municipio': 'Rondonópolis', 'uf': 'MT',
                   'numero': '45', 'complemento': 'qd45',
                   'email': 'empresa_21@teste.com.br', 'telefone': '(98)9 9876-5432',
                   'business': 'serviços', 'subbusiness': 'informática',
                   'date': '1980/05/10 12:45:10', 'plano': 'basico',
-                  'manager': 'empresa_2'},
+                  'manager': 'empresa_2', 'tipo': 'Cliente'},
 
                  {'name': 'empresa_22', 'cnpj': '50.201.802/0001-38',
                   'cep': '69037097',
                   'logradouro': 'Alameda Namíbia', 'bairro': 'Ponta Negra',
-                  'municipio': 'Manaus', 'uf' : 'AM',
+                  'municipio': 'Manaus', 'uf': 'AM',
                   'numero': '789', 'complemento': '',
                   'email': 'empresa_22@teste.com.br', 'telefone': '(12)9 9876-5432',
                   'business': 'serviços', 'subbusiness': 'informática',
                   'date': '1980/05/10 12:45:10', 'plano': 'basico',
-                  'manager': 'empresa_2'},
+                  'manager': 'empresa_2', 'tipo': 'Cliente'},
 
                  {'name': 'empresa_3', 'cnpj': '01.021.781/0001-63',
                   'cep': '58360974',
                   'logradouro': 'Rua José Xavier 54', 'bairro': 'Centro',
-                  'municipio': 'Itabaiana', 'uf' : 'PB',
+                  'municipio': 'Itabaiana', 'uf': 'PB',
                   'numero': '0', 'complemento': '',
                   'email': 'empresa_3@teste.com.br', 'telefone': '(15)9 9876-5432',
                   'business': 'serviços', 'subbusiness': 'informática',
                   'date': '1980/05/10 12:45:10', 'plano': 'basico',
-                  'manager': 'empresa_1'},
+                  'manager': 'empresa_1', 'tipo': 'Cliente'},
                  ]
 
 roles_lista = [{'company': 'empresa_1', 'name': 'default', 'description': 'padrão'},
@@ -275,32 +278,43 @@ viewroles_lista = [{'company': 'empresa_1', 'role': 'default', 'view': 'Plano'},
                    {'company': 'empresa_3', 'role': 'adminluz', 'view': 'Indicadores'},
                    ]
 
+password_lista = [{'password': 'aaa11111', 'expiration_date': str(datetime.datetime.now() + datetime.timedelta(30)),
+                   'expirate': False, 'temporary': False},
+                  {'password': 'aaa22222', 'expiration_date': str(datetime.datetime.now() + datetime.timedelta(30)),
+                   'expirate': False, 'temporary': False},
+                  {'password': 'aaa33333', 'expiration_date': str(datetime.datetime.now() + datetime.timedelta(30)),
+                   'expirate': False, 'temporary': False},
+                  {'password': 'aaa44444', 'expiration_date': str(datetime.datetime.now() + datetime.timedelta(30)),
+                   'expirate': False, 'temporary': False},
+                  {'password': 'aaa55555', 'expiration_date': str(datetime.datetime.now() + datetime.timedelta(30)),
+                   'expirate': False, 'temporary': False},
+                  {'password': 'aaa66666', 'expiration_date': str(datetime.datetime.now() + datetime.timedelta(30)),
+                   'expirate': False, 'temporary': False},
+                  {'password': 'aaa77777', 'expiration_date': str(datetime.datetime.now() + datetime.timedelta(30)),
+                   'expirate': False, 'temporary': False},
+                  ]
+
 user_lista = [{'username': 'admin', 'email': 'admin@admin.com',
                'password': 'aaa11111', 'role': 'admin',
                'date': '1980/05/10 12:45:10', 'company': 'empresa_1'},
               {'username': 'leandro', 'email': 'engleoluz@hotmail.com',
-               'password': 'aaa11111', 'role': 'default',
+               'password': 'aaa22222', 'role': 'default',
                'date': '1980/05/10 12:45:10', 'company': 'empresa_1'},
               {'username': 'danylo', 'email': 'danylo@gmail.com',
-               'password': '12345678', 'role': 'admin',
+               'password': 'aaa33333', 'role': 'admin',
                'date': '1980/05/10 12:45:10', 'company': 'empresa_1'},
-
               {'username': 'admin_empresa_2', 'email': 'admin_empresa_2@admin.com',
-               'password': 'aaa11111', 'role': 'admin',
+               'password': 'aaa44444', 'role': 'admin',
                'date': '1980/05/10 12:45:10', 'company': 'empresa_2'},
-
               {'username': 'admin_empresa_21', 'email': 'admin_empresa_21@admin.com',
-               'password': 'aaa11111', 'role': 'admin',
+               'password': 'aaa55555', 'role': 'admin',
                'date': '1980/05/10 12:45:10', 'company': 'empresa_21'},
-
               {'username': 'admin_empresa_22', 'email': 'admin_empresa_22@admin.com',
-               'password': 'aaa11111', 'role': 'admin',
+               'password': 'aaa66666', 'role': 'admin',
                'date': '1980/05/10 12:45:10', 'company': 'empresa_22'},
-
               {'username': 'admin_empresa_3', 'email': 'admin_empresa_3@admin.com',
-               'password': 'aaa11111', 'role': 'admin',
+               'password': 'aaa77777', 'role': 'admin',
                'date': '1980/05/10 12:45:10', 'company': 'empresa_3'},
-
               ]
 
 group_lista = [{'name': 'cadeira', 'company': 'empresa_1'},
@@ -335,12 +349,13 @@ def generate_business():
         business = Business()
         business.name = item['name']
         businesslista.append(business)
+
         try:
             db.session.add(business)
             db.session.commit()
-            print('Ramo de negócio inserido:', business.name)
+            print(f'Ramo de negócio inserido:{business.name}')
         except Exception as e:
-            log.error("Erro ao inserir o ramo de negócio: %s, %s" % (str(business), e))
+            log.error(f'Erro ao inserir o ramo de negócio: {business}-{e}')
             db.session.rollback()
     return businesslista
 
@@ -357,12 +372,13 @@ def generate_subbusiness():
         # business = Business.query.filter_by(name=item['business']).one()
         subbusiness.name = item['name']
         subbusiness.business_id = business.id
+
         try:
             db.session.add(subbusiness)
             db.session.commit()
             print('Sub-ramo de negócio inserido:', subbusiness.name)
         except Exception as e:
-            log.error("Erro ao inserir o sub-ramo de negócio: %s, %s" % (str(subbusiness), e))
+            log.error(f'Erro ao inserir o sub-ramo de negócio: {subbusiness}-{e}')
             db.session.rollback()
     return subbusinesss
 
@@ -377,12 +393,13 @@ def generate_plans():
         plan = Plan()
         plan.name = item['name']
         planlista.append(plan)
+
         try:
             db.session.add(plan)
             db.session.commit()
-            print('Plano inserido:', plan.name)
+            print(f'Plano inserido: {plan.name}')
         except Exception as e:
-            log.error("Erro ao inserir o plano: %s, %s" % (str(plan), e))
+            log.error(f'Erro ao inserir o plano: {plan}-{e}')
             db.session.rollback()
     return planlista
 
@@ -398,12 +415,13 @@ def generate_views():
         view.name = item['name']
         view.icon = item['icon']
         view.url = item['url']
+
         try:
             db.session.add(view)
             db.session.commit()
-            print('Tela inserida:', view.name)
+            print(f'Tela inserida: {view.name}')
         except Exception as e:
-            log.error("Erro ao inserir a tela: %s, %s" % (str(view), e))
+            log.error(f'Erro ao inserir a tela: {view}-{e}')
             db.session.rollback()
     return viewlista
 
@@ -423,12 +441,13 @@ def generate_viewplans():
         viewplan.view_id = view.id
         viewplan.plan_id = plan.id
         viewplan.active = True
+
         try:
             db.session.add(viewplan)
             db.session.commit()
-            print('Tela inserida: %s no plano: %s' % (view.name, plan.name))
+            print(f'Tela inserida: {view.name} no plano: {plan.name}')
         except Exception as e:
-            log.error("Erro ao inserir a tela/plano: %s, %s" % (str(view), e))
+            log.error(f'Erro ao inserir a tela/plano: {viewplan}-{e}')
             db.session.rollback()
     return viewplanlista
 
@@ -447,14 +466,36 @@ def generate_leads():
         lead.telefone = item['telefone']
         lead.data_solicitacao = datetime.datetime.now()
         leads.append(lead)
+
         try:
             db.session.add(lead)
             db.session.commit()
-            print('Lead inserido:', lead.name)
+            print(f'Lead inserido: {lead.name}')
         except Exception as e:
-            log.error("Erro ao inserir lead: %s, %s" % (str(lead), e))
+            log.error(f'Erro ao inserir lead: {lead}-{e}')
             db.session.rollback()
     return leads
+
+
+def generate_company_types():
+    company_types = list()
+    for item in company_type_lista:
+        companytype = Companytype.query.filter_by(name=item['name']).first()
+        if companytype:
+            company_types.append(companytype)
+            continue
+        companytype = Companytype()
+        companytype.name = item['name']
+        company_types.append(companytype)
+
+        try:
+            db.session.add(companytype)
+            db.session.commit()
+            print(f'Ramo de negócio inserido: {companytype.name}')
+        except Exception as e:
+            log.error(f'Erro ao inserir o tipo de empresa: {companytype.name}-{e}')
+            db.session.rollback()
+    return company_types
 
 
 def generate_companies():
@@ -465,11 +506,13 @@ def generate_companies():
             companies.append(company)
             continue
         company = Company()
-        business = Business.query.filter_by(name=item['business']).one()
-        subbusiness = Subbusiness.query.filter_by(name=item['subbusiness'], business_id=business.id).one()
+        business = Business.query.filter_by(name=item['business']).one_or_none()
+        subbusiness = Subbusiness.query.filter_by(name=item['subbusiness'], business_id=business.id).one_or_none()
+        companytype = Companytype.query.filter_by(name=item['tipo']).one_or_none()
         plan = Plan.query.filter_by(name=item['plano']).one()
         manager = Company.query.filter_by(name=item['manager']).first()
         company.manager_company_id = 1
+
         if manager:
             company.manager_company_id = manager.id
         company.name = item['name']
@@ -488,13 +531,15 @@ def generate_companies():
 
         company.subbusiness_id = subbusiness.id
         company.plan_id = plan.id
+        company.companytype_id = companytype.id
         companies.append(company)
+
         try:
             db.session.add(company)
             db.session.commit()
-            print('Empresa inserida:', company.name)
+            print(f'Empresa inserida:: {company.name}')
         except Exception as e:
-            log.error("Erro ao inserir empresa: %s, %s" % (str(company), e))
+            log.error(f'Erro ao inserir a empresa: {company.name}-{e}')
             db.session.rollback()
     return companies
 
@@ -508,12 +553,15 @@ def generate_roles():
             roles.append(role)
             continue
         role = Role(name=item['name'], description=item['description'], company_id=company.id)
+
         try:
-            role.save()
-            print("Regra inserida: %s na empresa: %s" % (role.name, company.name))
+            db.session.add(role)
+            db.session.commit()
+            print(f'Regra inserida:: {role.name}')
         except Exception as e:
-            log.error("Erro ao inserir a regra: %s, %s" % (str(role), e))
+            log.error(f'Erro ao inserir a regra: {role.name}-{e}')
             db.session.rollback()
+
     return roles
 
 
@@ -530,13 +578,40 @@ def generate_viewroles():
             continue
 
         viewrole = ViewRole(role_id=role.id, view_id=view.id, active=True)
+
         try:
-            viewrole.save()
-            print('Tela inserida: %s no perfil: %s' % (view.name, role.name))
+            db.session.add(viewrole)
+            db.session.commit()
+            print(f'Tela inserida: {view.name} no perfil: {role.name}')
         except Exception as e:
-            log.error("Erro ao inserir a tela: %s erro: %s" % (str(viewrole), e))
+            log.error(f'Erro ao inserir a tela: {viewrole}-{e}')
             db.session.rollback()
+
     return viewrolelista
+
+
+def generate_passwords():
+    passwords = list()
+    for item in password_lista:
+        password = Password.query.filter_by(password=item['password']).one_or_none()
+        if password:
+            passwords.append(password)
+            continue
+        password = Password()
+        password.password = item['password']
+        password.expiration_date = item['expiration_date']
+        password.expirate = item['expirate']
+        password.temporary = item['temporary']
+
+        try:
+            db.session.add(password)
+            db.session.commit()
+            print(f'Senha inserida:: {password.password}')
+        except Exception as e:
+            log.error(f'Erro ao inserir a senha: {password.password}-{e}')
+            db.session.rollback()
+
+    return passwords
 
 
 def generate_users():
@@ -547,24 +622,25 @@ def generate_users():
             users.append(user)
             continue
         user = User()
-        company = Company.query.filter_by(name=item['company']).one()
-        role = Role.query.filter_by(name=item['role'], company_id=company.id).one()
+        company = Company.query.filter_by(name=item['company']).one_or_none()
+        role = Role.query.filter_by(name=item['role'], company_id=company.id).one_or_none()
+        password = Password.query.filter_by(password=item['password']).one_or_none()
         user.username = item['username']
         user.email = item['email']
-        user.password = item['password']
+        user.password_id = password.id
         user.member_since = item['date']
-        user.confirmed = True
         user.active = True
         user.role_id = role.id
         user.company_id = company.id
+
         try:
-            user.save()
-            # db.session.add(user)
-            # db.session.commit()
-            print("Usuário inserido: %s, na empresa: %s" % (user.username, company.name))
+            db.session.add(user)
+            db.session.commit()
+            print(f'Usuário inserido: {user.username}, na empresa: {company.name}')
         except Exception as e:
-            log.error("Erro ao inserir usuário: %s, %s" % (str(user), e))
+            log.error(f'Erro ao inserir a usuário: {user}-{e}')
             db.session.rollback()
+
     return users
 
 
@@ -579,12 +655,13 @@ def generate_group():
         group.name = item['name']
         company = Company.query.filter_by(name=item['company']).one()
         group.company_id = company.id
+
         try:
             db.session.add(group)
             db.session.commit()
-            print("Grupo de equipamento inserido: %s,  na empresa: %s" % (group.name, company.name))
+            print(f'Grupo de equipamento inserido: {group.name} na empresa: {company.name}')
         except Exception as e:
-            log.error("Erro ao inserir o grupo do equipamento: %s, %s" % (str(group), e))
+            log.error(f'Erro ao inserir o grupo do equipamento: {group}-{e}')
             db.session.rollback()
     return groups
 
@@ -604,9 +681,9 @@ def generate_asset():
         try:
             db.session.add(asset)
             db.session.commit()
-            print("Equipamento inserido: %s, na empresa: %s" % (asset.short_description, company.name))
+            print(f'Equipamento inserido: {asset.short_description} na empresa: {company.name}')
         except Exception as e:
-            log.error("Erro ao inserir Equipamento: %s, %s" % (str(asset), e))
+            log.error(f'Erro ao inserir Equipamento: {asset}-{e}')
             db.session.rollback()
     return assets
 
@@ -625,9 +702,9 @@ def generate_system():
         try:
             db.session.add(system)
             db.session.commit()
-            print("Sistema inserido: %s, no equipamento: %s" % (system.name, asset.short_description))
+            print(f'Sistema inserido: {system.name} no equipamento: {asset.short_description}')
         except Exception as e:
-            log.error("Erro ao inserir Sistema: %s, %s" % (str(system), e))
+            log.error(f'Erro ao inserir Sistema: {system}-{e}')
             db.session.rollback()
     return systems
 
@@ -646,9 +723,9 @@ def generate_supplier():
         try:
             db.session.add(supplier)
             db.session.commit()
-            print("Fornecedor inserido: %s, na empresa: %s" % (supplier.name, company.name))
+            print(f'Fornecedor inserido: {supplier.name} na empresa: {company.name}')
         except Exception as e:
-            log.error("Erro ao inserir Fornecedor: %s, %s" % (str(supplier), e))
+            log.error(f'Erro ao inserir Fornecedor: {supplier}-{e}')
             db.session.rollback()
     return suppliers
 
@@ -660,11 +737,13 @@ generate_views()
 generate_plans()
 generate_viewplans()
 generate_leads()
+generate_company_types()
 generate_companies()
 
 # carregamento para os perfis e usuários
 generate_roles()
 generate_viewroles()
+generate_passwords()
 generate_users()
 
 # carregamento para os equipamentos

@@ -86,3 +86,14 @@ class ViewPlan(db.Model):
         else:
             self.active = True
             flash("Plano ativado com sucesso", category="success")
+
+    def save(self) -> bool:
+        """    Função para salvar no banco de dados o objeto"""
+        try:
+            db.session.add(self)
+            db.session.commit()
+            return True
+        except Exception as e:
+            log.error(f'Erro salvar no bando de dados: {self.__repr__()}:{e}')
+            db.session.rollback()
+            return False

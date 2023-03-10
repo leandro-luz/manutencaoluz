@@ -1,9 +1,10 @@
+import re
+from flask import flash
 from flask_wtf import FlaskForm as Form
 from wtforms import StringField, IntegerField, SelectField, BooleanField, SubmitField, ValidationError
-from wtforms.validators import InputRequired, Length, Email, NumberRange, Regexp
+from wtforms.validators import InputRequired, Length, Email, NumberRange
+
 from webapp.company.models import Lead, Company, Business, Subbusiness
-from flask import flash
-import re
 
 
 def cnpj_validate(form, field):
@@ -18,13 +19,13 @@ class CompanyForm(Form):
     name = StringField('Nome', validators=[InputRequired(), Length(max=50)],
                        render_kw={"placeholder": "Digite o nome da empresa"})
     cnpj = StringField('Cnpj', validators=[InputRequired(), Length(min=18, max=18), cnpj_validate],
-                       render_kw={"placeholder": "Digite o cnpj"})
+                       render_kw={"placeholder": "xx.xxx.xxx/xxxx-xx"})
     email = StringField('Email', validators=[InputRequired(), Email()],
-                        render_kw={"placeholder": "Digite o email"})
+                        render_kw={"placeholder": "email@dominio.com"})
     telefone = StringField('Telefone', validators=[InputRequired()],
-                        render_kw={"placeholder": "Digite o telefone"})
+                           render_kw={"placeholder": "(xx)x xxxx-xxxx"})
     cep = StringField('Cep', validators=[InputRequired(), Length(min=8, max=8)],
-                      render_kw={"placeholder": "Digite o cep"})
+                      render_kw={"placeholder": "xxxxxxxxx"})
 
     numero = IntegerField('Número', validators=[InputRequired(), NumberRange(min=0)],
                           render_kw={"placeholder": "Digite o número"})
@@ -71,7 +72,12 @@ class CompanyForm(Form):
                 flash("Já existe uma empresa com este cnpj", category="danger")
                 return False
 
-            # verifica se existe empresa com o mesmo endereço eletronico, ignorando a empresa repassada(se <> 0)
+            # Verifica se o cnpj está válido
+            if not Company.validate_cnpj(self.cnpj.data):
+                flash("O CNPJ informado não está válido", category="danger")
+                return False
+
+            # verifica se existe empresa com o mesmo endereço eletrônico, ignorando a empresa repassada(se <> 0)
             if company_:
                 company = Company.query.filter(Company.id != company_.id,
                                                Company.email == self.email.data).one_or_none()
@@ -81,10 +87,11 @@ class CompanyForm(Form):
             if company:
                 flash("Já existe uma empresa vinculada a este email", category="danger")
                 return False
+
         else:
             for error in self.errors:
                 print(error)
-            flash("Empresa não válidada", category="danger")
+            flash("Empresa não validada", category="danger")
             return False
 
         return True
@@ -107,7 +114,7 @@ class BusinessForm(Form):
                 flash(f'Já existe um Negócio com este nome "{self.name.data}"', category="danger")
                 return False
         else:
-            flash("Negócio não válidado", category="danger")
+            flash("Negócio não validado", category="danger")
             return False
 
         return True
@@ -131,7 +138,7 @@ class SubbusinessForm(Form):
                 flash(f'Já existe um Subnegócio com este nome "{self.name.data}"', category="danger")
                 return False
         else:
-            flash("Subnegócio não válidado", category="danger")
+            flash("Subnegócio não validado", category="danger")
             return False
 
         return True

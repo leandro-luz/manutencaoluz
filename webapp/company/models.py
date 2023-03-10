@@ -1,11 +1,15 @@
 import datetime
 import logging
-from webapp import db
+import re
 from flask import flash
+from itertools import cycle
+from webapp import db
+
 
 logging.basicConfig(format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
 logging.getLogger().setLevel(logging.DEBUG)
 log = logging.getLogger(__name__)
+
 
 class Business(db.Model):
     """    Classe de Negócio    """
@@ -43,7 +47,7 @@ class Subbusiness(db.Model):
         return f'<SubBusiness: {self.id}-{self.name}>'
 
     def change_attributes(self, form) -> None:
-        """    Função que grava as informaçõe repassadas pelo formulário    """
+        """    Função que grava as informações repassadas pelo formulário    """
         self.name = form.name.data
         self.business_id = form.business.data
 
@@ -59,6 +63,7 @@ class Subbusiness(db.Model):
 
 
 class Lead(db.Model):
+    """    Classe de interessados no sistema    """
     id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(50), nullable=False, unique=True)
     cnpj = db.Column(db.String(18), nullable=False, unique=True)
@@ -71,6 +76,7 @@ class Lead(db.Model):
         return f'<Lead {self.name}, {self.cnpj}, {self.email}>'
 
     def change_attributes(self, form) -> None:
+        """    Função que alterar os atributos do objeto    """
         self.name = form.name.data
         self.cnpj = form.cnpj.data
         self.email = form.email.data
@@ -78,10 +84,10 @@ class Lead(db.Model):
         self.data_solicitacao = datetime.datetime.now()
 
     def save(self) -> bool:
+        """    Função para salvar no banco de dados o objeto    """
         try:
             db.session.add(self)
             db.session.commit()
-            flash("Informações enviadas com sucesso, em breve vamos lhe atender", category="success")
             return True
         except Exception as e:
             log.error(f'Erro salvar no banco de dados: {self.__repr__()} :{e}')
@@ -89,10 +95,32 @@ class Lead(db.Model):
             flash("Erro ao cadastrar o lead no banco de dados", category="danger")
             return False
 
-    def registred(self):
-        """    Função para salvar a data de registro do led como cliente    """
+    def registred(self) -> bool:
+        """    Função para salvar a data de registro do 'lead' como cliente    """
         self.data_cadastro = datetime.datetime.now()
-        self.save()
+        return self.save()
+
+
+class Companytype(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(50), nullable=False, index=True, unique=True)
+    company = db.relationship("Company", back_populates="companytype")
+
+    def __repr__(self) -> str:
+        return f'<Companytype: {self.id}-{self.name}>'
+
+    def save(self) -> bool:
+        """    Função para salvar no banco de dados o objeto    """
+        try:
+            db.session.add(self)
+            db.session.commit()
+            return True
+        except Exception as e:
+            log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
+            db.session.rollback()
+            flash("Erro ao cadastrar/atualizar o tipo de empresa no banco de dados", category="danger")
+            return False
+
 
 class Company(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
@@ -111,10 +139,12 @@ class Company(db.Model):
     active = db.Column(db.Boolean, default=False)
     member_since = db.Column(db.DateTime(), nullable=True)
     manager_company_id = db.Column(db.Integer(), nullable=False)
-    subbusiness_id = db.Column(db.Integer(), db.ForeignKey("subbusiness.id"))
+    subbusiness_id = db.Column(db.Integer(), db.ForeignKey("subbusiness.id"), nullable=False)
     subbusiness = db.relationship("Subbusiness", back_populates="company")
-    plan_id = db.Column(db.Integer(), db.ForeignKey("plan.id"))
+    plan_id = db.Column(db.Integer(), db.ForeignKey("plan.id"), nullable=False)
     plan = db.relationship("Plan", back_populates="company")
+    companytype_id = db.Column(db.Integer(), db.ForeignKey("companytype.id"), nullable=False)
+    companytype = db.relationship("Companytype", back_populates="company")
 
     user = db.relationship("User", back_populates="company")
     role = db.relationship("Role", back_populates="company")
@@ -130,9 +160,8 @@ class Company(db.Model):
         self.name = name
 
     def change_attributes(self, form, company_id, new=False) -> None:
-        """    Alteraçãos dos atributos da empresa     """
+        """    Alterações dos atributos da empresa     """
         self.name = form.name.data
-        # numero = int("".join(re.findall("\d+", form.cnpj.data)))  # deixado somente os numeros do cnpj
         self.cnpj = form.cnpj.data
         self.cep = form.cep.data
         self.logradouro = form.logradouro.data
@@ -171,15 +200,38 @@ class Company(db.Model):
             flash("Erro ao cadastrar/atualizar a empresa no banco de dados", category="danger")
             return False
 
-    def import_lead(self, lead:[Lead]) -> None:
+    def import_lead(self, lead: [Lead]) -> None:
         self.name = lead.name
         self.cnpj = lead.cnpj
         self.email = lead.email
         self.telefone = lead.telefone
 
+    @staticmethod
+    def validate_cnpj(cnpj: str) -> bool:
+        length_cnpj = 14
 
+        # deixado somente os números do cnpj
+        cnpj = "".join(re.findall("\d+", cnpj))
+
+        # verifica se a quantidade de caracteres estão no limite
+        if len(cnpj) != length_cnpj:
+            return False
+
+        # verifica se existe somente números
+        if cnpj in (c * length_cnpj for c in "1234567890"):
+            return False
+
+        # realiza a validação do cnpj
+        cnpj_r = cnpj[::-1]
+        for i in range(2, 0, -1):
+            cnpj_enum = zip(cycle(range(2, 10)), cnpj_r[i:])
+            dv = sum(map(lambda x: int(x[1]) * x[0], cnpj_enum)) * 10 % 11
+            if cnpj_r[i - 1:i] != str(dv % 10):
+                return False
+
+        return True
 
     @staticmethod
     def list_companies_by_plan(value):
-        """    Função que retorna uma lista de empresas com base no indentificador    """
+        """    Função que retorna uma lista de empresas com base no identificador    """
         return Company.query.filter_by(plan_id=value).all()

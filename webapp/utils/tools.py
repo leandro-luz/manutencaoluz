@@ -4,9 +4,11 @@ import config
 import string
 import random
 
-def create_token(id, email, expiration=60):
+
+def create_token(id_, email, expiration=60):
+    """    Função que gera um token para acesso externo    """
     token = jwt.encode(
-        {"id": id,
+        {"id": id_,
          "email": email,
          "exp": datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(seconds=expiration)},
         config.Config.SECRET_KEY,
@@ -16,6 +18,7 @@ def create_token(id, email, expiration=60):
 
 
 def verify_token(tipo, token):
+    """    Função que válida o token recebido de um acesso externo    """
     try:
         data = jwt.decode(
             token,
@@ -29,8 +32,5 @@ def verify_token(tipo, token):
 
 
 def password_random(size=8, chars=string.ascii_uppercase + string.digits) -> str:
+    """    Função que gera uma senha aleatório para acesso temporário    """
     return ''.join(random.choice(chars) for _ in range(size))
-
-
-
-
