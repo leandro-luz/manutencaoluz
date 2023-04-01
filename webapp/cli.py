@@ -1,16 +1,16 @@
 import logging
 import click
 from faker import Faker
-from .auth import bcrypt
-from .auth.models import User, Role, db
+from .usuario import bcrypt
+from .usuario.models import Usuario, Perfil, db
 
 log = logging.getLogger(__name__)
 # faker = Faker()
 
 # fake_users = [
-#     {'username': 'user_default', 'role': 'default'},
-#     {'username': 'user_poster', 'role': 'poster'},
-#     {'username': 'admin', 'role': 'admin'}
+#     {'razao_social': 'user_default', 'role': 'default'},
+#     {'razao_social': 'user_poster', 'role': 'poster'},
+#     {'razao_social': 'admin', 'role': 'admin'}
 # ]
 # fake_roles = ['default', 'poster', 'admin']
 
@@ -18,11 +18,11 @@ log = logging.getLogger(__name__)
 # def generate_roles():
 #     roles = list()
 #     for rolename in fake_roles:
-#         role = Role.query.filter_by(name=rolename).first()
+#         role = Perfil.query.filter_by(razao_social=rolename).first()
 #         if role:
 #             roles.append(role)
 #             continue
-#         role = Role(rolename)
+#         role = Perfil(rolename)
 #         roles.append(role)
 #         db.session.add(role)
 #         try:
@@ -36,15 +36,15 @@ log = logging.getLogger(__name__)
 # def generate_users():
 #     users = list()
 #     for item in fake_users:
-#         user = User.query.filter_by(username=item['username']).first()
+#         user = Usuario.query.filter_by(razao_social=item['razao_social']).first()
 #         if user:
 #             users.append(user)
 #             continue
-#         user = User()
-#         poster = Role.query.filter_by(name=item['role']).one()
+#         user = Usuario()
+#         poster = Perfil.query.filter_by(razao_social=item['role']).one()
 #         user.roles.append(poster)
-#         user.username = item['username']
-#         user.password = bcrypt.generate_password_hash("password")
+#         user.razao_social = item['razao_social']
+#         user.senha = bcrypt.generate_password_hash("senha")
 #         users.append(user)
 #         try:
 #             db.session.add(user)
@@ -61,43 +61,43 @@ def register(app):
     #     generate_roles()
 
     # @app.cli.command('create-user')
-    # @click.argument('username')
-    # @click.argument('password')
-    # def create_user(username, password):
-    #     user = User()
-    #     user.username = username
-    #     user.set_password(password)
+    # @click.argument('razao_social')
+    # @click.argument('senha')
+    # def create_user(razao_social, senha):
+    #     user = Usuario()
+    #     user.razao_social = razao_social
+    #     user.set_password(senha)
     #     try:
     #         db.session.add(user)
     #         db.session.commit()
-    #         click.echo('User {0} Added.'.format(username))
+    #         click.echo('Usuario {0} Added.'.format(razao_social))
     #     except Exception as e:
-    #         log.error("Fail to add new user: %s Error: %s" % (username, e))
+    #         log.error("Fail to add new user: %s Error: %s" % (razao_social, e))
     #         db.session.rollback()
     #
     # @app.cli.command('create-admin')
-    # @click.argument('username')
-    # @click.argument('password')
-    # def create_user(username, password):
-    #     admin_role = Role.query.filter_by(name='admin').scalar()
-    #     user = User()
-    #     user.username = username
-    #     user.set_password(password)
+    # @click.argument('razao_social')
+    # @click.argument('senha')
+    # def create_user(razao_social, senha):
+    #     admin_role = Perfil.query.filter_by(razao_social='admin').scalar()
+    #     user = Usuario()
+    #     user.razao_social = razao_social
+    #     user.set_password(senha)
     #     user.roles.append(admin_role)
     #     try:
     #         db.session.add(user)
     #         db.session.commit()
-    #         click.echo('User {0} Added.'.format(username))
+    #         click.echo('Usuario {0} Added.'.format(razao_social))
     #     except Exception as e:
-    #         log.error("Fail to add new user: %s Error: %s" % (username, e))
+    #         log.error("Fail to add new user: %s Error: %s" % (razao_social, e))
     #         db.session.rollback()
 
     # @app.cli.command('list-users')
     # def list_users():
     #     try:
-    #         users = User.query.all()
+    #         users = Usuario.query.all()
     #         for user in users:
-    #             click.echo('{0}'.format(user.username))
+    #             click.echo('{0}'.format(user.razao_social))
     #     except Exception as e:
     #         log.error("Fail to list users Error: %s" % e)
     #         db.session.rollback()

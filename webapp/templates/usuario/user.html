@@ -1,0 +1,31 @@
+{% extends "sistema_base.html" %}
+{% block body %}
+<body>
+
+    <h2>Dados Cadastrais</h2>
+
+    <ul>
+        <li>
+            nome: {{ usuario.nome }}
+        </li>
+        <li>
+            email: {{ usuario.email }}
+        </li>
+        <li>
+            cliente desde: {{ usuario.data_assinatura }}
+        </li>
+        <li>
+            ativo: {{ usuario.ativo }}
+        </li>
+        <li>
+            empresa: {{ usuario.empresa.razao_social }}
+        </li>
+        <li>
+            perfil: {{ usuario.perfil.nome }}
+        </li>
+    </ul>
+
+
+</body>
+
+{% endblock %}

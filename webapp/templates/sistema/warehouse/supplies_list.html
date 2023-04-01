@@ -1,39 +1,39 @@
 {% extends "sistema_base.html" %}
 {% block body %}
-<body>
+    <body>
 
-<h2> LISTA DOS FORNECEDORES </h2>
-<a href="{{ url_for('supplier.supplier_edit', id=0) }}">
-    Adicionar
-</a>
+    <h2> LISTA DOS FORNECEDORES </h2>
+    <a href="{{ url_for('supplier.supplier_edit', id=0) }}">
+        Adicionar
+    </a>
 
-<table class="table">
-    <thead>
-    <tr>
-        <th scope="col">NAME</th>
-        <th scope="col">EMPRESA</th>
-        <th scope="col"></th>
-    </tr>
-    </thead>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">NOME</th>
+                <th scope="col">EMPRESA</th>
+                <th scope="col"></th>
+            </tr>
+        </thead>
 
-    <tbody>
-    {% for supplier in suppliers %}
-    <tr>
-        <td>{{ supplier.name }}</td>
-       <td>{{ supplier.company_id }}</td>
-        <td>
-            <a href="{{ url_for('supplier.supplier_edit', id=supplier.id) }}">
-                    <span data-tooltip="Informações">
-                        <i class="bi-caret-right fs-6"></i>
-                    </span>
-            </a>
-        </td>
-    </tr>
-    {% endfor %}
-    </tbody>
-</table>
+        <tbody>
+            {% for supplier in suppliers %}
+                <tr>
+                    <td>{{ supplier.nome }}</td>
+                    <td>{{ supplier.company_id }}</td>
+                    <td>
+                        <a href="{{ url_for('supplier.supplier_edit', id=supplier.id) }}">
+                            <span data-tooltip="Informações">
+                                <i class="bi-caret-right fs-6"></i>
+                            </span>
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
-<a href="{{ url_for('supplier.supplier_list') }}">Voltar</a>
+    <a href="{{ url_for('supplier.supplier_list') }}">Voltar</a>
 
-</body>
+    </body>
 {% endblock %}

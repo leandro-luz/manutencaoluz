@@ -5,8 +5,8 @@ from flask import (render_template,
                    flash)
 from flask_login import current_user, login_required
 from .models import db, Supplier
-from webapp.company.models import Company
-from webapp.auth import has_view
+from webapp.empresa.models import Empresa
+from webapp.usuario import has_view
 
 from .forms import SupplierForm
 
@@ -14,7 +14,7 @@ supplier_blueprint = Blueprint(
     'supplier',
     __name__,
     template_folder='../templates/sistema/supplier',
-    url_prefix="/system"
+    url_prefix="/sistema"
 )
 
 
@@ -22,7 +22,7 @@ supplier_blueprint = Blueprint(
 @login_required
 @has_view('Fornecedor')
 def supplier_list():
-    suppliers = Supplier.query.filter_by(company_id=current_user.company_id).all()
+    suppliers = Supplier.query.filter_by(company_id=current_user.empresa_id).all()
     return render_template('supplier_list.html', suppliers=suppliers)
 
 
@@ -39,7 +39,7 @@ def supplier_edit(id):
         if form.company.data:
             c_d = form.company.data
         else:
-            c_d = supplier.company_id
+            c_d = supplier.empresa_id
 
     else:
         # Cadastrar
@@ -49,10 +49,10 @@ def supplier_edit(id):
         c_d = form.company.data
 
     # Listas
-    form.company.choices = [(companies.id, companies.name) for companies
-                            in Company.query.filter_by(id=current_user.company_id).all()]
+    form.company.choices = [(companies.id, companies.razao_social) for companies
+                            in Empresa.query.filter_by(id=current_user.empresa_id).all()]
     ##perfil superadmin
-    # form.company.choices = [(companies.id, companies.name) for companies in Company.query.all()]
+    # form.company.choices = [(companies.id, companies.razao_social) for companies in Empresa.query.all()]
     form.company.data = c_d
 
     # Validação

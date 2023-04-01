@@ -8,16 +8,17 @@ log = logging.getLogger(__name__)
 
 class Supplier(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
+    nome = db.Column(db.String(50), nullable=False)
 
-    company_id = db.Column(db.Integer(), db.ForeignKey("company.id"))
-    company = db.relationship("Company", back_populates="supplier")
+    company_id = db.Column(db.Integer(), db.ForeignKey("empresa.id"), nullable=False)
+
+    empresa = db.relationship("Empresa", back_populates="supplier")
 
     def __repr__(self):
-        return f'<Supplier {self.name}>'
+        return f'<Supplier {self.nome}>'
 
     def change_attributes(self, form):
-        self.name = form.name.data
+        self.nome = form.nome.data
         self.company_id = form.company.data
 
     def save(self) -> bool:

@@ -1,0 +1,62 @@
+{% extends "sistema_base.html" %}
+{% block body %}
+    <body>
+
+    <h2> EMPRESAS </h2>
+    <a href="{{ url_for('empresa.company_edit', empresa_id=0) }}">
+        Adicionar
+    </a>
+
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">CNPJ</th>
+                <th scope="col">RAZÃO SOCIAL</th>
+                <th scope="col">PLANO</th>
+                <th scope="col">ATIVO</th>
+                <th scope="col"></th>
+                <th scope="col"></th>
+            </tr>
+        </thead>
+
+        <tbody>
+        {% for empresa in empresas %}
+            <tr>
+                <th scope="row">{{ empresa.cnpj }}</th>
+                <td>{{ empresa.razao_social }}</td>
+                <td>{{ empresa.plano.nome }}</td>
+                <td>{{ empresa.active }}</td>
+                <td>
+                    <a href="{{ url_for('empresa.company_edit', empresa_id=empresa.id) }}">
+                        <span data-tooltip="Informações">
+                            <i class="bi-caret-right fs-6"></i>
+                        </span>
+                    </a>
+                </td>
+                {% if empresa.active == True %}
+                    <td>
+                        <a href="{{ url_for('empresa.company_active', empresa_id=empresa.id) }}">
+                            <span data-tooltip="Desativar">
+                                <i class="bi-caret-down fs-6"></i>
+                            </span>
+                        </a>
+                    </td>
+                {% else %}
+                    <td>
+                        <a href="{{ url_for('empresa.company_active', empresa_id=empresa.id) }}">
+                            <span data-tooltip="Ativar">
+                                <i class="bi-caret-up fs-6"></i>
+                            </span>
+                        </a>
+                    </td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{url_for('sistema.index')}}">Voltar</a>
+
+    </body>
+{% endblock %}

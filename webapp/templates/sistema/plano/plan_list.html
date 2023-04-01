@@ -1,0 +1,37 @@
+{% extends "sistema_base.html" %}
+{% block body %}
+    <body>
+
+    <h2> LISTA DE PLANOS </h2>
+    <a href="{{ url_for('plano.plan_edit', plano_id=0) }}">
+        Adicionar
+    </a>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">NOME</th>
+                <th scope="col"></th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for plano in planos %}
+                <tr>
+                    <td>{{ plano.nome }}</td>
+                    <td>
+                        <a href="{{ url_for('plano.plan_edit', plano_id=plano.id) }}">
+                            <span data-tooltip="Informações">
+                                <i class="bi-caret-right fs-6"></i>
+                            </span>
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{url_for('sistema.index')}}">Voltar</a>
+
+    </body>
+{% endblock %}

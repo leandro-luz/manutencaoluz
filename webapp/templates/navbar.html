@@ -2,8 +2,8 @@
     <div class="container">
         <a class="navbar-brand" href="{{url_for('main.index')}}"> MANUTENÇÃOLUZ </a>
         {% if current_user.is_authenticated %}
-        <a class="navbar-brand"> {{ current_user.company.name }} </a>
-        <a class="navbar-brand"> {{ current_user.role.name }} </a>
+        <a class="navbar-brand"> {{ current_user.empresa.razao_social }} </a>
+        <a class="navbar-brand"> {{ current_user.perfil.nome }} </a>
         {% endif %}
         <div id="navbar-items">
             <ul class="navbar-nav">
@@ -19,17 +19,17 @@
                     <div class="dropdown ">
                         <a class="nav-link" data-bs-toggle="dropdown" href="#">
                             <i class="bi bi-person-circle"></i>
-                            <b>{{ current_user.username }}</b>
+                            <b>{{ current_user.nome }}</b>
                         </a>
                         <ul aria-labelledby="dropdownMenuButton1" class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('auth.user', id=current_user.id) }}">Conta</a>
+                            <li><a class="dropdown-item" href="{{ url_for('usuario.user', user_id=current_user.id) }}">Conta</a>
                             </li>
-                            <li><a class="dropdown-item" href="{{ url_for('auth.change_password') }}">Trocar senha</a>
+                            <li><a class="dropdown-item" href="{{ url_for('usuario.change_password') }}">Trocar senha</a>
                             </li>
-                            <li><a class="dropdown-item" href="{{ url_for('auth.change_email_request') }}">Trocar
+                            <li><a class="dropdown-item" href="{{ url_for('usuario.change_email_request') }}">Trocar
                                 email</a>
                             </li>
-                            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Desconectar</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('usuario.logout') }}">Desconectar</a></li>
                         </ul>
                     </div>
                 </li>
@@ -41,13 +41,13 @@
                 </li>
                 {% else %}
                 <li class="nav-item">
-                    <a class="nav-link" href="{{url_for('auth.login')}}">
+                    <a class="nav-link" href="{{url_for('usuario.login')}}">
                         <i class="bi bi-person"></i>
                         <b>Acessar</b>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{{url_for('company.request')}}">
+                    <a class="nav-link" href="{{url_for('empresa.request')}}">
                         <i class="bi bi-person-plus"></i>
                         <b>Cadastro</b>
                     </a>

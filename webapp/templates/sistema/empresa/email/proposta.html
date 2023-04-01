@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<p>{{ interessado.nome }},</p>
+<br>
+<p>Agradeçemos o contato com a  <b>Manutenção Luz</b>!</p>
+<p>O nosso sistema de gerenciamento de manutenção e composto por módulos </p>
+<p>E o valor da assinatura é correspondente ao módulos assinados </p>
+<p>Podem ser alterados, incluídos e inativados a qualquer momento </p>
+<p>Para dar prosseguimento ao acesso é necessário completar o cadastro das informações da empresa atráves do link abaixo</p>
+<p><a href="{{ url_for('empresa.lead_confirm', token=token, _external=True) }}">clique aqui</a>.</p>
+<br>
+<br>
+<p>Atenciosamente,</p>
+<p>Time Manutenção Luz</p>
+<br>
+<br>
+<br>
+<br>
+<p><small>Aviso: não responder para este endereço de email, pois ele não é monitorado.</small></p>
+
+
+</body>
+</html>

@@ -1,0 +1,19 @@
+{% extends "sistema_base.html" %}
+{% block body %}
+    <body>
+        <form action="{{ url_for('plano.viewplan_edit', plano_id=id) }}" method="POST">
+            {{form.csrf_token}}
+
+            <h2>Inclusão de Telas</h2>
+
+            {{form.plano.label}}            {{form.plano}}<br>
+            {{form.tela.label}}            {{form.tela}}<br>
+
+            <input type="submit" value="Inclusão"/>
+
+        </form>
+
+    <a href="{{ url_for('plano.viewplan_list', plano_id=id) }}">Voltar</a>
+
+    </body>
+{% endblock %}

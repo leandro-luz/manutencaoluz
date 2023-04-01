@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 
 # print(datetime.datetime.now())
 # print(datetime.datetime.utcnow())
@@ -6,7 +6,7 @@ import datetime
 
 #
 #
-# name_of_file = input("What is the name of the file: ")
+# name_of_file = input("What is the razao_social of the file: ")
 # completeName = '/home/user/Documents/'+ name_of_file + ".txt"
 # file1 = open(completeName , "w")
 # toFile = input("Write what you want into the field")
@@ -39,8 +39,48 @@ import datetime
 
 
 
-lista = [{'nome': 'admin_', 'email': 'email1'}, {'nome': 'adminluz_', 'email': 'email2'}]
+# lista = [{'razao_social': 'admin_', 'email': 'email1'}, {'razao_social': 'adminluz_', 'email': 'email2'}]
+#
+# for x in lista:
+#     print(x['razao_social'])
+#     print(x['email'])
 
-for x in lista:
-    print(x['nome'])
-    print(x['email'])
+
+import requests
+
+cep = "20.090-002"
+
+cep = cep.replace("-", "").replace(".", "").replace(" ", "")
+
+cnpj = "33291488000102"
+cnpj2 = "30722226000167"
+
+
+if len(cep) == 8:
+    # link = f'https://viacep.com.br/ws/{cep}/json/'
+    link = f'https://receitaws.com.br/v1/cnpj/{cnpj2}'
+    print(link)
+
+    requisicao = requests.get(link)
+
+    print(requisicao)
+
+    dic_requisicao = requisicao.json()
+
+    print(dic_requisicao['atividade_principal'])
+
+    print(dic_requisicao)
+else:
+    print("CEP Inválido")
+#
+
+
+
+# valor = {'ultima_atualizacao': '2023-03-02T04:04:24.780Z'}
+#
+# valor2 = valor['ultima_atualizacao']
+# print(valor2)
+# print(type(valor2))
+# tempo = datetime.strptime(valor2, "%Y-%m-%dT%H:%M:%S.%fZ")
+# print(tempo)
+# print(type(tempo))

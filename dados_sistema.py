@@ -3,12 +3,11 @@ import datetime
 import os
 from webapp import create_app
 from webapp import db
-from webapp.auth.models import Role, Password, User, ViewRole
-from webapp.company.models import Lead, Companytype, Company, Business, Subbusiness
-from webapp.asset.models import Asset, Group, System
+from webapp.usuario.models import Perfil, Senha, Usuario, ViewRole
+from webapp.empresa.models import Interessado, Tipoempresa, Empresa, Business, Subbusiness
+from webapp.equipamento.models import Equipamento, Grupo, Sistema
 from webapp.supplier.models import Supplier
-from webapp.plan.models import Plan, View, ViewPlan
-
+from webapp.plano.models import Plano, Tela, Telaplano
 
 env = os.environ.get('WEBAPP_ENV', 'dev')
 app = create_app('config.%sConfig' % env.capitalize())
@@ -18,71 +17,71 @@ logging.basicConfig(format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
 logging.getLogger().setLevel(logging.DEBUG)
 log = logging.getLogger(__name__)
 
-business_lista = [{'name': 'indústria'},
-                  {'name': 'comércio'},
-                  {'name': 'serviços'}
+business_lista = [{'nome': 'indústria'},
+                  {'nome': 'comércio'},
+                  {'nome': 'serviços'}
                   ]
 
-subbusiness_lista = [{'business': 'indústria', 'name': 'roupas'},
-                     {'business': 'indústria', 'name': 'laticínios'},
-                     {'business': 'comércio', 'name': 'roupas'},
-                     {'business': 'comércio', 'name': 'ferragens'},
-                     {'business': 'serviços', 'name': 'informática'},
-                     {'business': 'serviços', 'name': 'odontologia'},
-                     {'business': 'indústria', 'name': 'teste'}
+subbusiness_lista = [{'business': 'indústria', 'nome': 'roupas'},
+                     {'business': 'indústria', 'nome': 'laticínios'},
+                     {'business': 'comércio', 'nome': 'roupas'},
+                     {'business': 'comércio', 'nome': 'ferragens'},
+                     {'business': 'serviços', 'nome': 'informática'},
+                     {'business': 'serviços', 'nome': 'odontologia'},
+                     {'business': 'indústria', 'nome': 'teste'}
                      ]
 
-views_lista = [{'name': 'Lead', 'icon': 'bi-card-list', 'url': 'company.lead_list'},
-               {'name': 'Plano', 'icon': 'bi-briefcase', 'url': 'plan.plan_list'},
-               {'name': 'Empresa', 'icon': 'bi-house-door', 'url': 'company.company_list'},
-               {'name': 'RH', 'icon': 'bi-people', 'url': 'auth.auth_list'},
-               {'name': 'Equipamento', 'icon': 'bi-robot', 'url': 'asset.asset_list'},
-               {'name': 'Almoxarifado', 'icon': 'bi-box-seam', 'url': 'sistema.almoxarifado'},
-               {'name': 'Programação', 'icon': 'bi-calendar3', 'url': 'sistema.programação'},
-               {'name': 'Manutenção', 'icon': 'bi-wrench-adjustable-circle', 'url': 'sistema.manutenção'},
-               {'name': 'Fornecedor', 'icon': 'bi-truck', 'url': 'supplier.supplier_list'},
-               {'name': 'Orçamento', 'icon': 'bi-cash', 'url': 'sistema.orçamento'},
-               {'name': 'Indicadores', 'icon': 'bi-graph-up', 'url': 'sistema.indicador'}
+telas_lista = [{'nome': 'Interessado', 'icon': 'bi-card-list', 'url': 'empresa.lead_list'},
+               {'nome': 'Plano', 'icon': 'bi-briefcase', 'url': 'plano.plan_list'},
+               {'nome': 'Empresa', 'icon': 'bi-house-door', 'url': 'empresa.company_list'},
+               {'nome': 'RH', 'icon': 'bi-people', 'url': 'usuario.auth_list'},
+               {'nome': 'Equipamento', 'icon': 'bi-robot', 'url': 'equipamento.asset_list'},
+               {'nome': 'Almoxarifado', 'icon': 'bi-box-seam', 'url': 'sistema.almoxarifado'},
+               {'nome': 'Programação', 'icon': 'bi-calendar3', 'url': 'sistema.programação'},
+               {'nome': 'Manutenção', 'icon': 'bi-wrench-adjustable-circle', 'url': 'sistema.manutenção'},
+               {'nome': 'Fornecedor', 'icon': 'bi-truck', 'url': 'supplier.supplier_list'},
+               {'nome': 'Orçamento', 'icon': 'bi-cash', 'url': 'sistema.orçamento'},
+               {'nome': 'Indicadores', 'icon': 'bi-graph-up', 'url': 'sistema.indicador'}
                ]
 
-plans_lista = [{'name': 'basico'},
-               {'name': 'intermediário'},
-               {'name': 'completo'}
-               ]
+planos_lista = [{'nome': 'basico'},
+                {'nome': 'intermediário'},
+                {'nome': 'completo'}
+                ]
 
-viewplans_lista = [{'plan': 'basico', 'view': 'RH'},
-                   {'plan': 'basico', 'view': 'Equipamento'},
-                   {'plan': 'basico', 'view': 'Fornecedor'},
-                   {'plan': 'intermediário', 'view': 'Plano'},
-                   {'plan': 'intermediário', 'view': 'Empresa'},
-                   {'plan': 'intermediário', 'view': 'RH'},
-                   {'plan': 'intermediário', 'view': 'Equipamento'},
-                   {'plan': 'intermediário', 'view': 'Fornecedor'},
-                   {'plan': 'intermediário', 'view': 'Almoxarifado'},
-                   {'plan': 'intermediário', 'view': 'Programação'},
-                   {'plan': 'completo', 'view': 'Lead'},
-                   {'plan': 'completo', 'view': 'Plano'},
-                   {'plan': 'completo', 'view': 'Empresa'},
-                   {'plan': 'completo', 'view': 'RH'},
-                   {'plan': 'completo', 'view': 'Equipamento'},
-                   {'plan': 'completo', 'view': 'Fornecedor'},
-                   {'plan': 'completo', 'view': 'Almoxarifado'},
-                   {'plan': 'completo', 'view': 'Programação'},
-                   {'plan': 'completo', 'view': 'Manutenção'},
-                   {'plan': 'completo', 'view': 'Orçamento'},
-                   {'plan': 'completo', 'view': 'Indicadores'}
+telasplano_lista = [{'plano': 'basico', 'tela': 'RH'},
+                   {'plano': 'basico', 'tela': 'Equipamento'},
+                   {'plano': 'basico', 'tela': 'Fornecedor'},
+                   {'plano': 'intermediário', 'tela': 'Plano'},
+                   {'plano': 'intermediário', 'tela': 'Empresa'},
+                   {'plano': 'intermediário', 'tela': 'RH'},
+                   {'plano': 'intermediário', 'tela': 'Equipamento'},
+                   {'plano': 'intermediário', 'tela': 'Fornecedor'},
+                   {'plano': 'intermediário', 'tela': 'Almoxarifado'},
+                   {'plano': 'intermediário', 'tela': 'Programação'},
+                   {'plano': 'completo', 'tela': 'Interessado'},
+                   {'plano': 'completo', 'tela': 'Plano'},
+                   {'plano': 'completo', 'tela': 'Empresa'},
+                   {'plano': 'completo', 'tela': 'RH'},
+                   {'plano': 'completo', 'tela': 'Equipamento'},
+                   {'plano': 'completo', 'tela': 'Fornecedor'},
+                   {'plano': 'completo', 'tela': 'Almoxarifado'},
+                   {'plano': 'completo', 'tela': 'Programação'},
+                   {'plano': 'completo', 'tela': 'Manutenção'},
+                   {'plano': 'completo', 'tela': 'Orçamento'},
+                   {'plano': 'completo', 'tela': 'Indicadores'}
                    ]
 
-lead_lista = [{'name': 'empresa_oi', 'cnpj': '96.207.052/0001-02',
-               'email': 'empresa_oi@empoi.com.br', 'telefone': '(45)9 9874-4578'},
-              {'name': 'empresa_by', 'cnpj': '24.885.627/0001-35',
-               'email': 'empresa_by@empby', 'telefone': '(78)3245-6578'},
-              ]
+interessado_lista = [{'razao_social': 'empresa_oi', 'cnpj': '96.207.052/0001-02',
+                      'email': 'empresa_oi@empoi.com.br', 'telefone': '(45)9 9874-4578'},
+                     {'razao_social': 'empresa_by', 'cnpj': '24.885.627/0001-35',
+                      'email': 'empresa_by@empby', 'telefone': '(78)3245-6578'},
+                     ]
 
-company_type_lista = [{'name': 'Cliente'}, {'name': 'Fornecedor'}, {'name': 'Parceiro'}]
+tipo_empresa_lista = [{'nome': 'Cliente'}, {'nome': 'Fornecedor'}, {'nome': 'Parceiro'}]
 
-
-company_lista = [{'name': 'empresa_1', 'cnpj': '39.262.527/0001-20',
+empresa_lista = [{'razao_social': 'empresa_1.ltda', 'nome_fantasia': 'empresa_1',
+                  'cnpj': '39.262.527/0001-20',
                   'cep': '65058864',
                   'logradouro': 'Rua Aderson Lago', 'bairro': 'Vila Janaína',
                   'municipio': 'São Luís', 'uf': 'MA',
@@ -90,9 +89,10 @@ company_lista = [{'name': 'empresa_1', 'cnpj': '39.262.527/0001-20',
                   'email': 'empresa_1@teste.com.br', 'telefone': '(45)9 9876-5432',
                   'business': 'serviços', 'subbusiness': 'informática',
                   'date': '1980/05/10 12:45:10', 'plano': 'completo',
-                  'manager': 'empresa_1', 'tipo': 'Cliente'},
+                  'empresa_gestora': 'empresa_1', 'tipo': 'Cliente'},
 
-                 {'name': 'empresa_2', 'cnpj': '10.540.017/0001-95',
+                 {'razao_social': 'empresa_2.ltda', 'nome_fantasia': 'empresa_2',
+                  'cnpj': '10.540.017/0001-95',
                   'cep': '69921728',
                   'logradouro': 'Rua São Francisco', 'bairro': 'Tancredo Neves',
                   'municipio': 'Rio Branco', 'uf': 'AC',
@@ -100,9 +100,10 @@ company_lista = [{'name': 'empresa_1', 'cnpj': '39.262.527/0001-20',
                   'email': 'empresa_2@teste.com.br', 'telefone': '(78)9 9876-5432',
                   'business': 'serviços', 'subbusiness': 'informática',
                   'date': '1980/05/10 12:45:10', 'plano': 'completo',
-                  'manager': 'empresa_1', 'tipo': 'Cliente'},
+                  'empresa_gestora': 'empresa_1', 'tipo': 'Cliente'},
 
-                 {'name': 'empresa_21', 'cnpj': '88.496.773/0001-51',
+                 {'razao_social': 'empresa_21.ltda', 'nome_fantasia': 'empresa_21',
+                  'cnpj': '88.496.773/0001-51',
                   'cep': '78717650',
                   'logradouro': 'Avenida José Agostinho Neto', 'bairro': 'Jardim São Bento',
                   'municipio': 'Rondonópolis', 'uf': 'MT',
@@ -110,9 +111,10 @@ company_lista = [{'name': 'empresa_1', 'cnpj': '39.262.527/0001-20',
                   'email': 'empresa_21@teste.com.br', 'telefone': '(98)9 9876-5432',
                   'business': 'serviços', 'subbusiness': 'informática',
                   'date': '1980/05/10 12:45:10', 'plano': 'basico',
-                  'manager': 'empresa_2', 'tipo': 'Cliente'},
+                  'empresa_gestora': 'empresa_2', 'tipo': 'Cliente'},
 
-                 {'name': 'empresa_22', 'cnpj': '50.201.802/0001-38',
+                 {'razao_social': 'empresa_22.ltda', 'nome_fantasia': 'empresa_22',
+                  'cnpj': '50.201.802/0001-38',
                   'cep': '69037097',
                   'logradouro': 'Alameda Namíbia', 'bairro': 'Ponta Negra',
                   'municipio': 'Manaus', 'uf': 'AM',
@@ -120,9 +122,10 @@ company_lista = [{'name': 'empresa_1', 'cnpj': '39.262.527/0001-20',
                   'email': 'empresa_22@teste.com.br', 'telefone': '(12)9 9876-5432',
                   'business': 'serviços', 'subbusiness': 'informática',
                   'date': '1980/05/10 12:45:10', 'plano': 'basico',
-                  'manager': 'empresa_2', 'tipo': 'Cliente'},
+                  'empresa_gestora': 'empresa_2', 'tipo': 'Cliente'},
 
-                 {'name': 'empresa_3', 'cnpj': '01.021.781/0001-63',
+                 {'razao_social': 'empresa_3.ltda', 'nome_fantasia': 'empresa_3',
+                  'cnpj': '01.021.781/0001-63',
                   'cep': '58360974',
                   'logradouro': 'Rua José Xavier 54', 'bairro': 'Centro',
                   'municipio': 'Itabaiana', 'uf': 'PB',
@@ -130,230 +133,230 @@ company_lista = [{'name': 'empresa_1', 'cnpj': '39.262.527/0001-20',
                   'email': 'empresa_3@teste.com.br', 'telefone': '(15)9 9876-5432',
                   'business': 'serviços', 'subbusiness': 'informática',
                   'date': '1980/05/10 12:45:10', 'plano': 'basico',
-                  'manager': 'empresa_1', 'tipo': 'Cliente'},
+                  'empresa_gestora': 'empresa_1', 'tipo': 'Cliente'},
                  ]
 
-roles_lista = [{'company': 'empresa_1', 'name': 'default', 'description': 'padrão'},
-               {'company': 'empresa_1', 'name': 'admin', 'description': 'administrador'},
-               {'company': 'empresa_1', 'name': 'adminluz', 'description': 'administrador do sistema'},
-               {'company': 'empresa_2', 'name': 'default', 'description': 'padrão'},
-               {'company': 'empresa_2', 'name': 'admin', 'description': 'administrador'},
-               {'company': 'empresa_2', 'name': 'adminluz', 'description': 'administrador do sistema'},
-               {'company': 'empresa_21', 'name': 'default', 'description': 'padrão'},
-               {'company': 'empresa_21', 'name': 'admin', 'description': 'administrador'},
-               {'company': 'empresa_21', 'name': 'adminluz', 'description': 'administrador do sistema'},
-               {'company': 'empresa_22', 'name': 'default', 'description': 'padrão'},
-               {'company': 'empresa_22', 'name': 'admin', 'description': 'administrador'},
-               {'company': 'empresa_22', 'name': 'adminluz', 'description': 'administrador do sistema'},
-               {'company': 'empresa_3', 'name': 'default', 'description': 'padrão'},
-               {'company': 'empresa_3', 'name': 'admin', 'description': 'administrador'},
-               {'company': 'empresa_3', 'name': 'adminluz', 'description': 'administrador do sistema'},
-               ]
-
-viewroles_lista = [{'company': 'empresa_1', 'role': 'default', 'view': 'Plano'},
-                   {'company': 'empresa_1', 'role': 'default', 'view': 'Empresa'},
-                   {'company': 'empresa_1', 'role': 'default', 'view': 'RH'},
-                   {'company': 'empresa_1', 'role': 'admin', 'view': 'Lead'},
-                   {'company': 'empresa_1', 'role': 'admin', 'view': 'Plano'},
-                   {'company': 'empresa_1', 'role': 'admin', 'view': 'Empresa'},
-                   {'company': 'empresa_1', 'role': 'admin', 'view': 'RH'},
-                   {'company': 'empresa_1', 'role': 'admin', 'view': 'Equipamento'},
-                   {'company': 'empresa_1', 'role': 'admin', 'view': 'Fornecedor'},
-                   {'company': 'empresa_1', 'role': 'admin', 'view': 'Almoxarifado'},
-                   {'company': 'empresa_1', 'role': 'admin', 'view': 'Programação'},
-                   {'company': 'empresa_1', 'role': 'admin', 'view': 'Manutenção'},
-                   {'company': 'empresa_1', 'role': 'admin', 'view': 'Orçamento'},
-                   {'company': 'empresa_1', 'role': 'admin', 'view': 'Indicadores'},
-                   {'company': 'empresa_1', 'role': 'adminluz', 'view': 'Lead'},
-                   {'company': 'empresa_1', 'role': 'adminluz', 'view': 'Plano'},
-                   {'company': 'empresa_1', 'role': 'adminluz', 'view': 'Empresa'},
-                   {'company': 'empresa_1', 'role': 'adminluz', 'view': 'RH'},
-                   {'company': 'empresa_1', 'role': 'adminluz', 'view': 'Equipamento'},
-                   {'company': 'empresa_1', 'role': 'adminluz', 'view': 'Fornecedor'},
-                   {'company': 'empresa_1', 'role': 'adminluz', 'view': 'Almoxarifado'},
-                   {'company': 'empresa_1', 'role': 'adminluz', 'view': 'Programação'},
-                   {'company': 'empresa_1', 'role': 'adminluz', 'view': 'Manutenção'},
-                   {'company': 'empresa_1', 'role': 'adminluz', 'view': 'Orçamento'},
-                   {'company': 'empresa_1', 'role': 'adminluz', 'view': 'Indicadores'},
-
-
-                   {'company': 'empresa_2', 'role': 'default', 'view': 'Plano'},
-                   {'company': 'empresa_2', 'role': 'default', 'view': 'Empresa'},
-                   {'company': 'empresa_2', 'role': 'default', 'view': 'RH'},
-                   {'company': 'empresa_2', 'role': 'admin', 'view': 'Plano'},
-                   {'company': 'empresa_2', 'role': 'admin', 'view': 'Empresa'},
-                   {'company': 'empresa_2', 'role': 'admin', 'view': 'RH'},
-                   {'company': 'empresa_2', 'role': 'admin', 'view': 'Equipamento'},
-                   {'company': 'empresa_2', 'role': 'admin', 'view': 'Fornecedor'},
-                   {'company': 'empresa_2', 'role': 'admin', 'view': 'Almoxarifado'},
-                   {'company': 'empresa_2', 'role': 'admin', 'view': 'Programação'},
-                   {'company': 'empresa_2', 'role': 'admin', 'view': 'Manutenção'},
-                   {'company': 'empresa_2', 'role': 'admin', 'view': 'Orçamento'},
-                   {'company': 'empresa_2', 'role': 'admin', 'view': 'Indicadores'},
-                   {'company': 'empresa_2', 'role': 'adminluz', 'view': 'Lead'},
-                   {'company': 'empresa_2', 'role': 'adminluz', 'view': 'Plano'},
-                   {'company': 'empresa_2', 'role': 'adminluz', 'view': 'Empresa'},
-                   {'company': 'empresa_2', 'role': 'adminluz', 'view': 'RH'},
-                   {'company': 'empresa_2', 'role': 'adminluz', 'view': 'Equipamento'},
-                   {'company': 'empresa_2', 'role': 'adminluz', 'view': 'Fornecedor'},
-                   {'company': 'empresa_2', 'role': 'adminluz', 'view': 'Almoxarifado'},
-                   {'company': 'empresa_2', 'role': 'adminluz', 'view': 'Programação'},
-                   {'company': 'empresa_2', 'role': 'adminluz', 'view': 'Manutenção'},
-                   {'company': 'empresa_2', 'role': 'adminluz', 'view': 'Orçamento'},
-                   {'company': 'empresa_2', 'role': 'adminluz', 'view': 'Indicadores'},
-
-                   {'company': 'empresa_21', 'role': 'default', 'view': 'Plano'},
-                   {'company': 'empresa_21', 'role': 'default', 'view': 'Empresa'},
-                   {'company': 'empresa_21', 'role': 'default', 'view': 'RH'},
-                   {'company': 'empresa_21', 'role': 'admin', 'view': 'Plano'},
-                   {'company': 'empresa_21', 'role': 'admin', 'view': 'Empresa'},
-                   {'company': 'empresa_21', 'role': 'admin', 'view': 'RH'},
-                   {'company': 'empresa_21', 'role': 'admin', 'view': 'Equipamento'},
-                   {'company': 'empresa_21', 'role': 'admin', 'view': 'Fornecedor'},
-                   {'company': 'empresa_21', 'role': 'admin', 'view': 'Almoxarifado'},
-                   {'company': 'empresa_21', 'role': 'admin', 'view': 'Programação'},
-                   {'company': 'empresa_21', 'role': 'admin', 'view': 'Manutenção'},
-                   {'company': 'empresa_21', 'role': 'admin', 'view': 'Orçamento'},
-                   {'company': 'empresa_21', 'role': 'admin', 'view': 'Indicadores'},
-                   {'company': 'empresa_21', 'role': 'adminluz', 'view': 'Lead'},
-                   {'company': 'empresa_21', 'role': 'adminluz', 'view': 'Plano'},
-                   {'company': 'empresa_21', 'role': 'adminluz', 'view': 'Empresa'},
-                   {'company': 'empresa_21', 'role': 'adminluz', 'view': 'RH'},
-                   {'company': 'empresa_21', 'role': 'adminluz', 'view': 'Equipamento'},
-                   {'company': 'empresa_21', 'role': 'adminluz', 'view': 'Fornecedor'},
-                   {'company': 'empresa_21', 'role': 'adminluz', 'view': 'Almoxarifado'},
-                   {'company': 'empresa_21', 'role': 'adminluz', 'view': 'Programação'},
-                   {'company': 'empresa_21', 'role': 'adminluz', 'view': 'Manutenção'},
-                   {'company': 'empresa_21', 'role': 'adminluz', 'view': 'Orçamento'},
-                   {'company': 'empresa_21', 'role': 'adminluz', 'view': 'Indicadores'},
-
-                   {'company': 'empresa_22', 'role': 'default', 'view': 'Plano'},
-                   {'company': 'empresa_22', 'role': 'default', 'view': 'Empresa'},
-                   {'company': 'empresa_22', 'role': 'default', 'view': 'RH'},
-                   {'company': 'empresa_22', 'role': 'admin', 'view': 'Plano'},
-                   {'company': 'empresa_22', 'role': 'admin', 'view': 'Empresa'},
-                   {'company': 'empresa_22', 'role': 'admin', 'view': 'RH'},
-                   {'company': 'empresa_22', 'role': 'admin', 'view': 'Equipamento'},
-                   {'company': 'empresa_22', 'role': 'admin', 'view': 'Fornecedor'},
-                   {'company': 'empresa_22', 'role': 'admin', 'view': 'Almoxarifado'},
-                   {'company': 'empresa_22', 'role': 'admin', 'view': 'Programação'},
-                   {'company': 'empresa_22', 'role': 'admin', 'view': 'Manutenção'},
-                   {'company': 'empresa_22', 'role': 'admin', 'view': 'Orçamento'},
-                   {'company': 'empresa_22', 'role': 'admin', 'view': 'Indicadores'},
-                   {'company': 'empresa_22', 'role': 'adminluz', 'view': 'Lead'},
-                   {'company': 'empresa_22', 'role': 'adminluz', 'view': 'Plano'},
-                   {'company': 'empresa_22', 'role': 'adminluz', 'view': 'Empresa'},
-                   {'company': 'empresa_22', 'role': 'adminluz', 'view': 'RH'},
-                   {'company': 'empresa_22', 'role': 'adminluz', 'view': 'Equipamento'},
-                   {'company': 'empresa_22', 'role': 'adminluz', 'view': 'Fornecedor'},
-                   {'company': 'empresa_22', 'role': 'adminluz', 'view': 'Almoxarifado'},
-                   {'company': 'empresa_22', 'role': 'adminluz', 'view': 'Programação'},
-                   {'company': 'empresa_22', 'role': 'adminluz', 'view': 'Manutenção'},
-                   {'company': 'empresa_22', 'role': 'adminluz', 'view': 'Orçamento'},
-                   {'company': 'empresa_22', 'role': 'adminluz', 'view': 'Indicadores'},
-
-                   {'company': 'empresa_3', 'role': 'default', 'view': 'Plano'},
-                   {'company': 'empresa_3', 'role': 'default', 'view': 'Empresa'},
-                   {'company': 'empresa_3', 'role': 'default', 'view': 'RH'},
-                   {'company': 'empresa_3', 'role': 'admin', 'view': 'Plano'},
-                   {'company': 'empresa_3', 'role': 'admin', 'view': 'Empresa'},
-                   {'company': 'empresa_3', 'role': 'admin', 'view': 'RH'},
-                   {'company': 'empresa_3', 'role': 'admin', 'view': 'Equipamento'},
-                   {'company': 'empresa_3', 'role': 'admin', 'view': 'Fornecedor'},
-                   {'company': 'empresa_3', 'role': 'admin', 'view': 'Almoxarifado'},
-                   {'company': 'empresa_3', 'role': 'admin', 'view': 'Programação'},
-                   {'company': 'empresa_3', 'role': 'admin', 'view': 'Manutenção'},
-                   {'company': 'empresa_3', 'role': 'admin', 'view': 'Orçamento'},
-                   {'company': 'empresa_3', 'role': 'admin', 'view': 'Indicadores'},
-                   {'company': 'empresa_3', 'role': 'adminluz', 'view': 'Lead'},
-                   {'company': 'empresa_3', 'role': 'adminluz', 'view': 'Plano'},
-                   {'company': 'empresa_3', 'role': 'adminluz', 'view': 'Empresa'},
-                   {'company': 'empresa_3', 'role': 'adminluz', 'view': 'RH'},
-                   {'company': 'empresa_3', 'role': 'adminluz', 'view': 'Equipamento'},
-                   {'company': 'empresa_3', 'role': 'adminluz', 'view': 'Fornecedor'},
-                   {'company': 'empresa_3', 'role': 'adminluz', 'view': 'Almoxarifado'},
-                   {'company': 'empresa_3', 'role': 'adminluz', 'view': 'Programação'},
-                   {'company': 'empresa_3', 'role': 'adminluz', 'view': 'Manutenção'},
-                   {'company': 'empresa_3', 'role': 'adminluz', 'view': 'Orçamento'},
-                   {'company': 'empresa_3', 'role': 'adminluz', 'view': 'Indicadores'},
-                   ]
-
-password_lista = [{'password': 'aaa11111', 'expiration_date': str(datetime.datetime.now() + datetime.timedelta(30)),
-                   'expirate': False, 'temporary': False},
-                  {'password': 'aaa22222', 'expiration_date': str(datetime.datetime.now() + datetime.timedelta(30)),
-                   'expirate': False, 'temporary': False},
-                  {'password': 'aaa33333', 'expiration_date': str(datetime.datetime.now() + datetime.timedelta(30)),
-                   'expirate': False, 'temporary': False},
-                  {'password': 'aaa44444', 'expiration_date': str(datetime.datetime.now() + datetime.timedelta(30)),
-                   'expirate': False, 'temporary': False},
-                  {'password': 'aaa55555', 'expiration_date': str(datetime.datetime.now() + datetime.timedelta(30)),
-                   'expirate': False, 'temporary': False},
-                  {'password': 'aaa66666', 'expiration_date': str(datetime.datetime.now() + datetime.timedelta(30)),
-                   'expirate': False, 'temporary': False},
-                  {'password': 'aaa77777', 'expiration_date': str(datetime.datetime.now() + datetime.timedelta(30)),
-                   'expirate': False, 'temporary': False},
-                  ]
-
-user_lista = [{'username': 'admin', 'email': 'admin@admin.com',
-               'password': 'aaa11111', 'role': 'admin',
-               'date': '1980/05/10 12:45:10', 'company': 'empresa_1'},
-              {'username': 'leandro', 'email': 'engleoluz@hotmail.com',
-               'password': 'aaa22222', 'role': 'default',
-               'date': '1980/05/10 12:45:10', 'company': 'empresa_1'},
-              {'username': 'danylo', 'email': 'danylo@gmail.com',
-               'password': 'aaa33333', 'role': 'admin',
-               'date': '1980/05/10 12:45:10', 'company': 'empresa_1'},
-              {'username': 'admin_empresa_2', 'email': 'admin_empresa_2@admin.com',
-               'password': 'aaa44444', 'role': 'admin',
-               'date': '1980/05/10 12:45:10', 'company': 'empresa_2'},
-              {'username': 'admin_empresa_21', 'email': 'admin_empresa_21@admin.com',
-               'password': 'aaa55555', 'role': 'admin',
-               'date': '1980/05/10 12:45:10', 'company': 'empresa_21'},
-              {'username': 'admin_empresa_22', 'email': 'admin_empresa_22@admin.com',
-               'password': 'aaa66666', 'role': 'admin',
-               'date': '1980/05/10 12:45:10', 'company': 'empresa_22'},
-              {'username': 'admin_empresa_3', 'email': 'admin_empresa_3@admin.com',
-               'password': 'aaa77777', 'role': 'admin',
-               'date': '1980/05/10 12:45:10', 'company': 'empresa_3'},
-              ]
-
-group_lista = [{'name': 'cadeira', 'company': 'empresa_1'},
-               {'name': 'elevador', 'company': 'empresa_1'},
-               {'name': 'mesa', 'company': 'empresa_1'}
-               ]
-
-asset_lista = [{'cod': '000.001', 'short': 'computador', 'company': 'empresa_1'},
-               {'cod': '000.002', 'short': 'mesa', 'company': 'empresa_1'},
-               {'cod': '000.003', 'short': 'chiller', 'company': 'empresa_1'},
-               {'cod': '000.004', 'short': 'carro', 'company': 'empresa_1'}
-               ]
-
-system_lista = [{'name': 'elétrico', 'cod': '000.001'},
-                {'name': 'alvenaria', 'cod': '000.002'},
-                {'name': 'hidraulico', 'cod': '000.003'},
-                {'name': 'combustão', 'cod': '000.004'}
+perfis_lista = [{'empresa': 'empresa_1.ltda', 'nome': 'default', 'descricao': 'padrão'},
+                {'empresa': 'empresa_1.ltda', 'nome': 'admin', 'descricao': 'administrador'},
+                {'empresa': 'empresa_1.ltda', 'nome': 'adminluz', 'descricao': 'administrador do sistema'},
+                {'empresa': 'empresa_2.ltda', 'nome': 'default', 'descricao': 'padrão'},
+                {'empresa': 'empresa_2.ltda', 'nome': 'admin', 'descricao': 'administrador'},
+                {'empresa': 'empresa_2.ltda', 'nome': 'adminluz', 'descricao': 'administrador do sistema'},
+                {'empresa': 'empresa_21.ltda', 'nome': 'default', 'descricao': 'padrão'},
+                {'empresa': 'empresa_21.ltda', 'nome': 'admin', 'descricao': 'administrador'},
+                {'empresa': 'empresa_21.ltda', 'nome': 'adminluz', 'descricao': 'administrador do sistema'},
+                {'empresa': 'empresa_22.ltda', 'nome': 'default', 'descricao': 'padrão'},
+                {'empresa': 'empresa_22.ltda', 'nome': 'admin', 'descricao': 'administrador'},
+                {'empresa': 'empresa_22.ltda', 'nome': 'adminluz', 'descricao': 'administrador do sistema'},
+                {'empresa': 'empresa_3.ltda', 'nome': 'default', 'descricao': 'padrão'},
+                {'empresa': 'empresa_3.ltda', 'nome': 'admin', 'descricao': 'administrador'},
+                {'empresa': 'empresa_3.ltda', 'nome': 'adminluz', 'descricao': 'administrador do sistema'},
                 ]
 
-supplier_lista = [{'name': 'Fornecedor_1', 'company': 'empresa_1'},
-                  {'name': 'Fornecedor_2', 'company': 'empresa_1'}
+viewroles_lista = [{'empresa': 'empresa_1.ltda', 'role': 'default', 'tela': 'Plano'},
+                   {'empresa': 'empresa_1.ltda', 'role': 'default', 'tela': 'Empresa'},
+                   {'empresa': 'empresa_1.ltda', 'role': 'default', 'tela': 'RH'},
+                   {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Interessado'},
+                   {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Plano'},
+                   {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Empresa'},
+                   {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'RH'},
+                   {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Equipamento'},
+                   {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Fornecedor'},
+                   {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Almoxarifado'},
+                   {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Programação'},
+                   {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Manutenção'},
+                   {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Orçamento'},
+                   {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Indicadores'},
+                   {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'Interessado'},
+                   {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'Plano'},
+                   {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'Empresa'},
+                   {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'RH'},
+                   {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'Equipamento'},
+                   {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'Fornecedor'},
+                   {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'Almoxarifado'},
+                   {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'Programação'},
+                   {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'Manutenção'},
+                   {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'Orçamento'},
+                   {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'Indicadores'},
+
+                   {'empresa': 'empresa_2.ltda', 'role': 'default', 'tela': 'Plano'},
+                   {'empresa': 'empresa_2.ltda', 'role': 'default', 'tela': 'Empresa'},
+                   {'empresa': 'empresa_2.ltda', 'role': 'default', 'tela': 'RH'},
+                   {'empresa': 'empresa_2.ltda', 'role': 'admin', 'tela': 'Plano'},
+                   {'empresa': 'empresa_2.ltda', 'role': 'admin', 'tela': 'Empresa'},
+                   {'empresa': 'empresa_2.ltda', 'role': 'admin', 'tela': 'RH'},
+                   {'empresa': 'empresa_2.ltda', 'role': 'admin', 'tela': 'Equipamento'},
+                   {'empresa': 'empresa_2.ltda', 'role': 'admin', 'tela': 'Fornecedor'},
+                   {'empresa': 'empresa_2.ltda', 'role': 'admin', 'tela': 'Almoxarifado'},
+                   {'empresa': 'empresa_2.ltda', 'role': 'admin', 'tela': 'Programação'},
+                   {'empresa': 'empresa_2.ltda', 'role': 'admin', 'tela': 'Manutenção'},
+                   {'empresa': 'empresa_2.ltda', 'role': 'admin', 'tela': 'Orçamento'},
+                   {'empresa': 'empresa_2.ltda', 'role': 'admin', 'tela': 'Indicadores'},
+                   {'empresa': 'empresa_2.ltda', 'role': 'adminluz', 'tela': 'Interessado'},
+                   {'empresa': 'empresa_2.ltda', 'role': 'adminluz', 'tela': 'Plano'},
+                   {'empresa': 'empresa_2.ltda', 'role': 'adminluz', 'tela': 'Empresa'},
+                   {'empresa': 'empresa_2.ltda', 'role': 'adminluz', 'tela': 'RH'},
+                   {'empresa': 'empresa_2.ltda', 'role': 'adminluz', 'tela': 'Equipamento'},
+                   {'empresa': 'empresa_2.ltda', 'role': 'adminluz', 'tela': 'Fornecedor'},
+                   {'empresa': 'empresa_2.ltda', 'role': 'adminluz', 'tela': 'Almoxarifado'},
+                   {'empresa': 'empresa_2.ltda', 'role': 'adminluz', 'tela': 'Programação'},
+                   {'empresa': 'empresa_2.ltda', 'role': 'adminluz', 'tela': 'Manutenção'},
+                   {'empresa': 'empresa_2.ltda', 'role': 'adminluz', 'tela': 'Orçamento'},
+                   {'empresa': 'empresa_2.ltda', 'role': 'adminluz', 'tela': 'Indicadores'},
+
+                   {'empresa': 'empresa_21.ltda', 'role': 'default', 'tela': 'Plano'},
+                   {'empresa': 'empresa_21.ltda', 'role': 'default', 'tela': 'Empresa'},
+                   {'empresa': 'empresa_21.ltda', 'role': 'default', 'tela': 'RH'},
+                   {'empresa': 'empresa_21.ltda', 'role': 'admin', 'tela': 'Plano'},
+                   {'empresa': 'empresa_21.ltda', 'role': 'admin', 'tela': 'Empresa'},
+                   {'empresa': 'empresa_21.ltda', 'role': 'admin', 'tela': 'RH'},
+                   {'empresa': 'empresa_21.ltda', 'role': 'admin', 'tela': 'Equipamento'},
+                   {'empresa': 'empresa_21.ltda', 'role': 'admin', 'tela': 'Fornecedor'},
+                   {'empresa': 'empresa_21.ltda', 'role': 'admin', 'tela': 'Almoxarifado'},
+                   {'empresa': 'empresa_21.ltda', 'role': 'admin', 'tela': 'Programação'},
+                   {'empresa': 'empresa_21.ltda', 'role': 'admin', 'tela': 'Manutenção'},
+                   {'empresa': 'empresa_21.ltda', 'role': 'admin', 'tela': 'Orçamento'},
+                   {'empresa': 'empresa_21.ltda', 'role': 'admin', 'tela': 'Indicadores'},
+                   {'empresa': 'empresa_21.ltda', 'role': 'adminluz', 'tela': 'Interessado'},
+                   {'empresa': 'empresa_21.ltda', 'role': 'adminluz', 'tela': 'Plano'},
+                   {'empresa': 'empresa_21.ltda', 'role': 'adminluz', 'tela': 'Empresa'},
+                   {'empresa': 'empresa_21.ltda', 'role': 'adminluz', 'tela': 'RH'},
+                   {'empresa': 'empresa_21.ltda', 'role': 'adminluz', 'tela': 'Equipamento'},
+                   {'empresa': 'empresa_21.ltda', 'role': 'adminluz', 'tela': 'Fornecedor'},
+                   {'empresa': 'empresa_21.ltda', 'role': 'adminluz', 'tela': 'Almoxarifado'},
+                   {'empresa': 'empresa_21.ltda', 'role': 'adminluz', 'tela': 'Programação'},
+                   {'empresa': 'empresa_21.ltda', 'role': 'adminluz', 'tela': 'Manutenção'},
+                   {'empresa': 'empresa_21.ltda', 'role': 'adminluz', 'tela': 'Orçamento'},
+                   {'empresa': 'empresa_21.ltda', 'role': 'adminluz', 'tela': 'Indicadores'},
+
+                   {'empresa': 'empresa_22.ltda', 'role': 'default', 'tela': 'Plano'},
+                   {'empresa': 'empresa_22.ltda', 'role': 'default', 'tela': 'Empresa'},
+                   {'empresa': 'empresa_22.ltda', 'role': 'default', 'tela': 'RH'},
+                   {'empresa': 'empresa_22.ltda', 'role': 'admin', 'tela': 'Plano'},
+                   {'empresa': 'empresa_22.ltda', 'role': 'admin', 'tela': 'Empresa'},
+                   {'empresa': 'empresa_22.ltda', 'role': 'admin', 'tela': 'RH'},
+                   {'empresa': 'empresa_22.ltda', 'role': 'admin', 'tela': 'Equipamento'},
+                   {'empresa': 'empresa_22.ltda', 'role': 'admin', 'tela': 'Fornecedor'},
+                   {'empresa': 'empresa_22.ltda', 'role': 'admin', 'tela': 'Almoxarifado'},
+                   {'empresa': 'empresa_22.ltda', 'role': 'admin', 'tela': 'Programação'},
+                   {'empresa': 'empresa_22.ltda', 'role': 'admin', 'tela': 'Manutenção'},
+                   {'empresa': 'empresa_22.ltda', 'role': 'admin', 'tela': 'Orçamento'},
+                   {'empresa': 'empresa_22.ltda', 'role': 'admin', 'tela': 'Indicadores'},
+                   {'empresa': 'empresa_22.ltda', 'role': 'adminluz', 'tela': 'Interessado'},
+                   {'empresa': 'empresa_22.ltda', 'role': 'adminluz', 'tela': 'Empresa'},
+                   {'empresa': 'empresa_22.ltda', 'role': 'adminluz', 'tela': 'RH'},
+                   {'empresa': 'empresa_22.ltda', 'role': 'adminluz', 'tela': 'Equipamento'},
+                   {'empresa': 'empresa_22.ltda', 'role': 'adminluz', 'tela': 'Fornecedor'},
+                   {'empresa': 'empresa_22.ltda', 'role': 'adminluz', 'tela': 'Almoxarifado'},
+                   {'empresa': 'empresa_22.ltda', 'role': 'adminluz', 'tela': 'Programação'},
+                   {'empresa': 'empresa_22.ltda', 'role': 'adminluz', 'tela': 'Manutenção'},
+                   {'empresa': 'empresa_22.ltda', 'role': 'adminluz', 'tela': 'Orçamento'},
+                   {'empresa': 'empresa_22.ltda', 'role': 'adminluz', 'tela': 'Indicadores'},
+
+                   {'empresa': 'empresa_3.ltda', 'role': 'default', 'tela': 'Plano'},
+                   {'empresa': 'empresa_3.ltda', 'role': 'default', 'tela': 'Empresa'},
+                   {'empresa': 'empresa_3.ltda', 'role': 'default', 'tela': 'RH'},
+                   {'empresa': 'empresa_3.ltda', 'role': 'admin', 'tela': 'Plano'},
+                   {'empresa': 'empresa_3.ltda', 'role': 'admin', 'tela': 'Empresa'},
+                   {'empresa': 'empresa_3.ltda', 'role': 'admin', 'tela': 'RH'},
+                   {'empresa': 'empresa_3.ltda', 'role': 'admin', 'tela': 'Equipamento'},
+                   {'empresa': 'empresa_3.ltda', 'role': 'admin', 'tela': 'Fornecedor'},
+                   {'empresa': 'empresa_3.ltda', 'role': 'admin', 'tela': 'Almoxarifado'},
+                   {'empresa': 'empresa_3.ltda', 'role': 'admin', 'tela': 'Programação'},
+                   {'empresa': 'empresa_3.ltda', 'role': 'admin', 'tela': 'Manutenção'},
+                   {'empresa': 'empresa_3.ltda', 'role': 'admin', 'tela': 'Orçamento'},
+                   {'empresa': 'empresa_3.ltda', 'role': 'admin', 'tela': 'Indicadores'},
+                   {'empresa': 'empresa_3.ltda', 'role': 'adminluz', 'tela': 'Interessado'},
+                   {'empresa': 'empresa_3.ltda', 'role': 'adminluz', 'tela': 'Plano'},
+                   {'empresa': 'empresa_3.ltda', 'role': 'adminluz', 'tela': 'Empresa'},
+                   {'empresa': 'empresa_3.ltda', 'role': 'adminluz', 'tela': 'RH'},
+                   {'empresa': 'empresa_3.ltda', 'role': 'adminluz', 'tela': 'Equipamento'},
+                   {'empresa': 'empresa_3.ltda', 'role': 'adminluz', 'tela': 'Fornecedor'},
+                   {'empresa': 'empresa_3.ltda', 'role': 'adminluz', 'tela': 'Almoxarifado'},
+                   {'empresa': 'empresa_3.ltda', 'role': 'adminluz', 'tela': 'Programação'},
+                   {'empresa': 'empresa_3.ltda', 'role': 'adminluz', 'tela': 'Manutenção'},
+                   {'empresa': 'empresa_3.ltda', 'role': 'adminluz', 'tela': 'Orçamento'},
+                   {'empresa': 'empresa_3.ltda', 'role': 'adminluz', 'tela': 'Indicadores'},
+                   ]
+
+senha_lista = [{'senha': 'aaa11111', 'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
+                'senha_expira': False, 'senha_temporaria': False},
+               {'senha': 'aaa22222', 'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
+                'senha_expira': False, 'senha_temporaria': False},
+               {'senha': 'aaa33333', 'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
+                'senha_expira': False, 'senha_temporaria': False},
+               {'senha': 'aaa44444', 'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
+                'senha_expira': False, 'senha_temporaria': False},
+               {'senha': 'aaa55555', 'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
+                'senha_expira': False, 'senha_temporaria': False},
+               {'senha': 'aaa66666', 'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
+                'senha_expira': False, 'senha_temporaria': False},
+               {'senha': 'aaa77777', 'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
+                'senha_expira': False, 'senha_temporaria': False},
+               ]
+
+usuario_lista = [{'nome': 'admin', 'email': 'admin@admin.com',
+                  'senha': 'aaa11111', 'perfil': 'admin',
+                  'data_assinatura': '1980/05/10 12:45:10', 'empresa': 'empresa_1.ltda'},
+                 {'nome': 'leandro', 'email': 'engleoluz@hotmail.com',
+                  'senha': 'aaa22222', 'perfil': 'default',
+                  'data_assinatura': '1980/05/10 12:45:10', 'empresa': 'empresa_1.ltda'},
+                 {'nome': 'danylo', 'email': 'danylo@gmail.com',
+                  'senha': 'aaa33333', 'perfil': 'admin',
+                  'data_assinatura': '1980/05/10 12:45:10', 'empresa': 'empresa_1.ltda'},
+                 {'nome': 'admin_empresa_2', 'email': 'admin_empresa_2@admin.com',
+                  'senha': 'aaa44444', 'perfil': 'admin',
+                  'data_assinatura': '1980/05/10 12:45:10', 'empresa': 'empresa_2.ltda'},
+                 {'nome': 'admin_empresa_21', 'email': 'admin_empresa_21@admin.com',
+                  'senha': 'aaa55555', 'perfil': 'admin',
+                  'data_assinatura': '1980/05/10 12:45:10', 'empresa': 'empresa_21.ltda'},
+                 {'nome': 'admin_empresa_22', 'email': 'admin_empresa_22@admin.com',
+                  'senha': 'aaa66666', 'perfil': 'admin',
+                  'data_assinatura': '1980/05/10 12:45:10', 'empresa': 'empresa_22.ltda'},
+                 {'nome': 'admin_empresa_3', 'email': 'admin_empresa_3@admin.com',
+                  'senha': 'aaa77777', 'perfil': 'admin',
+                  'data_assinatura': '1980/05/10 12:45:10', 'empresa': 'empresa_3.ltda'},
+                 ]
+
+group_lista = [{'nome': 'None', 'empresa': 'empresa_1.ltda'},
+               {'nome': 'cadeira', 'empresa': 'empresa_1.ltda'},
+               {'nome': 'elevador', 'empresa': 'empresa_1.ltda'},
+               {'nome': 'mesa', 'empresa': 'empresa_1.ltda'}
+               ]
+
+asset_lista = [{'cod': '000.001', 'short': 'gerador', 'empresa': 'empresa_1.ltda', 'tag': 'ger.001'},
+               {'cod': '000.002', 'short': 'subestação 13.8KV', 'empresa': 'empresa_1.ltda', 'tag': 'se.001'},
+               {'cod': '000.003', 'short': 'chiller', 'empresa': 'empresa_1.ltda', 'tag': 'ch.001'},
+               {'cod': '000.004', 'short': 'carro', 'empresa': 'empresa_1.ltda', 'tag': 'ca.001'}
+               ]
+
+system_lista = [{'nome': 'elétrico', 'cod': '000.001'},
+                {'nome': 'mecânico', 'cod': '000.001'},
+                {'nome': 'elétrico', 'cod': '000.002'},
+                {'nome': 'alvenaria', 'cod': '000.002'},
+                {'nome': 'refrigeração', 'cod': '000.002'}
+                ]
+
+supplier_lista = [{'nome': 'Fornecedor_1', 'empresa': 'empresa_1.ltda'},
+                  {'nome': 'Fornecedor_2', 'empresa': 'empresa_1.ltda'}
                   ]
 
 
 def generate_business():
     businesslista = list()
     for item in business_lista:
-        business = Business.query.filter_by(name=item['name']).first()
+        business = Business.query.filter_by(nome=item['nome']).first()
         if business:
             businesslista.append(business)
             continue
         business = Business()
-        business.name = item['name']
+        business.nome = item['nome']
         businesslista.append(business)
 
         try:
             db.session.add(business)
             db.session.commit()
-            print(f'Ramo de negócio inserido:{business.name}')
+            print(f'Ramo de negócio inserido:{business}')
         except Exception as e:
             log.error(f'Erro ao inserir o ramo de negócio: {business}-{e}')
             db.session.rollback()
@@ -363,226 +366,226 @@ def generate_business():
 def generate_subbusiness():
     subbusinesss = list()
     for item in subbusiness_lista:
-        business = Business.query.filter_by(name=item['business']).one()
-        subbusiness = Subbusiness.query.filter_by(name=item['name'], business_id=business.id).first()
+        business = Business.query.filter_by(nome=item['business']).one()
+        subbusiness = Subbusiness.query.filter_by(nome=item['nome'], business_id=business.id).first()
         if subbusiness:
             subbusinesss.append(subbusiness)
             continue
         subbusiness = Subbusiness()
-        # business = Business.query.filter_by(name=item['business']).one()
-        subbusiness.name = item['name']
+        # business = Business.query.filter_by(razao_social=item['business']).one()
+        subbusiness.nome = item['nome']
         subbusiness.business_id = business.id
 
         try:
             db.session.add(subbusiness)
             db.session.commit()
-            print('Sub-ramo de negócio inserido:', subbusiness.name)
+            print('Sub-ramo de negócio inserido:', subbusiness)
         except Exception as e:
             log.error(f'Erro ao inserir o sub-ramo de negócio: {subbusiness}-{e}')
             db.session.rollback()
     return subbusinesss
 
 
-def generate_plans():
-    planlista = list()
-    for item in plans_lista:
-        plan = Plan.query.filter_by(name=item['name']).first()
-        if plan:
-            planlista.append(plan)
+def criar_planos():
+    planos = list()
+    for item in planos_lista:
+        plano = Plano.query.filter_by(nome=item['nome']).first()
+        if plano:
+            planos.append(plano)
             continue
-        plan = Plan()
-        plan.name = item['name']
-        planlista.append(plan)
+        plano = Plano()
+        plano.nome = item['nome']
+        planos.append(plano)
 
         try:
-            db.session.add(plan)
+            db.session.add(plano)
             db.session.commit()
-            print(f'Plano inserido: {plan.name}')
+            print(f'Plano inserido: {plano}')
         except Exception as e:
-            log.error(f'Erro ao inserir o plano: {plan}-{e}')
+            log.error(f'Erro ao inserir o plano: {plano}-{e}')
             db.session.rollback()
-    return planlista
+    return planos
 
 
-def generate_views():
-    viewlista = list()
-    for item in views_lista:
-        view = View.query.filter_by(name=item['name']).first()
-        if view:
-            viewlista.append(view)
+def criar_telas():
+    telas = list()
+    for item in telas_lista:
+        tela = Tela.query.filter_by(nome=item['nome']).first()
+        if tela:
+            telas.append(tela)
             continue
-        view = View()
-        view.name = item['name']
-        view.icon = item['icon']
-        view.url = item['url']
+        tela = Tela()
+        tela.nome = item['nome']
+        tela.icon = item['icon']
+        tela.url = item['url']
 
         try:
-            db.session.add(view)
+            db.session.add(tela)
             db.session.commit()
-            print(f'Tela inserida: {view.name}')
+            print(f'Tela inserida: {tela}')
         except Exception as e:
-            log.error(f'Erro ao inserir a tela: {view}-{e}')
+            log.error(f'Erro ao inserir a tela: {tela}-{e}')
             db.session.rollback()
-    return viewlista
+    return telas
 
 
-def generate_viewplans():
-    viewplanlista = list()
-    for item in viewplans_lista:
-        view = View.query.filter_by(name=item['view']).first()
-        plan = Plan.query.filter_by(name=item['plan']).first()
-        viewplan = ViewPlan.query.filter_by(view_id=view.id, plan_id=plan.id).first()
+def criar_telasplano():
+    telasplano = list()
+    for item in telasplano_lista:
+        tela = Tela.query.filter_by(nome=item['tela']).first()
+        plano = Plano.query.filter_by(nome=item['plano']).first()
+        telaplano = Telaplano.query.filter_by(tela_id=tela.id, plano_id=plano.id).first()
 
-        if viewplan:
-            viewplanlista.append(viewplan)
+        if telaplano:
+            telasplano.append(telaplano)
             continue
 
-        viewplan = ViewPlan()
-        viewplan.view_id = view.id
-        viewplan.plan_id = plan.id
-        viewplan.active = True
+        telaplano = Telaplano()
+        telaplano.tela_id = tela.id
+        telaplano.plano_id = plano.id
+        telaplano.active = True
 
         try:
-            db.session.add(viewplan)
+            db.session.add(telaplano)
             db.session.commit()
-            print(f'Tela inserida: {view.name} no plano: {plan.name}')
+            print(f'Tela inserida: {tela} no plano: {plano}')
         except Exception as e:
-            log.error(f'Erro ao inserir a tela/plano: {viewplan}-{e}')
+            log.error(f'Erro ao inserir a tela/plano: {telaplano}-{e}')
             db.session.rollback()
-    return viewplanlista
+    return telasplano
 
 
-def generate_leads():
-    leads = list()
-    for item in lead_lista:
-        lead = Lead.query.filter_by(name=item['name']).first()
-        if lead:
-            leads.append(lead)
+def criar_interessados():
+    interessados = list()
+    for item in interessado_lista:
+        interessado = Interessado.query.filter_by(razao_social=item['razao_social']).first()
+        if interessado:
+            interessados.append(interessado)
             continue
-        lead = Lead()
-        lead.name = item['name']
-        lead.cnpj = item['cnpj']
-        lead.email = item['email']
-        lead.telefone = item['telefone']
-        lead.data_solicitacao = datetime.datetime.now()
-        leads.append(lead)
+        interessado = Interessado()
+        interessado.razao_social = item['razao_social']
+        interessado.cnpj = item['cnpj']
+        interessado.email = item['email']
+        interessado.telefone = item['telefone']
+        interessado.data_solicitacao = datetime.datetime.now()
+        interessados.append(interessado)
 
         try:
-            db.session.add(lead)
+            db.session.add(interessado)
             db.session.commit()
-            print(f'Lead inserido: {lead.name}')
+            print(f'Interessado inserido: {interessado}')
         except Exception as e:
-            log.error(f'Erro ao inserir lead: {lead}-{e}')
+            log.error(f'Erro ao inserir interessado: {interessado}-{e}')
             db.session.rollback()
-    return leads
+    return interessados
 
 
-def generate_company_types():
-    company_types = list()
-    for item in company_type_lista:
-        companytype = Companytype.query.filter_by(name=item['name']).first()
-        if companytype:
-            company_types.append(companytype)
+def criar_tipos_empresa():
+    tipos_empresa = list()
+    for item in tipo_empresa_lista:
+        tipoempresa = Tipoempresa.query.filter_by(nome=item['nome']).first()
+        if tipoempresa:
+            tipos_empresa.append(tipoempresa)
             continue
-        companytype = Companytype()
-        companytype.name = item['name']
-        company_types.append(companytype)
+        tipoempresa = Tipoempresa()
+        tipoempresa.nome = item['nome']
+        tipos_empresa.append(tipoempresa)
 
         try:
-            db.session.add(companytype)
+            db.session.add(tipoempresa)
             db.session.commit()
-            print(f'Ramo de negócio inserido: {companytype.name}')
+            print(f'Ramo de negócio inserido: {tipoempresa}')
         except Exception as e:
-            log.error(f'Erro ao inserir o tipo de empresa: {companytype.name}-{e}')
+            log.error(f'Erro ao inserir o tipo de empresa: {tipoempresa.nome}-{e}')
             db.session.rollback()
-    return company_types
+    return tipos_empresa
 
 
-def generate_companies():
-    companies = list()
-    for item in company_lista:
-        company = Company.query.filter_by(name=item['name']).first()
-        if company:
-            companies.append(company)
+def criar_empresas():
+    empresas = list()
+    for item in empresa_lista:
+        empresa = Empresa.query.filter_by(razao_social=item['razao_social']).first()
+        if empresa:
+            empresas.append(empresa)
             continue
-        company = Company()
-        business = Business.query.filter_by(name=item['business']).one_or_none()
-        subbusiness = Subbusiness.query.filter_by(name=item['subbusiness'], business_id=business.id).one_or_none()
-        companytype = Companytype.query.filter_by(name=item['tipo']).one_or_none()
-        plan = Plan.query.filter_by(name=item['plano']).one()
-        manager = Company.query.filter_by(name=item['manager']).first()
-        company.manager_company_id = 1
+        empresa = Empresa()
+        business = Business.query.filter_by(nome=item['business']).one_or_none()
+        subbusiness = Subbusiness.query.filter_by(nome=item['subbusiness'], business_id=business.id).one_or_none()
+        tipoempresa = Tipoempresa.query.filter_by(nome=item['tipo']).one_or_none()
+        plan = Plano.query.filter_by(nome=item['plano']).one()
+        empresa_gestora = Empresa.query.filter_by(razao_social=item['empresa_gestora']).first()
+        empresa.empresa_gestora_id = 1
 
-        if manager:
-            company.manager_company_id = manager.id
-        company.name = item['name']
-        company.cnpj = item['cnpj']
-        company.cep = item['cep']
-        company.logradouro = item['logradouro']
-        company.bairro = item['bairro']
-        company.municipio = item['municipio']
-        company.uf = item['uf']
-        company.numero = item['numero']
-        company.complemento = item['complemento']
-        company.email = item['email']
-        company.telefone = item['telefone']
-        company.active = True
-        company.member_since = item['date']
+        if empresa_gestora:
+            empresa.empresa_gestora_id = empresa_gestora.id
+        empresa.razao_social = item['razao_social']
+        empresa.nome_fantasia = item['nome_fantasia']
+        empresa.cnpj = item['cnpj']
+        empresa.cep = item['cep']
+        empresa.logradouro = item['logradouro']
+        empresa.bairro = item['bairro']
+        empresa.municipio = item['municipio']
+        empresa.uf = item['uf']
+        empresa.numero = item['numero']
+        empresa.complemento = item['complemento']
+        empresa.email = item['email']
+        empresa.telefone = item['telefone']
+        empresa.active = True
+        empresa.member_since = item['date']
 
-        company.subbusiness_id = subbusiness.id
-        company.plan_id = plan.id
-        company.companytype_id = companytype.id
-        companies.append(company)
+        empresa.subbusiness_id = subbusiness.id
+        empresa.plano_id = plan.id
+        empresa.tipoempresa_id = tipoempresa.id
+        empresas.append(empresa)
 
         try:
-            db.session.add(company)
+            db.session.add(empresa)
             db.session.commit()
-            print(f'Empresa inserida:: {company.name}')
+            print(f'Empresa inserida:: {empresa}')
         except Exception as e:
-            log.error(f'Erro ao inserir a empresa: {company.name}-{e}')
+            log.error(f'Erro ao inserir a empresa: {empresa.razao_social}-{e}')
             db.session.rollback()
-    return companies
+    return empresas
 
 
-def generate_roles():
-    roles = list()
-    for item in roles_lista:
-        company = Company.query.filter_by(name=item['company']).one()
-        role = Role.query.filter_by(name=item['name'], company_id=company.id).first()
-        if role:
-            roles.append(role)
+def criar_perfis():
+    perfis = list()
+    for item in perfis_lista:
+        empresa = Empresa.query.filter_by(razao_social=item['empresa']).one_or_none()
+        perfil = Perfil.query.filter_by(nome=item['nome'], empresa_id=empresa.id).first()
+        if perfil:
+            perfis.append(perfil)
             continue
-        role = Role(name=item['name'], description=item['description'], company_id=company.id)
+        perfil = Perfil(nome=item['nome'], descricao=item['descricao'], empresa_id=empresa.id)
 
         try:
-            db.session.add(role)
+            db.session.add(perfil)
             db.session.commit()
-            print(f'Regra inserida:: {role.name}')
+            print(f'Regra inserida:: {perfil}')
         except Exception as e:
-            log.error(f'Erro ao inserir a regra: {role.name}-{e}')
+            log.error(f'Erro ao inserir a regra: {perfil.nome}-{e}')
             db.session.rollback()
-
-    return roles
+    return perfis
 
 
 def generate_viewroles():
     viewrolelista = list()
     for item in viewroles_lista:
-        company = Company.query.filter_by(name=item['company']).one()
-        role = Role.query.filter_by(name=item['role'], company_id=company.id).one()
-        view = View.query.filter_by(name=item['view']).one()
-        viewrole = ViewRole.query.filter_by(view_id=view.id, role_id=role.id).first()
+        empresa = Empresa.query.filter_by(razao_social=item['empresa']).one()
+        perfil = Perfil.query.filter_by(nome=item['role'], empresa_id=empresa.id).one()
+        tela = Tela.query.filter_by(nome=item['tela']).one()
+        viewrole = ViewRole.query.filter_by(tela_id=tela.id, perfil_id=perfil.id).first()
 
         if viewrole:
             viewrolelista.append(viewrole)
             continue
 
-        viewrole = ViewRole(role_id=role.id, view_id=view.id, active=True)
+        viewrole = ViewRole(perfil_id=perfil.id, tela_id=tela.id, active=True)
 
         try:
             db.session.add(viewrole)
             db.session.commit()
-            print(f'Tela inserida: {view.name} no perfil: {role.name}')
+            print(f'Tela inserida: {tela} no perfil: {perfil}')
         except Exception as e:
             log.error(f'Erro ao inserir a tela: {viewrole}-{e}')
             db.session.rollback()
@@ -590,76 +593,76 @@ def generate_viewroles():
     return viewrolelista
 
 
-def generate_passwords():
-    passwords = list()
-    for item in password_lista:
-        password = Password.query.filter_by(password=item['password']).one_or_none()
-        if password:
-            passwords.append(password)
+def criar_senhas():
+    senhas = list()
+    for item in senha_lista:
+        senha = Senha.query.filter_by(senha=item['senha']).one_or_none()
+        if senha:
+            senhas.append(senha)
             continue
-        password = Password()
-        password.password = item['password']
-        password.expiration_date = item['expiration_date']
-        password.expirate = item['expirate']
-        password.temporary = item['temporary']
+        senha = Senha()
+        senha.senha = item['senha']
+        senha.data_expiracao = item['data_expiracao']
+        senha.senha_expira = item['senha_expira']
+        senha.senha_temporaria = item['senha_temporaria']
 
         try:
-            db.session.add(password)
+            db.session.add(senha)
             db.session.commit()
-            print(f'Senha inserida:: {password.password}')
+            print(f'Senha inserida:: {senha}')
         except Exception as e:
-            log.error(f'Erro ao inserir a senha: {password.password}-{e}')
+            log.error(f'Erro ao inserir a senha: {senha.senha}-{e}')
             db.session.rollback()
 
-    return passwords
+    return senhas
 
 
-def generate_users():
-    users = list()
-    for item in user_lista:
-        user = User.query.filter_by(username=item['username']).first()
-        if user:
-            users.append(user)
+def criar_usuarios():
+    usuarios = list()
+    for item in usuario_lista:
+        usuario = Usuario.query.filter_by(nome=item['nome']).first()
+        if usuario:
+            usuarios.append(usuario)
             continue
-        user = User()
-        company = Company.query.filter_by(name=item['company']).one_or_none()
-        role = Role.query.filter_by(name=item['role'], company_id=company.id).one_or_none()
-        password = Password.query.filter_by(password=item['password']).one_or_none()
-        user.username = item['username']
-        user.email = item['email']
-        user.password_id = password.id
-        user.member_since = item['date']
-        user.active = True
-        user.role_id = role.id
-        user.company_id = company.id
+        usuario = Usuario()
+        empresa = Empresa.query.filter_by(razao_social=item['empresa']).one_or_none()
+        perfil = Perfil.query.filter_by(nome=item['perfil'], empresa_id=empresa.id).one_or_none()
+        senha = Senha.query.filter_by(senha=item['senha']).one_or_none()
+        usuario.nome = item['nome']
+        usuario.email = item['email']
+        usuario.senha_id = senha.id
+        usuario.data_assinatura = item['data_assinatura']
+        usuario.ativo = True
+        usuario.perfil_id = perfil.id
+        usuario.empresa_id = empresa.id
 
         try:
-            db.session.add(user)
+            db.session.add(usuario)
             db.session.commit()
-            print(f'Usuário inserido: {user.username}, na empresa: {company.name}')
+            print(f'Usuário inserido: {usuario}, na empresa: {empresa}')
         except Exception as e:
-            log.error(f'Erro ao inserir a usuário: {user}-{e}')
+            log.error(f'Erro ao inserir a usuário: {usuario}-{e}')
             db.session.rollback()
 
-    return users
+    return usuarios
 
 
 def generate_group():
     groups = list()
     for item in group_lista:
-        group = Group.query.filter_by(name=item['name']).first()
+        group = Grupo.query.filter_by(nome=item['nome']).first()
         if group:
             groups.append(group)
             continue
-        group = Group()
-        group.name = item['name']
-        company = Company.query.filter_by(name=item['company']).one()
-        group.company_id = company.id
+        group = Grupo()
+        group.nome = item['nome']
+        empresa = Empresa.query.filter_by(razao_social=item['empresa']).one()
+        group.empresa_id = empresa.id
 
         try:
             db.session.add(group)
             db.session.commit()
-            print(f'Grupo de equipamento inserido: {group.name} na empresa: {company.name}')
+            print(f'Grupo de equipamento inserido: {group} na empresa: {empresa}')
         except Exception as e:
             log.error(f'Erro ao inserir o grupo do equipamento: {group}-{e}')
             db.session.rollback()
@@ -669,19 +672,20 @@ def generate_group():
 def generate_asset():
     assets = list()
     for item in asset_lista:
-        asset = Asset.query.filter_by(cod=item['cod']).first()
+        asset = Equipamento.query.filter_by(cod=item['cod']).first()
         if asset:
             assets.append(asset)
             continue
-        asset = Asset()
-        company = Company.query.filter_by(name=item['company']).one()
+        asset = Equipamento()
+        empresa = Empresa.query.filter_by(razao_social=item['empresa']).one()
         asset.cod = item['cod']
-        asset.short_description = item['short']
-        asset.company_id = company.id
+        asset.descricao_curta = item['short']
+        asset.tag = item['tag']
+        asset.empresa_id = empresa.id
         try:
             db.session.add(asset)
             db.session.commit()
-            print(f'Equipamento inserido: {asset.short_description} na empresa: {company.name}')
+            print(f'Equipamento inserido: {asset} na empresa: {empresa}')
         except Exception as e:
             log.error(f'Erro ao inserir Equipamento: {asset}-{e}')
             db.session.rollback()
@@ -691,18 +695,18 @@ def generate_asset():
 def generate_system():
     systems = list()
     for item in system_lista:
-        system = System.query.filter_by(name=item['name']).first()
+        system = Sistema.query.filter_by(nome=item['nome']).first()
         if system:
             systems.append(system)
             continue
-        system = System()
-        asset = Asset.query.filter_by(cod=item['cod']).one()
-        system.name = item['name']
-        system.asset_id = asset.id
+        system = Sistema()
+        asset = Equipamento.query.filter_by(cod=item['cod']).one_or_none()
+        system.nome = item['nome']
+        system.equipamento_id = asset.id
         try:
             db.session.add(system)
             db.session.commit()
-            print(f'Sistema inserido: {system.name} no equipamento: {asset.short_description}')
+            print(f'Sistema inserido: {system} no equipamento: {asset}')
         except Exception as e:
             log.error(f'Erro ao inserir Sistema: {system}-{e}')
             db.session.rollback()
@@ -712,18 +716,18 @@ def generate_system():
 def generate_supplier():
     suppliers = list()
     for item in supplier_lista:
-        supplier = Supplier.query.filter_by(name=item['name']).first()
+        supplier = Supplier.query.filter_by(nome=item['nome']).first()
         if supplier:
             suppliers.append(supplier)
             continue
         supplier = Supplier()
-        company = Company.query.filter_by(name=item['company']).one()
-        supplier.name = item['name']
-        supplier.company_id = company.id
+        empresa = Empresa.query.filter_by(razao_social=item['empresa']).one()
+        supplier.nome = item['nome']
+        supplier.company_id = empresa.id
         try:
             db.session.add(supplier)
             db.session.commit()
-            print(f'Fornecedor inserido: {supplier.name} na empresa: {company.name}')
+            print(f'Fornecedor inserido: {supplier} na empresa: {empresa}')
         except Exception as e:
             log.error(f'Erro ao inserir Fornecedor: {supplier}-{e}')
             db.session.rollback()
@@ -733,18 +737,18 @@ def generate_supplier():
 # carregamento para as empresas
 generate_business()
 generate_subbusiness()
-generate_views()
-generate_plans()
-generate_viewplans()
-generate_leads()
-generate_company_types()
-generate_companies()
+criar_telas()
+criar_planos()
+criar_telasplano()
+criar_interessados()
+criar_tipos_empresa()
+criar_empresas()
 
 # carregamento para os perfis e usuários
-generate_roles()
+criar_perfis()
 generate_viewroles()
-generate_passwords()
-generate_users()
+criar_senhas()
+criar_usuarios()
 
 # carregamento para os equipamentos
 generate_group()

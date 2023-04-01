@@ -18,13 +18,13 @@ def create_app(object_name: str) -> Flask:
     mail.init_app(app)
     # debug_toolbar.init_app(app)
 
-    from webapp.auth import create_module as auth_create_module
+    from webapp.usuario import create_module as auth_create_module
     from webapp.main import create_module as main_create_module
     from webapp.sistema import create_module as sistema_create_module
-    from webapp.company import create_module as company_create_module
-    from webapp.asset import create_module as asset_create_module
+    from webapp.empresa import create_module as company_create_module
+    from webapp.equipamento import create_module as asset_create_module
     from webapp.supplier import create_module as supplier_create_module
-    from webapp.plan import create_module as plan_create_module
+    from webapp.plano import create_module as plan_create_module
 
     auth_create_module(app)
     main_create_module(app)
