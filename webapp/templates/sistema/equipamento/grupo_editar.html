@@ -1,0 +1,25 @@
+{% extends "sistema_base.html" %}
+{% block body %}
+    <body>
+        <form action="{{ url_for('equipamento.grupo_editar', grupo_id=grupo.id, equipamento_id=equipamento_id) }}" method="POST">
+            {{form.csrf_token}}
+
+            {% if grupo.id == 0 %}
+                <h2>Cadastro de Grupo de Equipamentos</h2>
+            {% else %}
+                <h2>Grupo de Equipamentos</h2>
+            {% endif %}
+            {{form.nome.label}}    {{form.nome(size=20)}}<br>
+            {{form.ativo.label}}    {{form.ativo(size=20)}}<br>
+
+            {% if grupo.id == 0 %}
+                <input type="submit" value="Cadastrar"/>
+            {% else %}
+                <input type="submit" value="Atualizar"/>
+            {% endif %}
+
+        </form>
+
+    <a href="{{ url_for('equipamento.grupo_listar', equipamento_id=equipamento_id) }}">Voltar</a>
+    </body>
+{% endblock %}

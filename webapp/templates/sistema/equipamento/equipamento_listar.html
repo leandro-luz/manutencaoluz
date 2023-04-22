@@ -1,0 +1,65 @@
+{% extends "sistema_base.html" %}
+{% block body %}
+<body>
+
+    <h2> LISTA DE EQUIPAMENTOS </h2>
+    <a href="{{ url_for('equipamento.equipamento_editar', equipamento_id=0) }}">
+        Adicionar
+    </a>
+
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">COD</th>
+                <th scope="col">DESCRIÇÃO_CURTA</th>
+                <th scope="col">TAG</th>
+                <th scope="col">GRUPO</th>
+                <th scope="col">ATIVO</th>
+                <th scope="col"></th>
+                <th scope="col"></th>
+            </tr>
+        </thead>
+
+        <tbody>
+        {% for equipamento in equipamentos %}
+            <tr>
+                <th scope="row">{{ equipamento.id }}</th>
+                <td>{{ equipamento.cod }}</td>
+                <td>{{ equipamento.descricao_curta }}</td>
+                <td>{{ equipamento.tag }}</td>
+                <td>{{ equipamento.grupo.nome }}</td>
+                <td>{{ equipamento.ativo }}</td>
+                <td>
+                    <a href="{{ url_for('equipamento.equipamento_editar', equipamento_id=equipamento.id) }}">
+                            <span data-tooltip="Informações">
+                                <i class="bi-caret-right fs-6"></i>
+                            </span>
+                    </a>
+                </td>
+                {% if equipamento.ativo == True %}
+                    <td>
+                        <a href="{{ url_for('equipamento.equipamento_ativar', equipamento_id=equipamento.id) }}">
+                                <span data-tooltip="Desativar">
+                                    <i class="bi-caret-down fs-6"></i>
+                                </span>
+                        </a>
+                    </td>
+                {% else %}
+                    <td>
+                        <a href="{{ url_for('equipamento.equipamento_ativar', equipamento_id=equipamento.id) }}">
+                                <span data-tooltip="Ativar">
+                                    <i class="bi-caret-up fs-6"></i>
+                                </span>
+                        </a>
+                    </td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+
+    </body>
+{% endblock %}

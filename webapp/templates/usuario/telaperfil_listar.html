@@ -1,0 +1,53 @@
+{% extends "sistema_base.html" %}
+{% block body %}
+<body>
+
+
+<h2> LISTA DAS TELAS PARA O PERFIL </h2>
+<a href="{{ url_for('usuario.telaperfil_editar', perfil_id=perfil_id) }}">
+    Adicionar
+</a>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th scope="col">TELAS</th>
+        <th scope="col"></th>
+        <th scope="col"></th>
+    </tr>
+    </thead>
+
+    <tbody>
+    {% for telaperfil in telasperfil %}
+    <tr>
+        <td>{{ telaperfil.tela.nome }}</td>
+
+        {% if telaperfil.ativo == True %}
+        <td>
+            <a href="{{ url_for('usuario.telaperfil_ativar', perfil_id=telaperfil.id) }}">
+                <span data-tooltip="Desativar">
+                    <i class="bi-caret-down fs-6"></i>
+                </span>
+            </a>
+        </td>
+        {% else %}
+        <td>
+            <a href="{{ url_for('usuario.telaperfil_ativar', perfil_id=telaperfil.id) }}">
+                <span data-tooltip="Ativar">
+                    <i class="bi-caret-up fs-6"></i>
+                </span>
+            </a>
+        </td>
+        {% endif %}
+
+
+        {% endfor %}
+    </tr>
+
+    </tbody>
+</table>
+
+<a href="{{ url_for('usuario.perfil_listar') }}">Voltar</a>
+
+</body>
+{% endblock %}

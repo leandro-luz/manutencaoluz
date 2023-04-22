@@ -19,10 +19,10 @@
         <div class="col-md-6">
             <div class="row align-items-center">
                 <div class="col-12">
-                    <img alt="Tela de Registro" class="img-fluid" src="/static/img/notify.svg">
+                    <img alt="Tela de Registro" class="img-fluid" src="/static/img/notificacao.svg">
                 </div>
                 <div class="col-12" id="link-register-user">
-                    <a href="{{ url_for('usuario.resend_confirmation', nome=user.nome) }}">
+                    <a href="{{ url_for('usuario.resend_confirmation', nome=usuario.nome) }}">
                         Não recebeu o email e gostaria de solicitar novamente?</a>
                 </div>
             </div>

@@ -85,7 +85,7 @@ class Equipamento(db.Model):
     comprimento = db.Column(db.Integer(), nullable=True)
     altura = db.Column(db.Integer(), nullable=True)
     peso = db.Column(db.Integer(), nullable=True)
-    ano_fabricacao = db.Column(db.DateTime(), nullable=True)
+    data_fabricacao = db.Column(db.DateTime(), nullable=True)
     data_aquisicao = db.Column(db.DateTime(), nullable=True)
     data_instalacao = db.Column(db.DateTime(), nullable=True)
     custo_aquisicao = db.Column(db.Integer(), nullable=True)
@@ -107,8 +107,8 @@ class Equipamento(db.Model):
     def retornar_ativo(self):
         return self.ativo
 
-    def alterar_ativo(self, active):
-        self.ativo = active
+    def alterar_ativo(self, ativo):
+        self.ativo = ativo
 
     def alterar_atributos(self, form):
         """    Função para alterar os atributos do objeto    """
@@ -123,7 +123,7 @@ class Equipamento(db.Model):
         self.comprimento = form.comprimento.data
         self.altura = form.altura.data
         self.peso = form.peso.data
-        self.ano_fabricacao = form.ano_fabricacao.data
+        self.data_fabricacao = form.data_fabricacao.data
         self.data_aquisicao = form.data_aquisicao.data
         self.data_instalacao = form.data_instalacao.data
         self.custo_aquisicao = form.custo_aquisicao.data

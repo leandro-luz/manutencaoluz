@@ -3,7 +3,8 @@ from flask_login import current_user, login_required
 from .models import Equipamento, Grupo, Sistema
 from .forms import EquipamentoForm, GrupoForm, SistemaForm
 from webapp.usuario import has_view
-from webapp.utils.files import file_standard
+from webapp.utils.files import arquivo_padrao
+from webapp.utils.erros import flash_errors
 
 empresa_blueprint = Blueprint(
     'equipamento',
@@ -13,19 +14,19 @@ empresa_blueprint = Blueprint(
 )
 
 
-@empresa_blueprint.route('/asset_list', methods=['GET', 'POST'])
+@empresa_blueprint.route('/equipamento_listar', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def asset_list():
+def equipamento_listar():
     """Retorna a lista de equipamentos"""
     equipamentos = Equipamento.query.filter_by(empresa_id=current_user.empresa_id).all()
-    return render_template('asset_list.html', equipamentos=equipamentos)
+    return render_template('equipamento_listar.html', equipamentos=equipamentos)
 
 
-@empresa_blueprint.route('/asset_edit/<int:equipamento_id>', methods=['GET', 'POST'])
+@empresa_blueprint.route('/equipamento_editar/<int:equipamento_id>', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def asset_edit(equipamento_id):
+def equipamento_editar(equipamento_id):
     if equipamento_id > 0:
         # Atualizar
         equipamento = Equipamento.query.filter_by(id=equipamento_id).first()
@@ -40,7 +41,7 @@ def asset_edit(equipamento_id):
                 g_d = equipamento.grupo_id
         else:
             flash("Equipamento não localizado", category="danger")
-            return redirect(url_for("equipamento.asset_list"))
+            return redirect(url_for("equipamento.equipamento_listar"))
     else:
         # Cadastrar
         equipamento = Equipamento()
@@ -65,63 +66,65 @@ def asset_edit(equipamento_id):
                 flash("Equipamento atualizado", category="success")
             else:
                 flash("Equipamento cadastrado", category="success")
+            return redirect(url_for("equipamento.equipamento_listar"))
+        else:
+            flash("Equipamento não cadastrado/atualizado", category="danger")
+    else:
+        flash_errors(form)
+    return render_template("equipamento_editar.html", form=form, equipamento=equipamento)
 
-        return redirect(url_for("equipamento.asset_list"))
-    return render_template("asset_edit.html", form=form, equipamento=equipamento)
 
-
-@empresa_blueprint.route('/asset_active/<int:equipamento_id>', methods=['GET', 'POST'])
+@empresa_blueprint.route('/equipamento_ativar/<int:equipamento_id>', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def asset_active(equipamento_id):
+def equipamento_ativar(equipamento_id):
     equipamento = Equipamento.query.filter_by(id=equipamento_id).one_or_none()
     if equipamento:
         equipamento.ativar_desativar()
-        equipamento.salvar()
-
+        if not equipamento.salvar():
+            flash("Equipamento não ativado/desativado", category="danger")
     else:
         flash("Equipamento não localizado", category="danger")
-    return redirect(url_for('equipamento.asset_list'))
+    return redirect(url_for('equipamento.equipamento_listar'))
 
 
-@empresa_blueprint.route('/asset_file_out/', methods=['GET', 'POST'])
+@empresa_blueprint.route('/gerar_padrao_equipamentos/', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def asset_file_out():
-    result, path = file_standard(file_name=Equipamento.nome_doc, titles=Equipamento.titulos_doc)
+def gerar_padrao_equipamentos():
+    result, path = arquivo_padrao(nome_arquivo=Equipamento.nome_doc, titulos=Equipamento.titulos_doc)
     if result:
         flash(f'Foi gerado o arquivo padrão no caminho: {path}', category="success")
-        return redirect(url_for("equipamento.asset_list"))
     else:
         flash("Não foi gerado o arquivo padrão", category="dander")
-        return redirect(url_for("equipamento.asset_list"))
+    return redirect(url_for("equipamento.equipamento_listar"))
 
 
-@empresa_blueprint.route('/asset_file_int/', methods=['GET', 'POST'])
+@empresa_blueprint.route('/cadastrar_lote_equipamentos/', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def asset_file_int():
+def cadastrar_lote_equipamentos():
     print('entrada da lista para o cadastro de equipamentos em lote')
 
     # file = request.files['file']
     # print(file.razao_social)
     # print(file.headers)
 
-    return redirect(url_for("equipamento.asset_list"))
+    return redirect(url_for("equipamento.equipamento_listar"))
 
 
-@empresa_blueprint.route('/group_list/<int:equipamento_id>', methods=['GET', 'POST'])
+@empresa_blueprint.route('/grupo_listar/<int:equipamento_id>', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def group_list(equipamento_id):
+def grupo_listar(equipamento_id):
     grupos = Grupo.query.filter_by(empresa_id=current_user.empresa_id).filter(Grupo.nome.notlike("%None%")).all()
-    return render_template('group_list.html', grupos=grupos, equipamento_id=equipamento_id)
+    return render_template('grupo_listar.html', grupos=grupos, equipamento_id=equipamento_id)
 
 
-@empresa_blueprint.route('/group_edit/<int:grupo_id>/<int:equipamento_id>', methods=['GET', 'POST'])
+@empresa_blueprint.route('/grupo_editar/<int:grupo_id>/<int:equipamento_id>', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def group_edit(grupo_id, equipamento_id):
+def grupo_editar(grupo_id, equipamento_id):
     if grupo_id > 0:
         # Atualizar
         grupo = Grupo.query.filter_by(id=grupo_id).first()
@@ -130,8 +133,7 @@ def group_edit(grupo_id, equipamento_id):
             form = GrupoForm(obj=grupo)
         else:
             flash("Grupo não localizado", category="danger")
-            return redirect(url_for("equipamento.group_list", equipamento_id=equipamento_id))
-
+            return redirect(url_for("equipamento.grupo_listar", equipamento_id=equipamento_id))
     else:
         # Cadastrar
         grupo = Grupo()
@@ -141,30 +143,33 @@ def group_edit(grupo_id, equipamento_id):
     # Validação
     if form.validate_on_submit():
         grupo.alterar_atributos(form)
-        grupo.salvar()
+        if grupo.salvar():
+            # Mensagens
+            if grupo_id > 0:
+                flash("Grupo atualizado", category="success")
+            else:
+                flash("Grupo cadastrado", category="success")
 
-        # Mensagens
-        if grupo_id > 0:
-            flash("Grupo atualizado", category="success")
+            return redirect(url_for("equipamento.grupo_listar", equipamento_id=equipamento_id))
         else:
-            flash("Grupo cadastrado", category="success")
+            flash("Grupo não cadastrado/atualizado", category="danger")
+    else:
+        flash_errors(form)
+    return render_template("grupo_editar.html", form=form, grupo=grupo, equipamento_id=equipamento_id)
 
-        return redirect(url_for("equipamento.group_list", equipamento_id=equipamento_id))
-    return render_template("group_edit.html", form=form, grupo=grupo, equipamento_id=equipamento_id)
 
-
-@empresa_blueprint.route('/system_list/<int:equipamento_id>', methods=['GET', 'POST'])
+@empresa_blueprint.route('/sistema_listar/<int:equipamento_id>', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def system_list(equipamento_id):
+def sistema_listar(equipamento_id):
     sistemas = Sistema.query.filter_by(equipamento_id=equipamento_id).all()
-    return render_template('system_list.html', sistemas=sistemas, equipamento_id=equipamento_id)
+    return render_template('sistema_listar.html', sistemas=sistemas, equipamento_id=equipamento_id)
 
 
-@empresa_blueprint.route('/system_edit/<int:sistema_id>/<int:equipamento_id>', methods=['GET', 'POST'])
+@empresa_blueprint.route('/sistema_editar/<int:sistema_id>/<int:equipamento_id>', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def system_edit(sistema_id, equipamento_id):
+def sistema_editar(sistema_id, equipamento_id):
     if sistema_id > 0:
         # Atualizar
         sistema = Sistema.query.filter_by(id=sistema_id).first()
@@ -173,8 +178,7 @@ def system_edit(sistema_id, equipamento_id):
             form = SistemaForm(obj=sistema)
         else:
             flash("Sistema não localizado", category="danger")
-            return redirect(url_for("equipamento.system_list", equipamento_id=equipamento_id))
-
+            return redirect(url_for("equipamento.sistema_editar", equipamento_id=equipamento_id))
     else:
         # Cadastrar
         sistema = Sistema()
@@ -184,15 +188,16 @@ def system_edit(sistema_id, equipamento_id):
     # Validação
     if form.validate_on_submit():
         sistema.alterar_atributos(form)
-        sistema.equipamento_id=equipamento_id
-        sistema.salvar()
-
-        # Mensagens
-        if sistema_id > 0:
-            flash("Sistema atualizado", category="success")
+        sistema.equipamento_id = equipamento_id
+        if sistema.salvar():
+            # Mensagens
+            if sistema_id > 0:
+                flash("Sistema atualizado", category="success")
+            else:
+                flash("Sistema cadastrado", category="success")
+            return redirect(url_for("equipamento.sistema_listar", equipamento_id=equipamento_id))
         else:
-            flash("Sistema cadastrado", category="success")
-
-        return redirect(url_for("equipamento.system_list", equipamento_id=equipamento_id))
-
-    return render_template("system_edit.html", form=form, sistema=sistema, sistema_id=sistema_id, equipamento_id=equipamento_id)
+            flash("Sistema não cadastrado/atualizado", category="danger")
+    else:
+        flash_errors(form)
+    return render_template("sistema_editar.html", form=form, sistema=sistema, sistema_id=sistema_id, equipamento_id=equipamento_id)

@@ -1,0 +1,41 @@
+{% extends "sistema_base.html" %}
+{% block body %}
+<body>
+
+<h2> LISTA DOS SISTEMAS </h2>
+<a href="{{ url_for('equipamento.sistema_editar', sistema_id=0, equipamento_id=equipamento_id) }}">
+    Adicionar
+</a>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th scope="col">NOME</th>
+        <th scope="col">EQUIPAMENTO</th>
+        <th scope="col">ATIVO</th>
+        <th scope="col"></th>
+    </tr>
+    </thead>
+
+    <tbody>
+    {% for sistema in sistemas %}
+    <tr>
+        <td>{{ sistema.nome }}</td>
+        <td>{{ sistema.equipamento.descricao_curta }}</td>
+        <td>{{ sistema.ativo }}</td>
+        <td>
+            <a href="{{ url_for('equipamento.sistema_editar', sistema_id=sistema.id, equipamento_id=equipamento_id) }}">
+                    <span data-tooltip="Informações">
+                        <i class="bi-caret-right fs-6"></i>
+                    </span>
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<a href="{{ url_for('equipamento.equipamento_editar', equipamento_id=equipamento_id) }}">Voltar</a>
+
+</body>
+{% endblock %}

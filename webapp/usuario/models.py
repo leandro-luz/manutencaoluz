@@ -6,7 +6,7 @@ import random
 from flask import flash
 from webapp.usuario import bcrypt, AnonymousUserMixin, jwt
 from webapp import db
-from webapp.plano.models import Tela
+from webapp.contrato.models import Tela
 from flask_jwt_extended import create_access_token, get_jwt_identity
 from webapp.utils.tools import password_random
 
@@ -26,15 +26,10 @@ class Perfil(db.Model):
 
     usuario = db.relationship("Usuario", back_populates="perfil")
     empresa = db.relationship("Empresa", back_populates="perfil")
-    viewrole = db.relationship("ViewRole", back_populates="perfil")
+    telaperfil = db.relationship("Telaperfil", back_populates="perfil")
 
     def __repr__(self) -> str:
         return f'<Perfil: {self.id}-{self.nome}>'
-
-    # def __init__(self, razao_social: str, descricao: str, empresa_id: int) -> None:
-    #     self.razao_social = razao_social
-    #     self.descricao = descricao
-    #     self.empresa_id = empresa_id
 
     def salvar(self) -> bool:
         """    Função para salvar no banco de dados o objeto"""
@@ -47,10 +42,10 @@ class Perfil(db.Model):
             db.session.rollback()
             return False
 
-    def alterar_atributos(self, form):
+    def alterar_atributos(self, form, empresa_id):
         self.nome = form.nome.data
         self.descricao = form.descricao.data
-        self.empresa_id = form.company.data
+        self.empresa_id = empresa_id
 
     @staticmethod
     def listar_regras_by_empresa(empresa_id: int):
@@ -149,46 +144,46 @@ class Usuario(db.Model):
     def __repr__(self):
         return f'<Usuario: {self.id}-{self.nome}>'
 
-    def usuario_administrador(self, nome: str, email: str, empresa_id: int, role_id: int, password_: int) -> None:
+    def usuario_administrador(self, nome: str, email: str, empresa_id: int, perfil_id: int, senha_id: int) -> None:
         """    Função para cadastrar as informações de administrador     """
         self.nome = nome
         self.email = email
-        self.senha_id = password_
+        self.senha_id = senha_id
         self.empresa_id = empresa_id
-        self.perfil_id = role_id
+        self.perfil_id = perfil_id
         self.ativo = True
         self.data_assinatura = datetime.datetime.now()
 
-    def save(self):
+    def salvar(self) -> bool:
         """    Função para salvar no banco de dados o objeto    """
         try:
-            db.session.autoflush = True
             db.session.add(self)
-            db.session.flush()
-            # db.session.commit()
+            db.session.commit()
+            return True
         except Exception as e:
             log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
             db.session.rollback()
+            return False
 
     # # @cache.memoize(60)
     def tela_permitida(self, nome: str) -> bool:
         """
         Verifica se a tela está cadastrada para o perfil e se está ativo
         """
-        for viewrole in ViewRole.query.filter_by(perfil_id=self.perfil_id, active=True).all():
-            view = Tela.query.filter_by(id=viewrole.tela_id).one_or_none()
-            if view.nome == nome:
+        for telacontrato in Telaperfil.query.filter_by(perfil_id=self.perfil_id, ativo=True).all():
+            tela = Tela.query.filter_by(id=telacontrato.tela_id).one_or_none()
+            if tela.nome == nome:
                 return True
         return False
 
-    def retornar_id(self):
+    def get_id(self):
         return self.id
 
     def alterar_email(self, email):
         self.email = email
 
-    def set_active(self, active):
-        self.ativo = active
+    def set_active(self, ativo):
+        self.ativo = ativo
 
     def ping(self):
         self.data_ultima_entrada = datetime.datetime.now()
@@ -223,11 +218,11 @@ class Usuario(db.Model):
         )
         return token
 
-    def alterar_atributos(self, form, new=False):
+    def alterar_atributos(self, form, empresa_id, new=False):
         self.nome = form.nome.data
         self.email = form.email.data
-        self.empresa_id = form.company.data
-        self.perfil_id = form.role.data
+        self.empresa_id = empresa_id
+        self.perfil_id = form.perfil.data
         self.ativo = form.ativo.data
         if new:
             self.data_assinatura = datetime.datetime.now()
@@ -242,25 +237,25 @@ class Usuario(db.Model):
 
     def retornar_telas_by_regras(self):
         telas = []
-        for viewrole in ViewRole.query.filter_by(perfil_id=self.perfil_id, active=True).all():
-            tela = Tela.query.filter_by(id=viewrole.tela_id).one()
+        for telaperfil in Telaperfil.query.filter_by(perfil_id=self.perfil_id, ativo=True).all():
+            tela = Tela.query.filter_by(id=telaperfil.tela_id).one()
             telas.append(dict(nome=tela.nome, url=tela.url, icon=tela.icon))
         return telas
 
 
-class ViewRole(db.Model):
+class Telaperfil(db.Model):
     """    Classe relacionamento entre Tela e Perfil    """
     id = db.Column(db.Integer(), primary_key=True)
-    active = db.Column(db.Boolean, default=True)
+    ativo = db.Column(db.Boolean, default=True)
 
     perfil_id = db.Column(db.Integer(), db.ForeignKey("perfil.id"), nullable=False)
     tela_id = db.Column(db.Integer(), db.ForeignKey("tela.id"), nullable=False)
 
-    perfil = db.relationship("Perfil", back_populates="viewrole")
-    tela = db.relationship("Tela", back_populates="viewrole")
+    perfil = db.relationship("Perfil", back_populates="telaperfil")
+    tela = db.relationship("Tela", back_populates="telaperfil")
 
     def __repr__(self) -> str:
-        return f'<ViewRole: {self.id}-{self.id}>'
+        return f'<Telaperfil: {self.id}-{self.id}>'
 
     def salvar(self) -> bool:
         """    Função para salvar no banco de dados o objeto    """
@@ -274,42 +269,41 @@ class ViewRole(db.Model):
             return False
 
     def alterar_atributos(self, form):
-        self.perfil_id = form.user.data
-        self.tela_id = form.view.data
+        self.perfil_id = form.perfil.data
+        self.tela_id = form.tela.data
 
-    def change_active(self):
-        if self.active:
-            self.active = False
+    def ativar_desativar(self):
+        if self.ativo:
+            self.ativo = False
         else:
-            self.active = True
+            self.ativo = True
 
     @staticmethod
     def retornar_name_tela(id_):
-        view = Tela.query.filter_by(id=id_).first()
-        return view.get_name()
+        tela = Tela.query.filter_by(id=id_).first()
+        return tela.get_name()
 
     @staticmethod
-    def alterar_perfil(active: bool, *args):
-        [[[ViewRole.save_change(active, item) for item in posicao] for posicao in id_] for id_ in args]
+    def alterar_perfil(ativo: bool, *args):
+        [[[Telaperfil.save_change(ativo, item) for item in posicao] for posicao in id_] for id_ in args]
 
     @staticmethod
-    def save_change(active: bool, kwargs) -> None:
-        viewrole = ViewRole.query.filter_by(perfil_id=kwargs['perfil_id'], tela_id=kwargs['tela_id']).one_or_none()
+    def save_change(ativo: bool, kwargs) -> None:
+        telaperfil = Telaperfil.query.filter_by(perfil_id=kwargs['perfil_id'], tela_id=kwargs['tela_id']).one_or_none()
 
-        if viewrole:  # se exister a tela para o perfil
-            if active:  # é para ativar
+        if telaperfil:  # se exister a tela para o perfil
+            if ativo:  # é para ativar
                 if kwargs['perfil_nome'] == 'admin':  # o perfil é administrador
-                    viewrole.ativo = True
+                    telaperfil.ativo = True
             else:  # o perfil não é administrador
-                viewrole.ativo = False  # desativa para qualquer perfil
+                telaperfil.ativo = False  # desativa para qualquer perfil
         else:
-            viewrole = ViewRole()
-            viewrole.perfil_id = kwargs['perfil_id']
-            viewrole.tela_id = kwargs['tela_id']
+            telaperfil = Telaperfil()
+            telaperfil.perfil_id = kwargs['perfil_id']
+            telaperfil.tela_id = kwargs['tela_id']
             if kwargs['perfil_nome'] == 'admin':  # o perfil é administrador
-                viewrole.active = True  # deixa ativa a tela
+                telaperfil.ativo = True  # deixa ativa a tela
             else:  # o perfil não é administrador
-                viewrole.active = False  # deixa desativada a tela
-
-        db.session.add(viewrole)
-        db.session.commit()
+                telaperfil.ativo = False  # deixa desativada a tela
+        if telaperfil.salvar():
+            flash("Tela do perfil não cadastrada", category="danger")

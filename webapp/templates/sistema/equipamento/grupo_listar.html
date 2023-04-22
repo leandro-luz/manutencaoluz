@@ -1,0 +1,39 @@
+{% extends "sistema_base.html" %}
+{% block body %}
+    <body>
+
+    <h2> LISTA DOS GRUPO DE EQUIPAMENTOS </h2>
+    <a href="{{ url_for('equipamento.equipamento_editar', grupo_id=0, equipamento_id=equipamento_id) }}">
+        Adicionar
+    </a>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">NOME</th>
+                <th scope="col">ATIVO</th>
+                <th scope="col"></th>
+            </tr>
+        </thead>
+
+        <tbody>
+        {% for grupo in grupos %}
+            <tr>
+                <td>{{ grupo.nome }}</td>
+                <td>{{ grupo.ativo }}</td>
+                <td>
+                    <a href="{{ url_for('equipamento.equipamento_editar', grupo_id=grupo.id, equipamento_id=equipamento_id) }}">
+                            <span data-tooltip="Informações">
+                                <i class="bi-caret-right fs-6"></i>
+                            </span>
+                    </a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ url_for('equipamento.equipamento_editar', equipamento_id=equipamento_id) }}">Voltar</a>
+
+    </body>
+{% endblock %}

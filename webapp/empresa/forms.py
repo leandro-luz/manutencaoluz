@@ -4,7 +4,7 @@ from flask_wtf import FlaskForm as Form
 from wtforms import StringField, IntegerField, SelectField, BooleanField, SubmitField, ValidationError, DateField
 from wtforms.validators import InputRequired, Length, Email, NumberRange
 
-from webapp.empresa.models import Interessado, Empresa, Business, Subbusiness
+from webapp.empresa.models import Interessado, Empresa
 
 
 def cnpj_validate(form, field):
@@ -24,7 +24,7 @@ class EmpresaForm(Form):
                         render_kw={"placeholder": "email@dominio.com"})
     telefone = StringField('Telefone', validators=[InputRequired()],
                            render_kw={"placeholder": "(xx)x xxxx-xxxx"})
-    cep = StringField('Cep', validators=[InputRequired(), Length(min=8, max=8)],
+    cep = StringField('Cep', validators=[InputRequired(), Length(min=8, max=8, message="O CEP está no formato errado")],
                       render_kw={"placeholder": "xxxxxxxxx"})
     numero = IntegerField('Número', validators=[InputRequired(), NumberRange(min=0)],
                           render_kw={"placeholder": "Digite o número"})
@@ -36,13 +36,12 @@ class EmpresaForm(Form):
     uf = StringField('UF', validators=[InputRequired()],  render_kw={"placeholder": "Digite o UF"})
     localizacao = StringField('Localização', render_kw={"placeholder": "Digite as coordenadas"})
 
-    active = BooleanField('Ativo',
-                          render_kw={"placeholder": "Informe se a empresa está ativa"})
+    ativo = BooleanField('Ativo', render_kw={"placeholder": "Informe se a empresa está ativa"})
 
-    nome_fantasia = StringField('Nome Fantasia', render_kw={"placeholder": "Digite o nome fantasia"})
-    data_abertura = DateField('Data de Abertura', render_kw={"placeholder": "Digite de criação do cnpj"})
+    nome_fantasia = StringField('Nome Fantasia', validators=[InputRequired()], render_kw={"placeholder": "Digite o nome fantasia"})
+    data_abertura = DateField('Data de Abertura', validators=[InputRequired()], render_kw={"placeholder": "Digite de criação do cnpj"})
     situacao = StringField('Situação', render_kw={"placeholder": "Digite a situação do cnpj"})
-    tipo = StringField('Tipo', render_kw={"placeholder": "Matriz/Filial"})
+    tipo = StringField('Tipo',  validators=[InputRequired()], render_kw={"placeholder": "Matriz/Filial"})
     nome_responsavel = StringField('Nome do Responsável', render_kw={"placeholder": "Digite o nome do responsável"})
     porte = StringField('Porte', render_kw={"placeholder": "Digite o porte da empresa"})
     natureza_juridica = StringField('Natureza Jurídica', render_kw={"placeholder": "Digite a natureza jurídica"})
@@ -54,7 +53,7 @@ class EmpresaForm(Form):
 
     business = SelectField('Ramo de Negócio', choices=[], validate_choice=False, coerce=int)
     subbusiness = SelectField('Sub-Ramo de Negócio', choices=[], validate_choice=False, coerce=int)
-    plano = SelectField('Plano', choices=[], validate_choice=False, coerce=int)
+    contrato = SelectField('Contrato', choices=[], validate_choice=False, coerce=int)
 
     submit = SubmitField("Cadastrar")
 
@@ -102,65 +101,87 @@ class EmpresaForm(Form):
                 flash("Já existe uma empresa vinculada a este email", category="danger")
                 return False
 
+            return True
         else:
-            for error in self.errors:
-                print(error)
-            flash("Empresa não validada", category="danger")
             return False
 
-        return True
 
+class EmpresaSimplesForm(Form):
+    """    Formulário de da classe empresa    """
+    id = IntegerField('Id')
+    nome_fantasia = StringField('Nome Fantasia', validators=[InputRequired()],
+                                render_kw={"placeholder": "Digite o nome fantasia"})
+    cnpj = StringField('Cnpj', validators=[InputRequired(), Length(min=14, max=18), cnpj_validate],
+                       render_kw={"placeholder": "xx.xxx.xxx/xxxx-xx"})
+    cep = StringField('Cep', validators=[InputRequired(), Length(min=8, max=8, message="O CEP está no formato errado")],
+                      render_kw={"placeholder": "xxxxxxxxx"})
+    numero = IntegerField('Número', validators=[InputRequired(), NumberRange(min=0)],
+                          render_kw={"placeholder": "Digite o número"})
+    complemento = StringField('Complemento', render_kw={"placeholder": "Digite o complemento"})
+    logradouro = StringField('Logradouro', validators=[InputRequired()],
+                             render_kw={"placeholder": "Digite o logradouro"})
+    bairro = StringField('Bairro', validators=[InputRequired()],  render_kw={"placeholder": "Digite o bairro"})
+    municipio = StringField('Município', validators=[InputRequired()],  render_kw={"placeholder": "Digite o município"})
+    uf = StringField('UF', validators=[InputRequired()],  render_kw={"placeholder": "Digite o UF"})
+    email = StringField('Email', validators=[InputRequired(), Email()],
+                        render_kw={"placeholder": "email@dominio.com"})
+    telefone = StringField('Telefone', validators=[InputRequired()],
+                           render_kw={"placeholder": "(xx)x xxxx-xxxx"})
+    contrato = SelectField('Contrato', choices=[], validate_choice=False, coerce=int)
 
-class BusinessForm(Form):
-    nome = StringField('Nome', validators=[InputRequired(), Length(max=50)],
-                       render_kw={"placeholder": "Digite o razao_social do ramo de negócios"})
     submit = SubmitField("Cadastrar")
 
-    def validate(self, **kwargs) -> bool:
+    def validate(self, **kwargs):
         """    Função que válida as informações do formulário    """
-        check_validate = super(BusinessForm, self).validate()  # valida de forma inicial as informações
+        check_validate = super(EmpresaSimplesForm, self).validate()
 
-        if check_validate:  # checa a validação inicial
-            # instância um negócio com base no identificador
-            business = Business.query.filter_by(nome=self.nome.data).one_or_none()
+        # instância uma empresa com as informações sem alterações, com base no identificador
+        empresa = Empresa.query.filter_by(id=self.id.data).one_or_none()
 
-            if business:  # se existe deve gerar uma falha
-                flash(f'Já existe um Negócio com este razao_social "{self.nome.data}"', category="danger")
+        if check_validate:
+            # verifica se existe empresa com o mesmo razao_social, ignorando a empresa repassada(se <> 0)
+            if empresa:
+                empresa = Empresa.query.filter(Empresa.id != empresa.id, Empresa.razao_social == self.nome_fantasia.data).one_or_none()
+            else:
+                empresa = Empresa.query.filter(Empresa.razao_social == self.nome_fantasia.data).one_or_none()
+
+            if empresa:
+                flash("Já existe uma empresa com este Nome Fantasia", category="danger")
                 return False
+
+            # verifica se existe empresa com o mesmo cnpj, ignorando a empresa repassada(se <> 0)
+            if empresa:
+                empresa = Empresa.query.filter(Empresa.id != empresa.id, Empresa.cnpj == self.cnpj.data).one_or_none()
+            else:
+                empresa = Empresa.query.filter(Empresa.razao_social == self.cnpj.data).one_or_none()
+
+            if empresa:
+                flash("Já existe uma empresa com este cnpj", category="danger")
+                return False
+
+            # Verifica se o cnpj está válido
+            if not Empresa.validar_cnpj(self.cnpj.data):
+                flash("O CNPJ informado não está válido", category="danger")
+                return False
+
+            # verifica se existe empresa com o mesmo endereço eletrônico, ignorando a empresa repassada(se <> 0)
+            if empresa:
+                empresa = Empresa.query.filter(Empresa.id != empresa.id,
+                                               Empresa.email == self.email.data).one_or_none()
+            else:
+                empresa = Empresa.query.filter(Empresa.razao_social == self.email.data).one_or_none()
+
+            if empresa:
+                flash("Já existe uma empresa vinculada a este email", category="danger")
+                return False
+            return True
+
         else:
-            flash("Negócio não validado", category="danger")
             return False
 
-        return True
 
-
-class SubbusinessForm(Form):
-    nome = StringField('Nome', validators=[InputRequired(), Length(max=50)],
-                       render_kw={"placeholder": "Digite o razao_social do sub-ramo de negócios"})
-    business = SelectField('Ramo de Negócio', choices=[], coerce=int)
-    submit = SubmitField("Cadastrar")
-
-    def validate(self, **kwargs) -> bool:
-        """    Função que válida as informações do formulário    """
-        check_validate = super(SubbusinessForm, self).validate()  # valida de forma inicial as informações
-
-        if check_validate:  # checa a validação inicial
-            # instância um subnegócio com base no identificador
-            subbusiness = Subbusiness.query.filter_by(nome=self.nome.data, business_id=self.business.data).one_or_none()
-
-            if subbusiness:  # se existe deve gerar uma falha
-                flash(f'Já existe um Subnegócio com este razao_social "{self.nome.data}"', category="danger")
-                return False
-        else:
-            flash("Subnegócio não validado", category="danger")
-            return False
-
-        return True
-
-
-class RegistroEmpresaForm(Form):
-    razao_social = StringField('Razão Social', [InputRequired(), Length(max=50)],
-                       render_kw={"placeholder": "Digite a Razão Social da empresa"})
+class RegistroInteressadoForm(Form):
+    nome_fantasia = StringField('Nome Fantasia', [InputRequired(), Length(max=50)], render_kw={"placeholder": "Digite a Razão Social da empresa"})
     cnpj = StringField('Cnpj', validators=[InputRequired(), Length(min=18, max=18), cnpj_validate],
                        render_kw={"placeholder": "00.000.000/0000-00"})
     email = StringField('Email', [InputRequired(), Email()],
@@ -172,11 +193,11 @@ class RegistroEmpresaForm(Form):
 
     def validate(self, **kwargs):
         # if our validators do not pass
-        check_validate = super(RegistroEmpresaForm, self).validate()
+        check_validate = super(RegistroInteressadoForm, self).validate()
 
         if check_validate:
             # verifica se o razao_social da empresa já foi solicitado
-            interessado = Interessado.query.filter_by(nome=self.razao_social.data).first()
+            interessado = Interessado.query.filter_by(nome_fantasia=self.nome_fantasia.data).first()
             if interessado:
                 flash("Já foi solicitado acesso para esta empresa", category="danger")
                 return False
@@ -185,10 +206,6 @@ class RegistroEmpresaForm(Form):
             if interessado:
                 flash("Já foi solicitado acesso com este cnpj", category="danger")
                 return False
-
+            return True
         else:
-            for error in self.errors:
-                print(error)
             return False
-
-        return True

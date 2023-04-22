@@ -1,4 +1,4 @@
-{{ interessado.nome }},
+{{ interessado.nome_fantasia }},
 
 Agradeçemos o contato com a Manutenção Luz!
 
@@ -10,7 +10,7 @@ e podem serem alterados a qualquer momento.
 
 Para darmos prosseguimento ao acesso é necessário escolher um dos planos iniciais:
 
-{{ url_for('empresa.lead_confirm', token=token, _external=True) }}
+{{ url_for('empresa.interessado_confirmar', token=token, _external=True) }}
 
 
 Atenciosamente,

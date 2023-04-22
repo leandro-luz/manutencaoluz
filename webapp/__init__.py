@@ -18,21 +18,21 @@ def create_app(object_name: str) -> Flask:
     mail.init_app(app)
     # debug_toolbar.init_app(app)
 
-    from webapp.usuario import create_module as auth_create_module
-    from webapp.main import create_module as main_create_module
-    from webapp.sistema import create_module as sistema_create_module
-    from webapp.empresa import create_module as company_create_module
-    from webapp.equipamento import create_module as asset_create_module
-    from webapp.supplier import create_module as supplier_create_module
-    from webapp.plano import create_module as plan_create_module
+    from webapp.usuario import criar_modulo as criar_modulo_usuario
+    from webapp.main import criar_modulo as criar_modulo_main
+    from webapp.sistema import criar_modulo as criar_modulo_sistema
+    from webapp.empresa import criar_modulo as criar_modulo_empresa
+    from webapp.equipamento import criar_modulo as criar_modulo_equipamento
+    from webapp.supplier import criar_modulo as criar_modulo_fornecedor
+    from webapp.contrato import criar_modulo as criar_modulo_contrato
 
-    auth_create_module(app)
-    main_create_module(app)
-    sistema_create_module(app)
-    company_create_module(app)
-    asset_create_module(app)
-    supplier_create_module(app)
-    plan_create_module(app)
+    criar_modulo_usuario(app)
+    criar_modulo_main(app)
+    criar_modulo_sistema(app)
+    criar_modulo_empresa(app)
+    criar_modulo_equipamento(app)
+    criar_modulo_fornecedor(app)
+    criar_modulo_contrato(app)
 
     # app.register_error_handler(404, page_not_found)
     return app

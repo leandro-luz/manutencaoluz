@@ -24,7 +24,7 @@ login_manager.login_message_category = "info"
 login_manager.anonymous_user = BlogAnonymous
 
 
-def create_module(app, **kwargs) -> None:
+def criar_modulo(app, **kwargs) -> None:
     """    Cria o módulo para controlador Auth - controlde de acessos    """
     bcrypt.init_app(app)
     login_manager.init_app(app)

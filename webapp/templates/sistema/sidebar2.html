@@ -3,22 +3,22 @@
    {{ current_user.get_views_role() }}
     <ul class="nav nav-pills flex-sm-column flex-row align-items-left">
         <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('plano.plan_list') }}" title="">
-                <i class="bi-briefcase fs-6"> Plano</i>
+            <a class="nav-link" href="{{ url_for('contrato.contrato_listar') }}" title="">
+                <i class="bi-briefcase fs-6"> Contrato</i>
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('empresa.company_list') }}" title="">
+            <a class="nav-link" href="{{ url_for('empresa.empresa_listar') }}" title="">
                 <i class="bi-house-door fs-6"> Empresa</i>
             </a>
         </li>
         <li>
-            <a class="nav-link" href="{{ url_for('usuario.auth_list') }}" title="">
+            <a class="nav-link" href="{{ url_for('usuario.usuario_listar') }}" title="">
                 <i class="bi-people fs-6"> RH</i>
             </a>
         </li>
         <li>
-            <a class="nav-link" href="{{ url_for('asset.asset_list') }}" title="">
+            <a class="nav-link" href="{{ url_for('equipamento.equipamento_editar') }}" title="">
                 <i class="bi-robot fs-6"> Equipamento</i>
             </a>
         </li>

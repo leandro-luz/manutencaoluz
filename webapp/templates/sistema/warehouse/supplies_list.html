@@ -20,7 +20,7 @@
             {% for supplier in suppliers %}
                 <tr>
                     <td>{{ supplier.nome }}</td>
-                    <td>{{ supplier.company_id }}</td>
+                    <td>{{ supplier.empresa_id }}</td>
                     <td>
                         <a href="{{ url_for('supplier.supplier_edit', id=supplier.id) }}">
                             <span data-tooltip="Informações">

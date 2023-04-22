@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block body %}
+<body>
+<div class="container col-11 col-md-9" id="form-container">
+    <div class="row align-items-center gx-5">
+        <div class="col-md-6 order-md-2">
+            <h2>Vamos atualizar a sua senha</h2>
+            <form action="{{ url_for('.alterar_senha_token', token=token) }}" method="POST">
+                {{ form.hidden_tag() }}
+                <div class="form-floating mb-3">
+                    {{ form.senha(class="form-control") }}
+                    <label class="form-label">Digite a nova senha</label>
+                </div>
+                <div class="form-floating mb-3">
+                    {{ form.senha2(class="form-control") }}
+                    <label class="form-label">Confirme a nova senha</label>
+                </div>
+                <input class="btn btn-primary" type="submit" value="Atualizar">
+            </form>
+        </div>
+
+        <div class="col-md-6 order-md-1">
+            <div class="col-12">
+                <img alt="Entrar no Sistema" class="img-fluid" src="/static/img/trocar_senha.svg">
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+{% endblock %}

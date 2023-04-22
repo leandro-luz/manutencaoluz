@@ -1,0 +1,27 @@
+{% extends "sistema_base.html" %}
+{% block body %}
+    <body>
+        <form action="{{ url_for('equipamento.sistema_editar', sistema_id=sistema.id, equipamento_id=equipamento_id) }}" method="POST">
+            {{form.csrf_token}}
+
+            {% if sistema.id == 0 %}
+                <h2>Cadastro de Sistemas dos Equipamentos</h2>
+            {% else %}
+                <h2>Sistema</h2>
+            {% endif %}
+
+            {{form.nome.label}}    {{form.nome(size=20)}}<br>
+            {{form.ativo.label}}    {{form.ativo(size=20)}}<br>
+
+            {% if sistema.id == 0 %}
+                <input type="submit" value="Cadastrar"/>
+            {% else %}
+                <input type="submit" value="Atualizar"/>
+            {% endif %}
+
+        </form>
+
+    <a href="{{ url_for('equipamento.sistema_listar', equipamento_id=equipamento_id) }}">Voltar</a>
+
+    </body>
+{% endblock %}

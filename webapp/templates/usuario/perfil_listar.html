@@ -1,0 +1,38 @@
+{% extends "sistema_base.html" %}
+{% block body %}
+<body>
+
+<h2> LISTA DOS PERFIS DE ACESSO </h2>
+<a href="{{ url_for('usuario.perfil_editar', perfil_id=0) }}">
+    Adicionar
+</a>
+
+
+<table class="table">
+    <thead>
+    <tr>
+        <th scope="col">NOME</th>
+        <th scope="col"></th>
+    </tr>
+    </thead>
+
+    <tbody>
+    {% for perfil in perfis %}
+    <tr>
+        <td>{{ perfil.nome }}</td>
+        <td>
+            <a href="{{ url_for('usuario.perfil_editar', perfil_id=perfil.id) }}">
+                    <span data-tooltip="Informações">
+                        <i class="bi-caret-right fs-6"></i>
+                    </span>
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<a href="{{ url_for('usuario.usuario_listar') }}">Voltar</a>
+
+</body>
+{% endblock %}

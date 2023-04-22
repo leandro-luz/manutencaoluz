@@ -7,13 +7,13 @@ env = os.environ.get('WEBAPP_ENV', 'test')
 app = create_app('config.%sConfig' % env.capitalize())
 app.app_context().push()
 
-from webapp.usuario.models import Perfil, Senha, Usuario, ViewRole
-from webapp.usuario.forms import RoleForm
+from webapp.usuario.models import Perfil, Senha, Usuario, Telaperfil
+from webapp.usuario.forms import PerfilForm
 
 
 class Test_Auth(unittest.TestCase):
     def test_role_change_atributes(self):
-        form = RoleForm
+        form = PerfilForm
         name = 'regra_teste'
         descricao = 'testando a gravação de um regra'
         company = 1

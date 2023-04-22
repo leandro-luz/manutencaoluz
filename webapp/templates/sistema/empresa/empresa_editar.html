@@ -1,0 +1,257 @@
+{% extends "sistema_base.html" %}
+{% block body %}
+    <body>
+        <form action="{{ url_for('empresa.empresa_editar', empresa_id=empresa.id) }}" method="POST">
+            {{form.csrf_token}}
+
+            {% if empresa.id == 0 %}
+                <h2>Cadastro de Empresa</h2>
+            {% else %}
+                <h2>Empresa</h2>
+            {% endif %}
+
+            {{form.cnpj.label}}             {{form.cnpj(size=20)}} <button onclick="pesquisar_cnpj()" type="button"> Validar CNPJ </button> <br>
+            {{form.razao_social.label}}     {{form.razao_social(size=100)}}<br>
+            {{form.nome_fantasia.label}}    {{form.nome_fantasia(size=100)}}<br>
+            {{form.data_abertura.label}}    {{form.data_abertura(size=10)}}<br>
+            {{form.situacao.label}}    {{form.situacao(size=10)}}<br>
+            {{form.porte.label}}    {{form.porte(size=20)}}<br>
+            {{form.natureza_juridica.label}}    {{form.natureza_juridica(size=50)}}<br>
+            {{form.cnae_principal.label}}    {{form.cnae_principal(size=10)}}
+            {{form.cnae_principal_texto.label}}    {{form.cnae_principal_texto(size=100)}}<br>
+            {{form.inscricao_estadual.label}}    {{form.inscricao_estadual(size=30)}}<br>
+            {{form.inscricao_municipal.label}}    {{form.inscricao_municipal(size=30)}}<br>
+            {{form.tipo.label}}    {{form.tipo(size=30)}}<br><br>
+
+            {{form.cep.label}}    {{form.cep(size=20)}}<button onclick="pesquisar_cep()" type="button"> Validar CEP </button> <br>
+            {{form.logradouro.label}}    {{form.logradouro(size=50)}}
+            {{form.numero.label}}    {{form.numero(size=10)}}<br>
+            {{form.complemento.label}}  {{form.complemento(size=50)}}
+            {{form.bairro.label}}    {{form.bairro(size=50)}}<br>
+            {{form.municipio.label}}    {{form.municipio(size=50)}}
+            {{form.uf.label}}    {{form.uf(size=10)}}<br>
+            {{form.localizacao.label}}    {{form.localizacao(size=50)}}<br><br>
+
+            {{form.nome_responsavel.label}}    {{form.nome_responsavel(size=50)}}<br>
+            {{form.email.label}}    {{form.email(size=50)}}<br>
+            {{form.telefone.label}}    {{form.telefone(size=20)}}<br>
+            {{form.ativo.label}}    {{form.ativo(size=20)}}<br>
+
+            {{form.contrato.label}}            {{form.contrato}}
+            <a href="{{ url_for('contrato.contrato_listar') }}">
+                <span data-tooltip="Atualizar">
+                    <i class="bi-caret-down fs-6"></i>
+                </span>
+            </a> <br>
+
+            {% if empresa.id == 0 %}
+                <input type="submit" value="Cadastrar"/>
+            {% else %}
+                <input type="submit" value="Atualizar"/>
+            {% endif %}
+
+
+        </form>
+
+    <a href="{{ url_for('empresa.empresa_listar') }}">Voltar</a>
+
+</body>
+
+
+<script>
+function pesquisar_cep() {
+    cep_select = document.getElementById('cep')
+    var cep = cep_select.value.replace(/\D/g, '');
+    //Verifica se campo cep possui valor informado.
+        if (cep != "") {
+            //Expressão regular para validar o CEP.
+            var validacep = /^[0-9]{8}$/;
+
+             //Valida o formato do CEP.
+            if(validacep.test(cep)) {
+
+                 //Preenche os campos com "..." enquanto consulta webservice.
+                document.getElementById('numero').value="...";
+                document.getElementById('complemento').value="...";
+                document.getElementById('logradouro').value="...";
+                document.getElementById('bairro').value="...";
+                document.getElementById('municipio').value="...";
+                document.getElementById('uf').value="...";
+
+                //Cria um elemento javascript.
+                var script_cep = document.createElement('script');
+
+                //Sincroniza com o callback.
+                script_cep.src = 'https://viacep.com.br/ws/'+ cep + '/json/?callback=callback_cep';
+
+                //Insere script no documento e carrega o conteúdo.
+                document.body.appendChild(script_cep);
+            }
+            else {
+                //cep é inválido.
+                limpa_formulário_cep();
+                alert("Formato de CEP inválido.");
+            }
+        }
+        else {
+            limpa_formulário_cep();
+        }
+    }
+
+
+function limpa_formulário_cep() {
+        //Limpa valores do formulário de cep.
+        document.getElementById('numero').value="";
+        document.getElementById('complemento').value="";
+        document.getElementById('logradouro').value="";
+        document.getElementById('bairro').value="";
+        document.getElementById('municipio').value="";
+        document.getElementById('uf').value="";
+}
+
+function callback_cep(conteudo) {
+    if (!("erro" in conteudo)) {
+        //Atualiza os campos com os valores.
+        document.getElementById('logradouro').value=(conteudo.logradouro);
+        document.getElementById('bairro').value=(conteudo.bairro);
+        document.getElementById('municipio').value=(conteudo.localidade);
+        document.getElementById('uf').value=(conteudo.uf);
+    } //end if.
+    else {
+        //CEP não Encontrado.
+        limpa_formulário_cep();
+        alert("CEP não encontrado.");
+    }
+}
+
+
+<!--                    CNPJ                    -->
+
+
+function pesquisar_cnpj() {
+    cnpj_select = document.getElementById('cnpj')
+    var cnpj = cnpj_select.value.replace(/\D/g, '');
+
+    //Verifica se campo cep possui valor informado.
+        if (cnpj != "") {
+            //Expressão regular para validar o CNPJ.
+            var validacnpj = /^[0-9]{14}$/;
+
+             //Valida o formato do CEP.
+            if(validacnpj.test(cnpj)) {
+                //Preenche os campos com "..." enquanto consulta webservice.
+
+
+
+                document.getElementById('razao_social').value="...";
+                document.getElementById('nome_fantasia').value="...";
+                document.getElementById('data_abertura').value="...";
+                document.getElementById('situacao').value="...";
+                document.getElementById('porte').value="...";
+                document.getElementById('nome_responsavel').value="...";
+                document.getElementById('natureza_juridica').value="...";
+                document.getElementById('cnae_principal').value="...";
+                document.getElementById('cnae_principal_texto').value="...";
+                document.getElementById('inscricao_estadual').value="...";
+                document.getElementById('inscricao_municipal').value="...";
+                document.getElementById('cep').value="...";
+                document.getElementById('numero').value="...";
+                document.getElementById('complemento').value="...";
+                document.getElementById('logradouro').value="...";
+                document.getElementById('bairro').value="...";
+                document.getElementById('municipio').value="...";
+                document.getElementById('uf').value="...";
+                document.getElementById('localizacao').value="...";
+                document.getElementById('email').value="...";
+                document.getElementById('telefone').value="...";
+
+
+                //Cria um elemento javascript.
+                var script_cnpj = document.createElement('script');
+
+                //Sincroniza com o callback.
+                script_cnpj.src = 'https://receitaws.com.br/v1/cnpj/' + cnpj +'?callback=callback_cnpj';
+
+                //Insere script no documento e carrega o conteúdo.
+                document.body.appendChild(script_cnpj);
+            }
+            else {
+                //cnpj é inválido.
+                limpa_formulário_cnpj();
+                alert("CNPJ inválido");
+            }
+        }
+        else {
+            limpa_formulário_cnpj();
+        }
+    }
+
+
+function limpa_formulário_cnpj() {
+        //Limpa valores do formulário de cnpj.
+        document.getElementById('razao_social').value="";
+        document.getElementById('nome_fantasia').value="";
+        document.getElementById('data_abertura').value="";
+        document.getElementById('situacao').value="";
+        document.getElementById('porte').value="";
+        document.getElementById('nome_responsavel').value="";
+        document.getElementById('natureza_juridica').value="";
+        document.getElementById('cnae_principal').value="";
+        document.getElementById('cnae_principal_texto').value="";
+        document.getElementById('inscricao_estadual').value="";
+        document.getElementById('inscricao_municipal').value="";
+        document.getElementById('cep').value="";
+        document.getElementById('numero').value="";
+        document.getElementById('complemento').value="";
+        document.getElementById('logradouro').value="";
+        document.getElementById('bairro').value="";
+        document.getElementById('municipio').value="";
+        document.getElementById('uf').value="";
+        document.getElementById('localizacao').value="";
+        document.getElementById('email').value="";
+        document.getElementById('telefone').value="";
+}
+
+
+function callback_cnpj(conteudo_cnpj) {
+    if (!("erro" in conteudo_cnpj)) {
+        //Atualiza os campos com os valores.
+        document.getElementById('razao_social').value=(conteudo_cnpj.nome);
+        document.getElementById('nome_fantasia').value=(conteudo_cnpj.fantasia);
+
+        document.getElementById('data_abertura').value=(conteudo_cnpj.abertura);
+
+        document.getElementById('situacao').value=(conteudo_cnpj.situacao);
+        document.getElementById('porte').value=(conteudo_cnpj.porte);
+        document.getElementById('natureza_juridica').value=(conteudo_cnpj.natureza_juridica);
+        document.getElementById('cnae_principal').value=(conteudo_cnpj.atividade_principal[0]['code']);
+        document.getElementById('cnae_principal_texto').value=(conteudo_cnpj.atividade_principal[0]['text']);
+        document.getElementById('cep').value=(conteudo_cnpj.cep);
+        document.getElementById('numero').value=(conteudo_cnpj.numero);
+        document.getElementById('complemento').value=(conteudo_cnpj.complemento);
+        document.getElementById('logradouro').value=(conteudo_cnpj.logradouro);
+        document.getElementById('bairro').value=(conteudo_cnpj.bairro);
+        document.getElementById('municipio').value=(conteudo_cnpj.municipio);
+        document.getElementById('uf').value=(conteudo_cnpj.uf);
+        document.getElementById('nome_responsavel').value=(conteudo_cnpj.qsa[0]['nome']);
+        document.getElementById('email').value=(conteudo_cnpj.email);
+        document.getElementById('telefone').value=(conteudo_cnpj.telefone);
+
+    } //end if.
+    else {
+        //CEP não Encontrado.
+        limpa_formulário_cnpj();
+        alert("CNPJ não encontrado");
+    }
+}
+
+
+
+
+
+
+</script>
+
+{% endblock %}
+
+

@@ -1,0 +1,79 @@
+{% extends "sistema_base.html" %}
+{% block body %}
+    <body>
+        <form action="{{ url_for('equipamento.equipamento_editar', equipamento_id=equipamento.id) }}" method="POST">
+            {{form.csrf_token}}
+            {% if equipamento.id == 0 %}
+                <h2>Cadastro de Equipamento</h2>
+            {% else %}
+                <h2>Equipamento</h2>
+            {% endif %}
+
+            {{form.cod.label}}    {{form.cod(size=20)}}<br>
+            {{form.descricao_curta.label}}    {{form.descricao_curta(size=20)}}<br>
+            {{form.descricao_longa.label}}    {{form.descricao_longa(size=20)}}<br>
+            {{form.fabricante.label}}    {{form.fabricante(size=20)}}<br>
+            {{form.marca.label}}    {{form.marca(size=20)}}<br>
+            {{form.modelo.label}}    {{form.modelo}}<br>
+            {{form.ns.label}}    {{form.ns}}<br>
+            {{form.largura.label}}    {{form.largura}}<br>
+            {{form.comprimento.label}}    {{form.comprimento}}<br>
+            {{form.altura.label}}    {{form.altura}}<br>
+            {{form.peso.label}}    {{form.peso}}<br>
+            {{form.data_fabricacao.label}}    {{form.data_fabricacao}}<br>
+            {{form.data_aquisicao.label}}    {{form.data_aquisicao}}<br>
+            {{form.data_instalacao.label}}    {{form.data_instalacao}}<br>
+            {{form.custo_aquisicao.label}}    {{form.custo_aquisicao}}<br>
+            {{form.depreciacao.label}}    {{form.depreciacao}}<br>
+            {{form.tag.label}}    {{form.tag}}<br>
+            {{form.centro_custo.label}}    {{form.centro_custo}}<br>
+
+            {{form.grupo.label}}            {{form.grupo}}
+            <a href="{{ url_for('equipamento.grupo_listar', equipamento_id=equipamento.id) }}">
+                <span data-tooltip="Atualizar">
+                    <i class="bi-caret-down fs-6"></i>
+                </span>
+            </a> <br>
+
+            {{form.sistema.label}}            {{form.sistema}}
+
+            <a href="{{ url_for('equipamento.sistema_listar', equipamento_id=equipamento.id) }}">
+                <span data-tooltip="Atualizar">
+                    <i class="bi-caret-down fs-6"></i>
+                </span>
+            </a> <br>
+
+            {{form.ativo.label}}    {{form.ativo(size=20)}}<br>
+
+
+
+            {% if equipamento.id == 0 %}
+                <input type="submit" value="Cadastrar"/>
+            {% else %}
+                <input type="submit" value="Atualizar"/>
+            {% endif %}
+
+        </form>
+
+        <br>
+
+        {% if equipamento.id == 0 %}
+
+            <form enctype="multipart/form-data" action="#" method="POST">
+                <p>Escolha um arquivo para o cadastro de equipamentos em Lote: <input type="file" name="filename" />
+                <input type="submit" value="Cadastrar_Lote" /></p>
+            </form>
+
+            <a href="{{ url_for('equipamento.gerar_padrao_equipamentos') }}">Gerar Arquivo Base</a>
+            <br>
+            <br>
+        {% endif %}
+
+        <a href="{{ url_for('equipamento.equipamento_listar') }}">Voltar</a>
+
+    </body>
+
+
+{% endblock %}
+
+

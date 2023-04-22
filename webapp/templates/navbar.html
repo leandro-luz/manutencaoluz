@@ -22,11 +22,11 @@
                             <b>{{ current_user.nome }}</b>
                         </a>
                         <ul aria-labelledby="dropdownMenuButton1" class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('usuario.user', user_id=current_user.id) }}">Conta</a>
+                            <li><a class="dropdown-item" href="{{ url_for('usuario.usuario', usuario_id=current_user.id) }}">Conta</a>
                             </li>
-                            <li><a class="dropdown-item" href="{{ url_for('usuario.change_password') }}">Trocar senha</a>
+                            <li><a class="dropdown-item" href="{{ url_for('usuario.trocar_senha') }}">Trocar senha</a>
                             </li>
-                            <li><a class="dropdown-item" href="{{ url_for('usuario.change_email_request') }}">Trocar
+                            <li><a class="dropdown-item" href="{{ url_for('usuario.solicitar_troca_email') }}">Trocar
                                 email</a>
                             </li>
                             <li><a class="dropdown-item" href="{{ url_for('usuario.logout') }}">Desconectar</a></li>
@@ -47,7 +47,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{{url_for('empresa.request')}}">
+                    <a class="nav-link" href="{{url_for('empresa.solicitar')}}">
                         <i class="bi bi-person-plus"></i>
                         <b>Cadastro</b>
                     </a>
