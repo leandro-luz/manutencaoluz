@@ -1,0 +1,61 @@
+{% extends "sistema_base.html" %}
+{% block body %}
+    <body>
+        <form action="{{ url_for('plano_manutencao.plano_editar', plano_id=plano.id) }}" method="POST">
+            {{form.csrf_token}}
+            {% if plano.id == 0 %}
+                <h2>Cadastro de Plano de Manutenção</h2>
+            {% else %}
+                <h2>Plano de Manutenção</h2>
+            {% endif %}
+
+
+            {{form.nome.label}}    {{form.nome(size=20)}}<br>
+            {{form.codigo.label}}    {{form.codigo(size=20)}}<br>
+            {{form.tipodata.label}}            {{form.tipodata}}
+            {{form.periodicidade.label}}            {{form.periodicidade}}
+
+            {{form.equipamento.label}}            {{form.equipamento}}
+
+            <a href="#">
+                <span data-tooltip="Atualizar">
+                    <i class="bi-caret-down fs-6"></i>
+                </span>
+            </a> <br>
+
+            {{form.ativo.label}}    {{form.ativo(size=20)}}<br>
+
+            {% if plano.id == 0 %}
+                <input type="submit" value="Cadastrar"/>
+            {% else %}
+                <input type="submit" value="Atualizar"/>
+            {% endif %}
+
+        </form>
+
+        <br>
+
+        {% if plano.id == 0 %}
+
+            <form enctype="multipart/form-data" action="#" method="POST">
+<!--                <p>Escolha um arquivo para o cadastro de equipamentos em Lote (4MB):-->
+<!--                    <input type="file" name="arquivo" value="Cadastrar_Lote">-->
+                    {{ form.file.label }} {{ form.file }}
+                    <input type="submit" value="Cadastrar"/>
+<!--                </p>-->
+
+            </form>
+
+            <a href="#">Gerar Arquivo Base</a>
+            <br>
+            <br>
+        {% endif %}
+
+        <a href="{{ url_for('plano_manutencao.plano_listar') }}">Voltar</a>
+
+    </body>
+
+
+{% endblock %}
+
+

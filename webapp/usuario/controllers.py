@@ -12,7 +12,7 @@ from webapp.utils.erros import flash_errors
 usuario_blueprint = Blueprint(
     'usuario',
     __name__,
-    template_folder='../templates/usuario',
+    template_folder='../templates/sistema/usuario',
     url_prefix="/sistema"
 )
 
@@ -300,10 +300,11 @@ def usuario_editar(usuario_id):
             password_.alterar_data_expiracao()
             password_.salvar()
             usuario.senha_id = password_.id
-            # grava as informações do formulário no objeto usuário
-            usuario.alterar_atributos(form, current_user.empresa_id, new)
 
-            if usuario.salvar():
+        # grava as informações do formulário no objeto usuário
+        usuario.alterar_atributos(form, current_user.empresa_id, new)
+        if usuario.salvar():
+            if new:
                 usuario = Usuario.query.filter_by(id=usuario_id).one_or_none()
                 # envia o email com as informações de login
                 send_email(usuario.email,
@@ -312,10 +313,11 @@ def usuario_editar(usuario_id):
                            usuario=usuario)
                 flash("Usuário cadastrado", category="success")
             else:
-                flash("Usuário não cadastrado/atualizado", category="danger")
+                flash("Usuário atualizado", category="success")
+                return redirect(url_for("usuario.usuario_listar"))
         else:
-            flash("Usuário atualizado", category="success")
-        return redirect(url_for("usuario.usuario_listar"))
+            flash("Usuário não cadastrado/atualizado", category="danger")
+            return redirect(url_for("usuario.usuario_editar", usuario_id=usuario_id))
     else:
         flash_errors(form)
 

@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm as Form
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, IntegerField
 from wtforms.validators import InputRequired, Length, EqualTo, Email, Regexp
 from webapp.usuario.models import Usuario, Telaperfil
 from webapp.empresa.models import Empresa
@@ -88,6 +88,7 @@ class RegistroUsuarioForm(Form):
 
 
 class EditarUsuarioForm(Form):
+    id = IntegerField()
     nome = StringField('Usuário', [InputRequired(), Length(max=50),
                                        Regexp('^[A-Za-z][A-Za-z0-9_.]*$', 0,
                                               'Nome deve conter somente letras, '
@@ -103,15 +104,18 @@ class EditarUsuarioForm(Form):
         # if our validators do not pass
         check_validate = super(EditarUsuarioForm, self).validate()
         if check_validate:
+            usuario = Usuario.query.filter_by(id=self.id.data).one_or_none()
             # Verifica se já existe um usuário com o mesmo nome
-            if Usuario.query.filter_by(nome=self.nome.data).first() is not None:
-                flash("Usuário já cadastrado com este nome", category="danger")
-                return False
+            if not usuario.nome == self.nome.data:
+                if Usuario.query.filter_by(nome=self.nome.data).first() is not None:
+                    flash("Usuário já cadastrado com este nome", category="danger")
+                    return False
 
             # Verifica se existe um usuário com o mesmo email
-            if Usuario.query.filter_by(email=self.email.data).first() is not None:
-                flash("Usuário já cadastrado com este email", category="danger")
-                return False
+            if not usuario.email == self.email.data:
+                if Usuario.query.filter_by(email=self.email.data).first() is not None:
+                    flash("Usuário já cadastrado com este email", category="danger")
+                    return False
             return True
         else:
             return False

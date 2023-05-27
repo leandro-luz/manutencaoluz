@@ -5,7 +5,7 @@ from wtforms import StringField, IntegerField, SelectField, BooleanField, Submit
 from wtforms.validators import InputRequired, Length, Email, NumberRange
 
 from webapp.empresa.models import Interessado, Empresa
-
+from datetime import datetime
 
 def cnpj_validate(form, field):
     if not re.match(r"([0-9]{2}[.]?[0-9]{3}[.]?[0-9]{3}[/]?[0-9]{4}[-]?[0-9]{2})", field.data):
@@ -24,7 +24,7 @@ class EmpresaForm(Form):
                         render_kw={"placeholder": "email@dominio.com"})
     telefone = StringField('Telefone', validators=[InputRequired()],
                            render_kw={"placeholder": "(xx)x xxxx-xxxx"})
-    cep = StringField('Cep', validators=[InputRequired(), Length(min=8, max=8, message="O CEP está no formato errado")],
+    cep = StringField('Cep', validators=[InputRequired(), Length(min=8, max=10, message="O CEP está no formato errado")],
                       render_kw={"placeholder": "xxxxxxxxx"})
     numero = IntegerField('Número', validators=[InputRequired(), NumberRange(min=0)],
                           render_kw={"placeholder": "Digite o número"})
@@ -39,7 +39,7 @@ class EmpresaForm(Form):
     ativo = BooleanField('Ativo', render_kw={"placeholder": "Informe se a empresa está ativa"})
 
     nome_fantasia = StringField('Nome Fantasia', validators=[InputRequired()], render_kw={"placeholder": "Digite o nome fantasia"})
-    data_abertura = DateField('Data de Abertura', validators=[InputRequired()], render_kw={"placeholder": "Digite de criação do cnpj"})
+    data_abertura = DateField('Data de Abertura', format='%Y-%m-%d',default=datetime.now().strftime("%Y-%m-%d"), validators=[InputRequired()], render_kw={"placeholder": "Digite de criação do cnpj"})
     situacao = StringField('Situação', render_kw={"placeholder": "Digite a situação do cnpj"})
     tipo = StringField('Tipo',  validators=[InputRequired()], render_kw={"placeholder": "Matriz/Filial"})
     nome_responsavel = StringField('Nome do Responsável', render_kw={"placeholder": "Digite o nome do responsável"})

@@ -1,0 +1,76 @@
+{% extends "sistema_base.html" %}
+{% block body %}
+    <body>
+        <form action="{{ url_for('ordem_servico.ordem_editar', ordem_id=ordem.id) }}" method="POST">
+            {{form.csrf_token}}
+            {% if ordem.id == 0 %}
+                <h2>Cadastro de Ordens de Serviços</h2>
+            {% else %}
+                <h2>Ordem de Serviço</h2>
+                Código          {{ordem.codigo}}<br>
+            {% endif %}
+
+            {{form.descricao.label}}        {{form.descricao(size=20)}}<br>
+            {{form.equipamento.label}}    {{form.equipamento}}<br>
+
+            {% if ordem.id > 0 %}
+                Solicitante      {{ ordem.usuario.nome }}<br>
+                Data Abertura    {{ ordem.data_abertura }}<br>
+                Data Fechamento  {{ ordem.data_fechamento }}<br>
+                Status Atual {{ ordem.situacaoordem.nome }}<br>
+                {% if not ordem.situacaoordem.nome == "Fiscalizada" %}
+                    Status Futuro   {{ form.situacaoordem }}<br>
+                {% endif %}
+            {% endif %}
+
+
+            {% if not ordem.situacaoordem.nome == "Fiscalizada" %}
+
+                {% if ordem.id == 0 %}
+                    <input type="submit" value="Cadastrar"/>
+                {% else %}
+                    <input type="submit" value="Atualizar"/>
+                {% endif %}
+            {% endif %}
+
+        </form>
+        <br>
+
+        <a href="#">TRAMITAÇÃO</a><br><br>
+
+        <h6>TRAMITAÇÕES</h6>
+        <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">SITUAÇÃO</th>
+                        <th scope="col">DATA INÍCIO</th>
+                        <th scope="col">DATA TÉRMINO</th>
+                        <th scope="col">USUÁRIO</th>
+                        <th scope="col">OBSERVAÇÃO</th>
+
+                    </tr>
+                </thead>
+
+                <tbody>
+                {% for tramitacao in tramitacoes %}
+                    <tr>
+                        <th scope="row">{{ tramitacao.situacaoordem.sigla }}</th>
+                        <td>{{ tramitacao.data_inicio }}</td>
+                        <td>{{ tramitacao.data_termino }}</td>
+                        <td>{{ tramitacao.usuario.nome }}</td>
+                        <td>{{ tramitacao.observacao }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        <br><br>
+        <a href="{{ url_for('ordem_servico.ordem_listar') }}">Voltar</a>
+
+
+
+    </body>
+
+
+{% endblock %}
+
+

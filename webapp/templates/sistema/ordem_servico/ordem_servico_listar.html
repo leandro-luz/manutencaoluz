@@ -1,0 +1,46 @@
+{% extends "sistema_base.html" %}
+{% block body %}
+<body>
+
+    <h2> LISTA DE ORDENS DE SERVIÇOS </h2>
+    <a href="{{ url_for('ordem_servico.ordem_editar', ordem_id=0) }}">
+        Adicionar
+    </a>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">CÓDIGO</th>
+                <th scope="col">DESCRIÇÃO</th>
+                <th scope="col">EQUIPAMENTO</th>
+                <th scope="col">SITUAÇÃO</th>
+                <th scope="col">DATA ABERTURA</th>
+                <th scope="col">DATA FECHAMENTO</th>
+                <th></th>
+            </tr>
+        </thead>
+
+        <tbody>
+        {% for ordem in ordens %}
+            <tr>
+                <th scope="row">{{ ordem.codigo }}</th>
+                <td>{{ ordem.descricao }}</td>
+                <td>{{ ordem.equipamento.descricao_curta }}</td>
+                <td>{{ ordem.situacaoordem.sigla }}</td>
+                <td>{{ ordem.data_abertura }}</td>
+                <td>{{ ordem.data_fechamento }}</td>
+                <td>
+                    <a href="{{ url_for('ordem_servico.ordem_editar', ordem_id=ordem.id) }}">
+                            <span data-tooltip="Informações">
+                                <i class="bi-caret-right fs-6"></i>
+                            </span>
+                    </a>
+                </td>
+
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+</body>
+{% endblock %}

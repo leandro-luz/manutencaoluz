@@ -8,6 +8,7 @@ class Config(object):
     SQLALCHEMY_POOL_RECYCLE = 280
     SQLALCHEMY_POOL_TIMEOUT = 10
     SQLALCHEMY_POOL_PRE_PING = True
+    # SQLALCHEMY_ECHO = True
     DEBUG_TB_INTERCEPT_REDIRECTS = False
     MAIL_SERVER = 'smtp-mail.outlook.com'
     MAIL_PORT = 587

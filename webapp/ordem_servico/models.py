@@ -1,0 +1,114 @@
+import datetime
+import logging
+from webapp import db
+from sqlalchemy import func
+from flask_login import current_user
+
+logging.basicConfig(format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
+logging.getLogger().setLevel(logging.DEBUG)
+log = logging.getLogger(__name__)
+
+
+class SituacaoOrdem(db.Model):
+    __tablename__ = 'situacao_ordem'
+
+    id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    nome = db.Column(db.String(50), nullable=False, index=True)
+    sigla = db.Column(db.String(5), nullable=False, index=True)
+    descricao = db.Column(db.String(100), nullable=False, index=True)
+    ordemservico = db.relationship("OrdemServico", back_populates="situacaoordem")
+    tramitacaoordem = db.relationship("TramitacaoOrdem", back_populates="situacaoordem")
+
+    def __init__(self, nome, sigla, descricao):
+        self.nome = nome
+        self.sigla = sigla
+        self.descricao = descricao
+
+    def __repr__(self) -> str:
+        return f'<Situação de Ordem: {self.id}-{self.nome}>'
+
+
+class FluxoOrdem(db.Model):
+    __tablename__ = 'fluxo_ordem'
+
+    id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    de = db.Column(db.Integer(), nullable=False)
+    para = db.Column(db.Integer(), nullable=False)
+
+    def __init__(self, de, para):
+        self.de = de
+        self.para = para
+
+    def __repr__(self) -> str:
+        return f'<Fluxo de Ordem: {self.id}-de:{self.de}-para:{self.para}>'
+
+
+class TramitacaoOrdem(db.Model):
+    __tablename__ = 'tramitacao_ordem'
+
+    id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    ordemservico_id = db.Column(db.Integer(), db.ForeignKey("ordem_servico.id"), nullable=False)
+    usuario_id = db.Column(db.Integer(), db.ForeignKey("usuario.id"), nullable=True)
+    situacaoordem_id = db.Column(db.Integer(), db.ForeignKey("situacao_ordem.id"), nullable=False)
+
+    data_inicio = db.Column(db.DateTime(), nullable=False)
+    data_termino = db.Column(db.DateTime(), nullable=False)
+    observacao = db.Column(db.String(200), nullable=False)
+
+    situacaoordem = db.relationship("SituacaoOrdem", back_populates="tramitacaoordem")
+    ordemservico = db.relationship("OrdemServico", back_populates="tramitacaoordem")
+    usuario = db.relationship("Usuario", back_populates="tramitacaoordem")
+
+    def __repr__(self) -> str:
+        return f'<Tramitação da Ordem: {self.id}-{self.situacaoordem.sigla}-{self.usuario.nome}>'
+
+
+class OrdemServico(db.Model):
+    __tablename__ = 'ordem_servico'
+
+    id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    codigo = db.Column(db.Integer())
+    descricao = db.Column(db.String(100), nullable=False, index=True)
+    data_abertura = db.Column(db.DateTime(), nullable=False)
+    data_fechamento = db.Column(db.DateTime(), nullable=True)
+
+    equipamento_id = db.Column(db.Integer(), db.ForeignKey("equipamento.id"), nullable=False)
+    situacaoordem_id = db.Column(db.Integer(), db.ForeignKey("situacao_ordem.id"), nullable=False)
+    solicitante_id = db.Column(db.Integer(), db.ForeignKey("usuario.id"), nullable=False)
+    planomanutencao_id = db.Column(db.Integer(), nullable=True)
+
+
+    equipamento = db.relationship("Equipamento", back_populates="ordemservico")
+    situacaoordem = db.relationship("SituacaoOrdem", back_populates="ordemservico")
+    usuario = db.relationship("Usuario", back_populates="ordemservico")
+    tramitacaoordem = db.relationship("TramitacaoOrdem", back_populates="ordemservico")
+
+
+    def __repr__(self) -> str:
+        return f'<Ordem de Serviço: {self.id}-{self.descricao}-{self.equipamento.descricao_curta}-{self.situacaoordem.nome}>'
+
+    def salvar(self) -> bool:
+        """    Função para salvar no banco de dados o objeto"""
+        try:
+            db.session.add(self)
+            db.session.commit()
+            return True
+        except Exception as e:
+            log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
+            db.session.rollback()
+            return False
+
+    def alterar_atributos(self, form, new):
+        if new:
+            consulta = db.session.query(func.max(OrdemServico.codigo))
+            self.codigo = consulta.first()[0]+1
+            self.data_abertura = datetime.datetime.now()
+            self.solicitante_id = current_user.id
+
+        sit = SituacaoOrdem.query.filter_by(nome="Fiscalizada").one_or_none()
+        if form.situacaoordem.data == sit.id:
+            self.data_fechamento = datetime.datetime.now()
+
+        self.descricao = form.descricao.data
+        self.equipamento_id = form.equipamento.data
+        self.situacaoordem_id = form.situacaoordem.data

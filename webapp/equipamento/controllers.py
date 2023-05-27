@@ -1,12 +1,13 @@
-from flask import (render_template, Blueprint, redirect, url_for, flash)
+from flask import (render_template, Blueprint, redirect, request, url_for, flash)
 from flask_login import current_user, login_required
 from .models import Equipamento, Grupo, Sistema
 from .forms import EquipamentoForm, GrupoForm, SistemaForm
+from werkzeug.utils import secure_filename
 from webapp.usuario import has_view
 from webapp.utils.files import arquivo_padrao
 from webapp.utils.erros import flash_errors
 
-empresa_blueprint = Blueprint(
+equipamento_blueprint = Blueprint(
     'equipamento',
     __name__,
     template_folder='../templates/sistema/equipamento',
@@ -14,7 +15,7 @@ empresa_blueprint = Blueprint(
 )
 
 
-@empresa_blueprint.route('/equipamento_listar', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/equipamento_listar', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
 def equipamento_listar():
@@ -23,13 +24,13 @@ def equipamento_listar():
     return render_template('equipamento_listar.html', equipamentos=equipamentos)
 
 
-@empresa_blueprint.route('/equipamento_editar/<int:equipamento_id>', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/equipamento_editar/<int:equipamento_id>', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
 def equipamento_editar(equipamento_id):
     if equipamento_id > 0:
         # Atualizar
-        equipamento = Equipamento.query.filter_by(id=equipamento_id).first()
+        equipamento = Equipamento.query.filter_by(id=equipamento_id).one_or_none()
 
         if equipamento:
             form = EquipamentoForm(obj=equipamento)
@@ -74,7 +75,7 @@ def equipamento_editar(equipamento_id):
     return render_template("equipamento_editar.html", form=form, equipamento=equipamento)
 
 
-@empresa_blueprint.route('/equipamento_ativar/<int:equipamento_id>', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/equipamento_ativar/<int:equipamento_id>', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
 def equipamento_ativar(equipamento_id):
@@ -88,7 +89,7 @@ def equipamento_ativar(equipamento_id):
     return redirect(url_for('equipamento.equipamento_listar'))
 
 
-@empresa_blueprint.route('/gerar_padrao_equipamentos/', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/gerar_padrao_equipamentos/', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
 def gerar_padrao_equipamentos():
@@ -100,20 +101,83 @@ def gerar_padrao_equipamentos():
     return redirect(url_for("equipamento.equipamento_listar"))
 
 
-@empresa_blueprint.route('/cadastrar_lote_equipamentos/', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/cadastrar_lote_equipamentos/<int:equipamento_id>', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def cadastrar_lote_equipamentos():
-    print('entrada da lista para o cadastro de equipamentos em lote')
+def cadastrar_lote_equipamentos(equipamento_id):
 
-    # file = request.files['file']
-    # print(file.razao_social)
-    # print(file.headers)
 
+    import pandas as pd
+
+    form = EquipamentoForm()
+    # file = request.files['arquivo']
+
+    filename = secure_filename(form.file.data.filename)
+    filestream = form.file.data
+    filestream.seek(0)
+    df = pd.DataFrame(pd.read_csv(filestream, sep=";", names=Equipamento.titulos_doc, encoding='latin-1'))
+
+    # total de linhas
+    total = int(len(df[df.columns[0]].count()))
+    # percorre pelos titulos obrigatórios
+    for eq in total :
+
+        for tit in Equipamento.titulos_obg:
+            #verifica se o valor foi preenchido, caso contrário, ignora equipamento
+
+            print(tit)
+
+
+
+
+
+    # if file:
+    #     df = pd.read_excel(files_excel["file"])
+
+    # csv = pd.read_csv(filename, sep=',', encoding='latin-1')
+    #
+    # print(csv.info())
+
+    # print(file)
+    # from csv import reader
+    # with open(filename) as f:
+    #     leitor_csv = reader(f)
+    #     # reader = csv.reader(f)
+    #     for linha in leitor_csv:
+    #         print(linha)
+
+
+    #
+    # if 'file' not in request.files:
+    #     print("b")
+    #     flash("Não tem a parte do arquivo", category="danger")
+    #     return redirect(url_for("equipamento.equipamento_editar", equipamento_id=equipamento_id))
+    # file = request.files['arquivo']
+    #
+    # print("c")
+    #
+    # # se o usuário não enviar o arquivo o navegador envia um arquivo vazio sem o nome
+    # if file.filename == '':
+    #     print("d")
+    #     flash("Nenhum arquivo selecionado")
+    #     return redirect(url_for("equipamento.equipamento_editar", equipamento_id=equipamento_id))
+    # # if file and allowed_file(file.filename):
+    #
+    # print("e")
+    # filename = secure_filename(file.filename)
+    # print(filename)
+    #
+    # print("f")
+    # print('entrada da lista para o cadastro de equipamentos em lote')
+    #
+    # # file = request.files['file']
+    # # print(file.razao_social)
+    # # print(file.headers)
+    # print("g")
     return redirect(url_for("equipamento.equipamento_listar"))
 
 
-@empresa_blueprint.route('/grupo_listar/<int:equipamento_id>', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/grupo_listar/<int:equipamento_id>', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
 def grupo_listar(equipamento_id):
@@ -121,7 +185,7 @@ def grupo_listar(equipamento_id):
     return render_template('grupo_listar.html', grupos=grupos, equipamento_id=equipamento_id)
 
 
-@empresa_blueprint.route('/grupo_editar/<int:grupo_id>/<int:equipamento_id>', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/grupo_editar/<int:grupo_id>/<int:equipamento_id>', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
 def grupo_editar(grupo_id, equipamento_id):
@@ -158,7 +222,7 @@ def grupo_editar(grupo_id, equipamento_id):
     return render_template("grupo_editar.html", form=form, grupo=grupo, equipamento_id=equipamento_id)
 
 
-@empresa_blueprint.route('/sistema_listar/<int:equipamento_id>', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/sistema_listar/<int:equipamento_id>', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
 def sistema_listar(equipamento_id):
@@ -166,7 +230,7 @@ def sistema_listar(equipamento_id):
     return render_template('sistema_listar.html', sistemas=sistemas, equipamento_id=equipamento_id)
 
 
-@empresa_blueprint.route('/sistema_editar/<int:sistema_id>/<int:equipamento_id>', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/sistema_editar/<int:sistema_id>/<int:equipamento_id>', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
 def sistema_editar(sistema_id, equipamento_id):

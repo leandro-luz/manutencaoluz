@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
 class Perfil(db.Model):
     """    Classe do perfil de acesso    """
     id = db.Column(db.Integer(), primary_key=True)
-    nome = db.Column(db.String(50), unique=False)
+    nome = db.Column(db.String(50), unique=False, index=True)
     descricao = db.Column(db.String(50))
 
     empresa_id = db.Column(db.Integer(), db.ForeignKey("empresa.id"), nullable=False)
@@ -54,7 +54,7 @@ class Perfil(db.Model):
 
 class Senha(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
-    senha = db.Column(db.String(50), nullable=False)
+    senha = db.Column(db.String(50), nullable=False, index=True)
     senha_temporaria = db.Column(db.Boolean, nullable=False, default=True)
     contador_acesso_temporario = db.Column(db.Integer(), nullable=True, default=0)
     data_expiracao = db.Column(db.DateTime(), nullable=True)
@@ -126,6 +126,8 @@ class Senha(db.Model):
 
 
 class Usuario(db.Model):
+    __tablename__ = 'usuario'
+
     id = db.Column(db.Integer(), primary_key=True)
     nome = db.Column(db.String(50), nullable=False, index=True, unique=True)
     email = db.Column(db.String(50), nullable=False, unique=True)
@@ -140,6 +142,8 @@ class Usuario(db.Model):
     perfil = db.relationship("Perfil", back_populates="usuario")
     empresa = db.relationship("Empresa", back_populates="usuario")
     senha = db.relationship("Senha", back_populates="usuario")
+    ordemservico = db.relationship("OrdemServico", back_populates="usuario")
+    tramitacaoordem = db.relationship("TramitacaoOrdem", back_populates="usuario")
 
     def __repr__(self):
         return f'<Usuario: {self.id}-{self.nome}>'
@@ -224,6 +228,7 @@ class Usuario(db.Model):
         self.empresa_id = empresa_id
         self.perfil_id = form.perfil.data
         self.ativo = form.ativo.data
+        print(f'perfil: {self.perfil.id}')
         if new:
             self.data_assinatura = datetime.datetime.now()
 

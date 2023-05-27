@@ -26,6 +26,9 @@ def create_app(object_name: str) -> Flask:
     from webapp.supplier import criar_modulo as criar_modulo_fornecedor
     from webapp.contrato import criar_modulo as criar_modulo_contrato
 
+    from webapp.plano_manutencao import criar_modulo as criar_modulo_plano_manutencao
+    from webapp.ordem_servico import criar_modulo as criar_modulo_ordem_servico
+
     criar_modulo_usuario(app)
     criar_modulo_main(app)
     criar_modulo_sistema(app)
@@ -33,6 +36,8 @@ def create_app(object_name: str) -> Flask:
     criar_modulo_equipamento(app)
     criar_modulo_fornecedor(app)
     criar_modulo_contrato(app)
+    criar_modulo_plano_manutencao(app)
+    criar_modulo_ordem_servico(app)
 
     # app.register_error_handler(404, page_not_found)
     return app

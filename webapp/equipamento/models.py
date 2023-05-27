@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 class Sistema(db.Model):
     """    Classe de sistemas nos ativos   """
     id = db.Column(db.Integer(), primary_key=True)
-    nome = db.Column(db.String(50), nullable=False)
+    nome = db.Column(db.String(50), nullable=False, index=True)
     ativo = db.Column(db.Boolean, nullable=False, default=True)
     equipamento_id = db.Column(db.Integer(), db.ForeignKey("equipamento.id"), nullable=False)
     equipamento = db.relationship("Equipamento", back_populates="sistema")
@@ -39,7 +39,7 @@ class Sistema(db.Model):
 class Grupo(db.Model):
     """    Classe de grupo de ativos    """
     id = db.Column(db.Integer(), primary_key=True)
-    nome = db.Column(db.String(50), nullable=False)
+    nome = db.Column(db.String(50), nullable=False, index=True)
     ativo = db.Column(db.Boolean, nullable=False, default=True)
     empresa_id = db.Column(db.Integer(), nullable=False)
     equipamento = db.relationship("Equipamento", back_populates="grupo")
@@ -67,14 +67,18 @@ class Grupo(db.Model):
 
 class Equipamento(db.Model):
     """    Classe do ativo    """
+    # nome do arquivo para cadastro em lote
     nome_doc = 'padrão_equipamentos'
-    titulos_doc = ['Código*', 'Descrição_Curta*', 'Descrição_Longa', 'Fábrica', 'Marca', 'Modelo',
-              'Número_Série', 'Largura', 'Comprimento', 'Altura', 'Peso', 'Ano_Fabricação',
+    # titulos para cadastro
+    titulos_doc = ['Código*', 'Descrição_Curta*', 'Tag*', 'Descrição_Longa', 'Fábrica', 'Marca', 'Modelo',
+              'Número_Série', 'Largura', 'Comprimento', 'Altura', 'Peso','Potência', 'Tensão', 'Ano_Fabricação',
               'Data_Aquisição', 'Data_Instalação', 'Custo_Aquisição', 'Taxa_Depreciação',
-              'Tag*', 'Centro_Custo', 'Grupo_Equipamentos', 'Sistema', 'Ativo']
+              'Patrimônio', 'Localização', 'Centro_Custo', 'Grupo_Equipamentos', 'Sistema', 'Ativo']
+   # titulos obrigatórios
+    titulos_obg = ['Código*', 'Descrição_Curta*','Tag*']
 
     id = db.Column(db.Integer(), primary_key=True)
-    cod = db.Column(db.String(50), nullable=True)
+    cod = db.Column(db.String(50), nullable=True, index=True)
     descricao_curta = db.Column(db.String(50), nullable=False)
     descricao_longa = db.Column(db.String(50), nullable=True)
     fabricante = db.Column(db.String(50), nullable=True)
@@ -85,12 +89,17 @@ class Equipamento(db.Model):
     comprimento = db.Column(db.Integer(), nullable=True)
     altura = db.Column(db.Integer(), nullable=True)
     peso = db.Column(db.Integer(), nullable=True)
+    potencia = db.Column(db.Integer(), nullable=True)
+    tensao = db.Column(db.Integer(), nullable=True)
+
     data_fabricacao = db.Column(db.DateTime(), nullable=True)
     data_aquisicao = db.Column(db.DateTime(), nullable=True)
     data_instalacao = db.Column(db.DateTime(), nullable=True)
     custo_aquisicao = db.Column(db.Integer(), nullable=True)
     depreciacao = db.Column(db.Integer(), nullable=True)
     tag = db.Column(db.String(20), nullable=False)
+    patrimonio = db.Column(db.String(20), nullable=True)
+    localizacao = db.Column(db.String(50), nullable=True)
     centro_custo = db.Column(db.String(50), nullable=True)
     ativo = db.Column(db.Boolean, nullable=False, default=True)
 
@@ -100,6 +109,8 @@ class Equipamento(db.Model):
     grupo = db.relationship("Grupo", back_populates="equipamento")
     empresa = db.relationship("Empresa", back_populates="equipamento")
     sistema = db.relationship("Sistema", back_populates="equipamento")
+    planomanutencao = db.relationship("PlanoManutencao", back_populates="equipamento")
+    ordemservico = db.relationship("OrdemServico", back_populates="equipamento")
 
     def __repr__(self):
         return f'<Equipamento: {self.id}-{self.descricao_curta}>'
@@ -123,12 +134,16 @@ class Equipamento(db.Model):
         self.comprimento = form.comprimento.data
         self.altura = form.altura.data
         self.peso = form.peso.data
+        self.potencia = form.potencia.data
+        self.tensao = form.tensao.data
         self.data_fabricacao = form.data_fabricacao.data
         self.data_aquisicao = form.data_aquisicao.data
         self.data_instalacao = form.data_instalacao.data
         self.custo_aquisicao = form.custo_aquisicao.data
         self.depreciacao = form.depreciacao.data
         self.tag = form.tag.data
+        self.patrimonio = form.patrimonio.data
+        self.localizacao = form.localizacao.data
         self.centro_custo = form.centro_custo.data
         self.ativo = form.ativo.data
         self.grupo_id = form.grupo.data

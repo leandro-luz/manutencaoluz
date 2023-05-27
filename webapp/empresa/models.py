@@ -72,8 +72,8 @@ class Tipoempresa(db.Model):
 class Empresa(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     cnpj = db.Column(db.String(18), nullable=False, unique=True)
-    razao_social = db.Column(db.String(50), nullable=False, index=True, unique=True)
-    nome_fantasia = db.Column(db.String(50), nullable=True, unique=False)
+    razao_social = db.Column(db.String(100), nullable=False, index=True, unique=True)
+    nome_fantasia = db.Column(db.String(100), nullable=True, unique=False)
     data_abertura = db.Column(db.DateTime(), nullable=True, unique=False)
     situacao = db.Column(db.String(50), nullable=True, unique=False)
     tipo = db.Column(db.String(20), nullable=True, unique=False)

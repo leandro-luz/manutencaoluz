@@ -9,6 +9,7 @@ log = logging.getLogger(__name__)
 
 downloads_path = str(Path.home() / "Downloads")
 
+EXTENSOES_VALIDAS = {'csv', 'xls'}
 
 def arquivo_padrao(nome_arquivo, titulos):
     """    Função que gera o arquivo padrão para o cadastro em lote de equipamentos    """
@@ -21,3 +22,10 @@ def arquivo_padrao(nome_arquivo, titulos):
     except Exception as e:
         log.error(f'Erro ao gerar o arquivo: {nome_arquivo}-{e}')
         return False, path
+
+
+
+
+def verificar_extensao(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in EXTENSOES_VALIDAS
