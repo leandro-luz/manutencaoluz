@@ -66,14 +66,6 @@ class PlanoManutencao(db.Model):
     equipamento = db.relationship("Equipamento", back_populates="planomanutencao")
     # ordemservico = db.relationship("OrdemServico", back_populates="planomanutencao")
 
-    # def __init__(self, nome, codigo, ativo, tipodata_id, periodicidade_id, equipamento_id, empresa_id) -> None:
-    #     self.nome = nome
-    #     self.codigo = codigo
-    #     self.ativo = ativo
-    #     self.tipodata_id = tipodata_id
-    #     self.periodicidade_id = periodicidade_id
-    #     self.equipamento_id = equipamento_id
-    #     self.empresa_id = empresa_id
 
     def __repr__(self):
         return f'<Plano de Manutenção: {self.id}-{self.codigo}>'

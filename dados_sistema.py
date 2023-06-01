@@ -430,19 +430,19 @@ ordem_servico_lista = [{'codigo': 1001, 'descricao': 'Trocar Lâmpada Queimada',
                         'planomanutencao': 'carr0002', 'solicitante': 'leandro'},
                        ]
 
-tramitacao_lista = [{'ordem_servico': 1001, 'usuario': 'danylo', 'situacaoordem': 'AGAP',
+tramitacao_lista = [{'ordem_servico': 1, 'usuario': 'danylo', 'situacaoordem': 'AGAP',
                      'data_inicio': '2023/01/02 08:00:00', 'data_termino': '2023/01/02 08:00:00',
                      'observacao': 'Abertura de Ordem de Serviço'},
-                    {'ordem_servico': 1001, 'usuario': 'leandro', 'situacaoordem': 'PEND',
+                    {'ordem_servico': 1, 'usuario': 'leandro', 'situacaoordem': 'PEND',
                      'data_inicio': '2023/01/03 08:00:00', 'data_termino': '2023/01/03 08:00:00',
                      'observacao': 'Aprovada a execução da Ordem de Serviço'},
-                    {'ordem_servico': 1001, 'usuario': 'leandro', 'situacaoordem': 'EXEC',
+                    {'ordem_servico': 1, 'usuario': 'leandro', 'situacaoordem': 'EXEC',
                      'data_inicio': '2023/01/04 08:00:00', 'data_termino': '2023/01/04 10:00:00',
                      'observacao': 'Foi realizada a troca da lâmpada queimada, está operacional'},
-                    {'ordem_servico': 1001, 'usuario': 'leandro', 'situacaoordem': 'CONC',
+                    {'ordem_servico': 1, 'usuario': 'leandro', 'situacaoordem': 'CONC',
                      'data_inicio': '2023/01/04 10:00:00', 'data_termino': '2023/01/04 10:00:00',
                      'observacao': 'Concluída a Ordem de Serviço'},
-                    {'ordem_servico': 1001, 'usuario': 'danylo', 'situacaoordem': 'FISC',
+                    {'ordem_servico': 1, 'usuario': 'danylo', 'situacaoordem': 'FISC',
                      'data_inicio': '2023/01/05 08:00:00', 'data_termino': '2023/01/05 08:00:00',
                      'observacao': 'Fiscalizada a Ordem de Serviço'},
 
@@ -743,13 +743,13 @@ def criar_usuarios():
 def criar_grupo():
     grupos = list()
     for item in grupo_lista:
-        grupo = Grupo.query.filter_by(nome=item['nome']).first()
+        grupo = Grupo.query.filter_by(nome=item['nome']).one_or_none()
         if grupo:
             grupos.append(grupo)
             continue
         grupo = Grupo()
         grupo.nome = item['nome']
-        empresa = Empresa.query.filter_by(razao_social=item['empresa']).one()
+        empresa = Empresa.query.filter_by(razao_social=item['empresa']).one_or_none()
         grupo.empresa_id = empresa.id
 
         try:
@@ -765,12 +765,12 @@ def criar_grupo():
 def criar_equipamento():
     equipamentos = list()
     for item in equipamento_lista:
-        equipamento = Equipamento.query.filter_by(cod=item['cod']).first()
+        equipamento = Equipamento.query.filter_by(cod=item['cod']).one_or_none()
         if equipamento:
             equipamentos.append(equipamento)
             continue
         equipamento = Equipamento()
-        empresa = Empresa.query.filter_by(razao_social=item['empresa']).one()
+        empresa = Empresa.query.filter_by(razao_social=item['empresa']).one_or_none()
         equipamento.cod = item['cod']
         equipamento.descricao_curta = item['short']
         equipamento.tag = item['tag']
@@ -896,6 +896,10 @@ def criar_periodicidades(lista: List[dict]) -> List[Periodicidade]:
         db.session.rollback()
         return []
 
+
+#  {'nome': 'Inspeção Diária Gerador', 'codigo': 'gera0001', 'ativo': True,
+#                            'empresa': 'empresa_1.ltda',
+#                            'tipodata': 'Data_Fixa', 'periodicidade': 'Diária', 'equipamento': '000.001'}
 
 def criar_planosmanutencao(lista: List[dict]) -> List[PlanoManutencao]:
 

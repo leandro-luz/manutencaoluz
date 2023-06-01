@@ -103,7 +103,7 @@ class Equipamento(db.Model):
     centro_custo = db.Column(db.String(50), nullable=True)
     ativo = db.Column(db.Boolean, nullable=False, default=True)
 
-    grupo_id = db.Column(db.Integer(), db.ForeignKey("grupo.id"), nullable=False, default=0)
+    grupo_id = db.Column(db.Integer(), db.ForeignKey("grupo.id"), nullable=True, default=0)
     empresa_id = db.Column(db.Integer(), db.ForeignKey("empresa.id"), nullable=False)
 
     grupo = db.relationship("Grupo", back_populates="equipamento")
