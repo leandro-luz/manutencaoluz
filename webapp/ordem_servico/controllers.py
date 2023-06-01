@@ -3,7 +3,6 @@ from flask_login import current_user, login_required
 from webapp.ordem_servico.models import OrdemServico, SituacaoOrdem, FluxoOrdem, TramitacaoOrdem
 from webapp.ordem_servico.forms import OrdemServicoForm
 from webapp.equipamento.models import Equipamento
-from webapp.usuario.models import Usuario
 from webapp.usuario import has_view
 from webapp.utils.erros import flash_errors
 
@@ -20,7 +19,7 @@ ordem_servico_blueprint = Blueprint(
 @has_view('Ordem de Serviço')
 def ordem_listar():
     """Retorna a lista dos planos de manutenção"""
-    # ordens = OrdemServico.query.filter(OrdemServico.equipamento.has(Equipamento.empresa_id == current_user.empresa_id))
+
     ordens = OrdemServico.query.filter(OrdemServico.equipamento_id == Equipamento.id,
                                        Equipamento.empresa_id == current_user.empresa_id).order_by(OrdemServico.codigo.desc())
 
@@ -31,6 +30,7 @@ def ordem_listar():
 @login_required
 @has_view('Ordem de Serviço')
 def ordem_editar(ordem_id):
+    tramitacoes = []
     if ordem_id > 0:
         # Atualizar
         ordem = OrdemServico.query.filter_by(id=ordem_id).one_or_none()
@@ -48,7 +48,6 @@ def ordem_editar(ordem_id):
                 eq_d = ordem.equipamento_id
                 si_d = ordem.situacaoordem_id
 
-
         else:
             flash("Ordem de Serviço não localizado", category="danger")
             return redirect(url_for("ordem_servico.ordem_listar"))
@@ -60,7 +59,7 @@ def ordem_editar(ordem_id):
         form.situacaoordem.data = si_d
 
         # Lista das tramitações realizadas na ordem de serviço
-        tramitacoes = TramitacaoOrdem.query.filter_by(ordemservico_id=ordem.codigo).all()
+        tramitacoes = TramitacaoOrdem.query.filter_by(ordemservico_id=ordem.id).all()
 
     else:
         # Cadastrar
