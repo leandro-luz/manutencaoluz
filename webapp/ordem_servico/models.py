@@ -51,8 +51,7 @@ class TramitacaoOrdem(db.Model):
     usuario_id = db.Column(db.Integer(), db.ForeignKey("usuario.id"), nullable=True)
     situacaoordem_id = db.Column(db.Integer(), db.ForeignKey("situacao_ordem.id"), nullable=False)
 
-    data_inicio = db.Column(db.DateTime(), nullable=False)
-    data_termino = db.Column(db.DateTime(), nullable=False)
+    data = db.Column(db.DateTime(), nullable=False)
     observacao = db.Column(db.String(200), nullable=False)
 
     situacaoordem = db.relationship("SituacaoOrdem", back_populates="tramitacaoordem")
@@ -61,6 +60,36 @@ class TramitacaoOrdem(db.Model):
 
     def __repr__(self) -> str:
         return f'<Tramitação da Ordem: {self.id}-{self.situacaoordem.sigla}-{self.usuario.nome}>'
+
+    def salvar(self) -> bool:
+        """    Função para salvar no banco de dados o objeto"""
+        try:
+            db.session.add(self)
+            db.session.commit()
+            return True
+        except Exception as e:
+            log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
+            db.session.rollback()
+            return False
+
+    def alterar_atributos(self, form, ordem_id):
+        self.ordemservico_id = ordem_id
+        self.usuario_id = current_user.id
+        self.situacaoordem_id = form.situacaoordem.data
+        self.observacao = form.observacao.data
+        self.data = datetime.datetime.now()
+
+        # Criando o objeto OrdemServiço
+        ordem = OrdemServico.query.filter_by(id=ordem_id).one_or_none()
+        # Alterando para a situação da tramitação
+        ordem.situacaoordem_id = form.situacaoordem.data
+        # Cria um objeto SituacaoOrdem
+        sit = SituacaoOrdem.query.filter_by(nome="Fiscalizada").one_or_none()
+        # Verifica se o id da SituacaoOrdem eh igual ao da tramitacao vigente
+        if form.situacaoordem.data == sit.id:
+            # Caso seja, colocará a data de fechamento da OrdemServico
+            ordem.data_fechamento = datetime.datetime.now()
+        ordem.salvar()
 
 
 class OrdemServico(db.Model):
@@ -105,10 +134,10 @@ class OrdemServico(db.Model):
             self.data_abertura = datetime.datetime.now()
             self.solicitante_id = current_user.id
 
-        sit = SituacaoOrdem.query.filter_by(nome="Fiscalizada").one_or_none()
-        if form.situacaoordem.data == sit.id:
-            self.data_fechamento = datetime.datetime.now()
+            # Inserindo o id da situação "Pendente" na OrdemServico
+            sit = SituacaoOrdem.query.filter_by(nome="Pendente").one_or_none()
+            self.situacaoordem_id = sit.id
 
         self.descricao = form.descricao.data
         self.equipamento_id = form.equipamento.data
-        self.situacaoordem_id = form.situacaoordem.data
+

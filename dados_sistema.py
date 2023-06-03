@@ -85,7 +85,7 @@ empresa_lista = [{'razao_social': 'empresa_1.ltda', 'nome_fantasia': 'empresa_1'
                   'numero': '0', 'complemento': 'qd05 lt05',
                   'email': 'empresa_1@teste.com.br', 'telefone': '(45)9 9876-5432',
                   'business': 'serviços', 'subbusiness': 'informática',
-                  'date': '1980/05/10 12:45:10', 'contrato': 'completo',
+                  'data_cadastro': str(datetime.datetime.now() - datetime.timedelta(360)), 'contrato': 'completo',
                   'empresa_gestora': 'empresa_1', 'tipo': 'Cliente'},
 
                  {'razao_social': 'empresa_2.ltda', 'nome_fantasia': 'empresa_2',
@@ -96,7 +96,7 @@ empresa_lista = [{'razao_social': 'empresa_1.ltda', 'nome_fantasia': 'empresa_1'
                   'numero': '59', 'complemento': '',
                   'email': 'empresa_2@teste.com.br', 'telefone': '(78)9 9876-5432',
                   'business': 'serviços', 'subbusiness': 'informática',
-                  'date': '1980/05/10 12:45:10', 'contrato': 'completo',
+                  'data_cadastro': str(datetime.datetime.now() - datetime.timedelta(1000)), 'contrato': 'completo',
                   'empresa_gestora': 'empresa_1', 'tipo': 'Cliente'},
 
                  {'razao_social': 'empresa_21.ltda', 'nome_fantasia': 'empresa_21',
@@ -107,7 +107,7 @@ empresa_lista = [{'razao_social': 'empresa_1.ltda', 'nome_fantasia': 'empresa_1'
                   'numero': '45', 'complemento': 'qd45',
                   'email': 'empresa_21@teste.com.br', 'telefone': '(98)9 9876-5432',
                   'business': 'serviços', 'subbusiness': 'informática',
-                  'date': '1980/05/10 12:45:10', 'contrato': 'basico',
+                  'data_cadastro': str(datetime.datetime.now() - datetime.timedelta(2000)), 'contrato': 'basico',
                   'empresa_gestora': 'empresa_2', 'tipo': 'Cliente'},
 
                  {'razao_social': 'empresa_22.ltda', 'nome_fantasia': 'empresa_22',
@@ -118,7 +118,7 @@ empresa_lista = [{'razao_social': 'empresa_1.ltda', 'nome_fantasia': 'empresa_1'
                   'numero': '789', 'complemento': '',
                   'email': 'empresa_22@teste.com.br', 'telefone': '(12)9 9876-5432',
                   'business': 'serviços', 'subbusiness': 'informática',
-                  'date': '1980/05/10 12:45:10', 'contrato': 'basico',
+                  'data_cadastro': str(datetime.datetime.now() - datetime.timedelta(2500)), 'contrato': 'basico',
                   'empresa_gestora': 'empresa_2', 'tipo': 'Cliente'},
 
                  {'razao_social': 'empresa_3.ltda', 'nome_fantasia': 'empresa_3',
@@ -129,7 +129,7 @@ empresa_lista = [{'razao_social': 'empresa_1.ltda', 'nome_fantasia': 'empresa_1'
                   'numero': '0', 'complemento': '',
                   'email': 'empresa_3@teste.com.br', 'telefone': '(15)9 9876-5432',
                   'business': 'serviços', 'subbusiness': 'informática',
-                  'date': '1980/05/10 12:45:10', 'contrato': 'basico',
+                  'data_cadastro': str(datetime.datetime.now() + datetime.timedelta(30)), 'contrato': 'basico',
                   'empresa_gestora': 'empresa_1', 'tipo': 'Cliente'},
                  ]
 
@@ -150,22 +150,22 @@ perfis_lista = [{'empresa': 'empresa_1.ltda', 'nome': 'default', 'descricao': 'p
                 {'empresa': 'empresa_3.ltda', 'nome': 'adminluz', 'descricao': 'administrador do sistema'},
                 ]
 
-viewroles_lista = [{'empresa': 'empresa_1.ltda', 'role': 'default', 'tela': 'Contrato'},
-                   {'empresa': 'empresa_1.ltda', 'role': 'default', 'tela': 'Empresa'},
-                   {'empresa': 'empresa_1.ltda', 'role': 'default', 'tela': 'RH'},
-                   {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Interessado'},
-                   {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Contrato'},
-                   {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Empresa'},
-                   {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'RH'},
-                   {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Equipamento'},
-                   {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Plano de Manutenção'},
-                   {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Ordem de Serviço'},
-                   {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Fornecedor'},
-                   {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Almoxarifado'},
-                   {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Programação'},
+telasperfil_lista = [{'empresa': 'empresa_1.ltda', 'role': 'default', 'tela': 'Contrato'},
+                     {'empresa': 'empresa_1.ltda', 'role': 'default', 'tela': 'Empresa'},
+                     {'empresa': 'empresa_1.ltda', 'role': 'default', 'tela': 'RH'},
+                     {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Interessado'},
+                     {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Contrato'},
+                     {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Empresa'},
+                     {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'RH'},
+                     {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Equipamento'},
+                     {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Plano de Manutenção'},
+                     {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Ordem de Serviço'},
+                     {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Fornecedor'},
+                     {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Almoxarifado'},
+                     {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Programação'},
+                     {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Orçamento'},
+                     {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Indicadores'},
 
-                   {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Orçamento'},
-                   {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Indicadores'},
                    {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'Interessado'},
                    {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'Contrato'},
                    {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'Empresa'},
@@ -431,20 +431,16 @@ ordem_servico_lista = [{'codigo': 1001, 'descricao': 'Trocar Lâmpada Queimada',
                        ]
 
 tramitacao_lista = [{'ordem_servico': 1, 'usuario': 'danylo', 'situacaoordem': 'AGAP',
-                     'data_inicio': '2023/01/02 08:00:00', 'data_termino': '2023/01/02 08:00:00',
-                     'observacao': 'Abertura de Ordem de Serviço'},
+                     'data': '2023/01/02 08:00:00', 'observacao': 'Abertura de Ordem de Serviço'},
                     {'ordem_servico': 1, 'usuario': 'leandro', 'situacaoordem': 'PEND',
-                     'data_inicio': '2023/01/03 08:00:00', 'data_termino': '2023/01/03 08:00:00',
-                     'observacao': 'Aprovada a execução da Ordem de Serviço'},
+                     'data': '2023/01/03 08:00:00', 'observacao': 'Aprovada a execução da Ordem de Serviço'},
                     {'ordem_servico': 1, 'usuario': 'leandro', 'situacaoordem': 'EXEC',
-                     'data_inicio': '2023/01/04 08:00:00', 'data_termino': '2023/01/04 10:00:00',
+                     'data': '2023/01/04 08:00:00',
                      'observacao': 'Foi realizada a troca da lâmpada queimada, está operacional'},
                     {'ordem_servico': 1, 'usuario': 'leandro', 'situacaoordem': 'CONC',
-                     'data_inicio': '2023/01/04 10:00:00', 'data_termino': '2023/01/04 10:00:00',
-                     'observacao': 'Concluída a Ordem de Serviço'},
+                     'data': '2023/01/04 10:00:00', 'observacao': 'Concluída a Ordem de Serviço'},
                     {'ordem_servico': 1, 'usuario': 'danylo', 'situacaoordem': 'FISC',
-                     'data_inicio': '2023/01/05 08:00:00', 'data_termino': '2023/01/05 08:00:00',
-                     'observacao': 'Fiscalizada a Ordem de Serviço'},
+                     'data': '2023/01/05 08:00:00', 'observacao': 'Fiscalizada a Ordem de Serviço'},
 
                     ]
 
@@ -488,7 +484,9 @@ def criar_telas(lista: List[dict]) -> List[Tela]:
               List[Tela]: Lista de novas telas criadas e adicionadas na base de dados.
           """
     # Criando uma lista de novas telas para serem adicionadas
-    novas_telas = [Tela(nome=item['nome'], icon=item['icon'], url=item['url'])
+    novas_telas = [Tela(nome=item['nome'],
+                        icon=item['icon'],
+                        url=item['url'])
                    for item in lista if item['nome'] not in {t.nome for t in Tela.query.all()}]
 
     try:
@@ -597,213 +595,277 @@ def criar_tipos_empresa(lista: List[dict]) -> List[Tipoempresa]:
         return []
 
 
-def criar_empresas():
-    empresas = list()
-    for item in empresa_lista:
-        empresa = Empresa.query.filter_by(razao_social=item['razao_social']).first()
-        if empresa:
-            empresas.append(empresa)
-            continue
-        empresa = Empresa()
-        tipoempresa = Tipoempresa.query.filter_by(nome=item['tipo']).one_or_none()
-        plan = Contrato.query.filter_by(nome=item['contrato']).one()
-        empresa_gestora = Empresa.query.filter_by(razao_social=item['empresa_gestora']).first()
-        empresa.empresa_gestora_id = 1
+def criar_empresas(lista: List[dict]) -> List[Perfil]:
+    empresas_existentes = {emp.razao_social for emp in Empresa.query.all()}
+    tipos_empresas = {tipo.nome: tipo for tipo in Tipoempresa.query.all()}
+    contratos = {contrato.nome: contrato for contrato in Contrato.query.all()}
 
-        if empresa_gestora:
-            empresa.empresa_gestora_id = empresa_gestora.id
-        empresa.razao_social = item['razao_social']
-        empresa.nome_fantasia = item['nome_fantasia']
-        empresa.cnpj = item['cnpj']
-        empresa.cep = item['cep']
-        empresa.logradouro = item['logradouro']
-        empresa.bairro = item['bairro']
-        empresa.municipio = item['municipio']
-        empresa.uf = item['uf']
-        empresa.numero = item['numero']
-        empresa.complemento = item['complemento']
-        empresa.email = item['email']
-        empresa.telefone = item['telefone']
-        empresa.ativo = True
-        empresa.member_since = item['date']
+    empresas = [
+        Empresa(
+            razao_social=item['razao_social'],
+            nome_fantasia=item['nome_fantasia'],
+            cnpj=item['cnpj'],
+            cep=item['cep'],
+            logradouro=item['logradouro'],
+            bairro=item['bairro'],
+            municipio=item['municipio'],
+            uf=item['uf'],
+            numero=item['numero'],
+            complemento=item['complemento'],
+            email=item['email'],
+            telefone=item['telefone'],
+            ativo=True,
+            data_cadastro=item['data_cadastro'],
+            contrato=contratos[item['contrato']],
+            tipoempresa=tipos_empresas[item['tipo']],
+            empresa_gestora_id=Empresa.query.filter_by(razao_social=item['empresa_gestora']).first()
+        )
+        for item in lista
+        if item['razao_social'] not in empresas_existentes
+    ]
 
-        empresa.contrato_id = plan.id
-        empresa.tipoempresa_id = tipoempresa.id
-        empresas.append(empresa)
-
-        try:
-            db.session.add(empresa)
-            db.session.commit()
-            print(f'Empresa inserida:: {empresa}')
-        except Exception as e:
-            log.error(f'Erro ao inserir a empresa: {empresa.razao_social}-{e}')
-            db.session.rollback()
-    return empresas
+    try:
+        db.session.add_all(empresas)
+        db.session.commit()
+        # log.info(f'{len(empresas)} Empresas inseridas com sucesso.')
+        return empresas
+    except Exception as e:
+        log.error(f'Erro ao inserir Empresas: {e}')
+        db.session.rollback()
+        return []
 
 
-def criar_perfis():
-    perfis = list()
-    for item in perfis_lista:
-        empresa = Empresa.query.filter_by(razao_social=item['empresa']).one_or_none()
-        perfil = Perfil.query.filter_by(nome=item['nome'], empresa_id=empresa.id).first()
-        if perfil:
-            perfis.append(perfil)
-            continue
-        perfil = Perfil(nome=item['nome'], descricao=item['descricao'], empresa_id=empresa.id)
+def criar_perfis(lista: List[dict]) -> List[Perfil]:
+    """
+   Cria novos perfis a partir de uma lista de dicionários.
+   Args:
+       lista (List[dict]): Lista de dicionários contendo informações de novos perfis.
+   Returns:
+       List[Perfil]: Lista de novos perfis criados e adicionados na base de dados.
+   """
 
-        try:
-            db.session.add(perfil)
-            db.session.commit()
-            print(f'Regra inserida:: {perfil}')
-        except Exception as e:
-            log.error(f'Erro ao inserir a regra: {perfil.nome}-{e}')
-            db.session.rollback()
-    return perfis
+    empresas = {e.razao_social: e.id for e in Empresa.query.all()}
+
+    # Criando a lista de novas perfis a serem adicionadas
+    novos_perfis = [Perfil(nome=item['nome'],
+                           descricao=item['descricao'],
+                           empresa_id=empresas[item['empresa']])
+                    for item in lista if item['nome'] not in [pe.nome
+                                                              for pe in Perfil.query.all()]]
+
+    try:
+        # Adicionando as novas perfis na sessão e realizando o commit
+        db.session.add_all(novos_perfis)
+        db.session.commit()
+        log.info(f'{len(novos_perfis)} Perfis inseridas com sucesso.')
+
+        # Retornando a lista de novos perfis
+        return novos_perfis
+    except Exception as e:
+        # Em caso de erro, realizando o rollback da transação e retornando uma lista vazia
+        log.error(f'Erro ao inserir Perfil: {e}')
+        db.session.rollback()
+        return []
 
 
-def generate_viewroles():
-    viewrolelista = list()
-    for item in viewroles_lista:
+def criar_telasperfil(lista: List[dict]) -> List[Telaperfil]:
+    """
+   Cria novos perfis a partir de uma lista de dicionários.
+   Args:
+       lista (List[dict]): Lista de dicionários contendo informações de novos perfis.
+   Returns:
+       List[Perfil]: Lista de novos perfis criados e adicionados na base de dados.
+   """
+
+    telasperfis = []
+
+    for item in lista:
         empresa = Empresa.query.filter_by(razao_social=item['empresa']).one()
         perfil = Perfil.query.filter_by(nome=item['role'], empresa_id=empresa.id).one()
         tela = Tela.query.filter_by(nome=item['tela']).one()
-        viewrole = Telaperfil.query.filter_by(tela_id=tela.id, perfil_id=perfil.id).first()
+        telaperfil = Telaperfil.query.filter_by(tela_id=tela.id, perfil_id=perfil.id).first()
 
-        if viewrole:
-            viewrolelista.append(viewrole)
-            continue
+        if not telaperfil:
+            telasperfis.append(Telaperfil(perfil_id=perfil.id, tela_id=tela.id, ativo=True))
 
-        viewrole = Telaperfil(perfil_id=perfil.id, tela_id=tela.id, ativo=True)
-
-        try:
-            db.session.add(viewrole)
-            db.session.commit()
-            print(f'Tela inserida: {tela} no perfil: {perfil}')
-        except Exception as e:
-            log.error(f'Erro ao inserir a tela: {viewrole}-{e}')
-            db.session.rollback()
-
-    return viewrolelista
+    try:
+        db.session.add_all(telasperfis)
+        db.session.commit()
+        log.info(f'{len(telasperfis)} TelasPerfil inseridas com sucesso.')
+        return telasperfis
+    except Exception as e:
+        log.error(f'Erro ao inserir telaperfil: {e}')
+        db.session.rollback()
+        return []
 
 
-def criar_senhas():
-    senhas = list()
-    for item in senha_lista:
-        senha = Senha.query.filter_by(senha=item['senha']).one_or_none()
-        if senha:
-            senhas.append(senha)
-            continue
-        senha = Senha()
-        senha.senha = item['senha']
-        senha.data_expiracao = item['data_expiracao']
-        senha.senha_expira = item['senha_expira']
-        senha.senha_temporaria = item['senha_temporaria']
+def criar_senhas(lista: List[dict]) -> List[Senha]:
+    """
+   Cria novos perfis a partir de uma lista de dicionários.
+   Args:
+       lista (List[dict]): Lista de dicionários contendo informações de novos perfis.
+   Returns:
+       List[Perfil]: Lista de novos perfis criados e adicionados na base de dados.
+   """
 
-        try:
-            db.session.add(senha)
-            db.session.commit()
-            print(f'Senha inserida:: {senha}')
-        except Exception as e:
-            log.error(f'Erro ao inserir a senha: {senha.senha}-{e}')
-            db.session.rollback()
+    # Criando a lista de novas perfis a serem adicionadas
+    senhas_existentes = {se.senha for se in Senha.query.all()}
+    novas_senhas = [Senha(senha=item['senha'],
+                          data_expiracao=item['data_expiracao'],
+                          senha_temporaria=item['senha_temporaria'],
+                          senha_expira=item['senha_expira'])
+                    for item in lista if item['senha'] not in senhas_existentes]
 
-    return senhas
-
-
-def criar_usuarios():
-    usuarios = list()
-    for item in usuario_lista:
-        usuario = Usuario.query.filter_by(nome=item['nome']).first()
-        if usuario:
-            usuarios.append(usuario)
-            continue
-        usuario = Usuario()
-        empresa = Empresa.query.filter_by(razao_social=item['empresa']).one_or_none()
-        perfil = Perfil.query.filter_by(nome=item['perfil'], empresa_id=empresa.id).one_or_none()
-        senha = Senha.query.filter_by(senha=item['senha']).one_or_none()
-        usuario.nome = item['nome']
-        usuario.email = item['email']
-        usuario.senha_id = senha.id
-        usuario.data_assinatura = item['data_assinatura']
-        usuario.ativo = True
-        usuario.perfil_id = perfil.id
-        usuario.empresa_id = empresa.id
-
-        try:
-            db.session.add(usuario)
-            db.session.commit()
-            print(f'Usuário inserido: {usuario}, na empresa: {empresa}')
-        except Exception as e:
-            log.error(f'Erro ao inserir a usuário: {usuario}-{e}')
-            db.session.rollback()
-
-    return usuarios
+    try:
+        db.session.add_all(novas_senhas)
+        db.session.commit()
+        log.info(f'{len(novas_senhas)} Senhas inseridas com sucesso.')
+        # Retornando a lista de novas senhas
+        return novas_senhas
+    except Exception as e:
+        # Em caso de erro, realizando o rollback da transação e retornando uma lista vazia
+        log.error(f'Erro ao inserir Senha: {e}')
+        db.session.rollback()
+        return []
 
 
-def criar_grupo():
-    grupos = list()
-    for item in grupo_lista:
-        grupo = Grupo.query.filter_by(nome=item['nome']).one_or_none()
-        if grupo:
-            grupos.append(grupo)
-            continue
-        grupo = Grupo()
-        grupo.nome = item['nome']
-        empresa = Empresa.query.filter_by(razao_social=item['empresa']).one_or_none()
-        grupo.empresa_id = empresa.id
+def criar_usuarios(lista: List[dict]) -> List[Usuario]:
+    """
+       Cria novos tipos de datas para os planos de manutenção.
+       Args:
+           lista (List[dict]): Lista de dicionários contendo informações das datas.
+       Returns:
+           List[TipoData]: Lista das novas datas e adicionados na base de dados.
+       """
 
-        try:
-            db.session.add(grupo)
-            db.session.commit()
-            print(f'Grupo de equipamento inserido: {grupo} na empresa: {empresa}')
-        except Exception as e:
-            log.error(f'Erro ao inserir o grupo do equipamento: {grupo}-{e}')
-            db.session.rollback()
-    return grupos
+    empresas = {e.razao_social: e.id for e in Empresa.query.all()}
+    perfis = {p.nome: p.id for p in Perfil.query.all()}
+    senhas = {s.senha: s.id for s in Senha.query.all()}
 
+    # Criando uma lista de novos tipodatas para serem adicionados
+    novos_usuarios = [Usuario(nome=item['nome'],
+                              email=item['email'],
+                              data_assinatura=item['data_assinatura'],
+                              ativo=True,
+                              senha_id=senhas[item['senha']],
+                              perfil_id=perfis[item['perfil']],
+                              empresa_id=empresas[item['empresa']]
+                              )
+                      for item in lista if item['nome'] not in [us.nome for us in Usuario.query.all()]]
 
-def criar_equipamento():
-    equipamentos = list()
-    for item in equipamento_lista:
-        equipamento = Equipamento.query.filter_by(cod=item['cod']).one_or_none()
-        if equipamento:
-            equipamentos.append(equipamento)
-            continue
-        equipamento = Equipamento()
-        empresa = Empresa.query.filter_by(razao_social=item['empresa']).one_or_none()
-        equipamento.cod = item['cod']
-        equipamento.descricao_curta = item['short']
-        equipamento.tag = item['tag']
-        equipamento.empresa_id = empresa.id
-        try:
-            db.session.add(equipamento)
-            db.session.commit()
-            print(f'Equipamento inserido: {equipamento} na empresa: {empresa}')
-        except Exception as e:
-            log.error(f'Erro ao inserir Equipamento: {equipamento}-{e}')
-            db.session.rollback()
-    return equipamentos
+    try:
+        # Adicionando os novos contratos na sessão e realizando o commit
+        db.session.add_all(novos_usuarios)
+        db.session.commit()
+        # Registrando o evento no sistema de logs
+        log.info(f'{len(novos_usuarios)} Usuários inseridos com sucesso.')
+        # Retornando a lista de novos contratos adicionados
+        return novos_usuarios
+    except SQLAlchemyError as e:
+        # Em caso de erro, realizando o rollback da transação e retornando uma lista vazia
+        log.error(f'Erro ao inserir usuario: {e}')
+        # Realizando o rollback da transação e retornando uma lista vazia
+        db.session.rollback()
+        return []
 
 
-def criar_sistema():
-    sistemas = list()
-    for item in sistema_lista:
-        sistema = Sistema.query.filter_by(nome=item['nome']).first()
-        if sistema:
-            sistemas.append(sistema)
-            continue
-        sistema = Sistema()
-        equipamento = Equipamento.query.filter_by(cod=item['cod']).one_or_none()
-        sistema.nome = item['nome']
-        sistema.equipamento_id = equipamento.id
-        try:
-            db.session.add(sistema)
-            db.session.commit()
-            print(f'Sistema inserido: {sistema} no equipamento: {equipamento}')
-        except Exception as e:
-            log.error(f'Erro ao inserir Sistema: {sistema}-{e}')
-            db.session.rollback()
-    return sistemas
+def criar_grupo(lista: List[dict]) -> List[Grupo]:
+    """
+       Cria novos tipos de datas para os planos de manutenção.
+       Args:
+           lista (List[dict]): Lista de dicionários contendo informações das datas.
+       Returns:
+           List[TipoData]: Lista das novas datas e adicionados na base de dados.
+       """
+
+    empresas = {e.razao_social: e.id for e in Empresa.query.all()}
+
+    # Criando uma lista de novos tipodatas para serem adicionados
+    novos_grupos = [Grupo(nome=item['nome'],
+                          empresa_id=empresas[item['empresa']])
+                    for item in lista if item['nome'] not in [gr.nome for gr in Grupo.query.all()]]
+
+    try:
+        # Adicionando os novos contratos na sessão e realizando o commit
+        db.session.add_all(novos_grupos)
+        db.session.commit()
+        # Registrando o evento no sistema de logs
+        log.info(f'{len(novos_grupos)} Grupos inseridos com sucesso.')
+        # Retornando a lista de novos contratos adicionados
+        return novos_grupos
+    except SQLAlchemyError as e:
+        # Em caso de erro, realizando o rollback da transação e retornando uma lista vazia
+        log.error(f'Erro ao inserir grupos: {e}')
+        # Realizando o rollback da transação e retornando uma lista vazia
+        db.session.rollback()
+        return []
+
+
+def criar_equipamento(lista: List[dict]) -> List[Equipamento]:
+    """
+       Cria novos tipos de datas para os planos de manutenção.
+       Args:
+           lista (List[dict]): Lista de dicionários contendo informações das datas.
+       Returns:
+           List[TipoData]: Lista das novas datas e adicionados na base de dados.
+       """
+
+    empresas = {e.razao_social: e.id for e in Empresa.query.all()}
+
+    # Criando uma lista de novos tipodatas para serem adicionados
+    novos_equipamentos = [Equipamento(cod=item['cod'],
+                                      descricao_curta=item['short'],
+                                      tag=item['tag'],
+                                      empresa_id=empresas[item['empresa']]
+                                      )
+                          for item in lista if item['cod'] not in [si.cod for si in Equipamento.query.all()]]
+
+    try:
+        # Adicionando os novos contratos na sessão e realizando o commit
+        db.session.add_all(novos_equipamentos)
+        db.session.commit()
+        # Registrando o evento no sistema de logs
+        log.info(f'{len(novos_equipamentos)} Equipamentos inseridos com sucesso.')
+        # Retornando a lista de novos contratos adicionados
+        return novos_equipamentos
+    except SQLAlchemyError as e:
+        # Em caso de erro, realizando o rollback da transação e retornando uma lista vazia
+        log.error(f'Erro ao inserir equipamentos: {e}')
+        # Realizando o rollback da transação e retornando uma lista vazia
+        db.session.rollback()
+        return []
+
+
+def criar_sistema(lista: List[dict]) -> List[Sistema]:
+    """
+       Cria novos tipos de datas para os planos de manutenção.
+       Args:
+           lista (List[dict]): Lista de dicionários contendo informações das datas.
+       Returns:
+           List[TipoData]: Lista das novas datas e adicionados na base de dados.
+       """
+
+    equipamentos = {e.cod: e.id for e in Equipamento.query.all()}
+
+    # Criando uma lista de novos tipodatas para serem adicionados
+    novos_sistemas = [Sistema(nome=item['nome'],
+                              equipamento_id=equipamentos[item['cod']])
+                      for item in lista if item['nome'] not in [si.nome for si in Sistema.query.all()]]
+
+    try:
+        # Adicionando os novos contratos na sessão e realizando o commit
+        db.session.add_all(novos_sistemas)
+        db.session.commit()
+        # Registrando o evento no sistema de logs
+        log.info(f'{len(novos_sistemas)} Sistemas inseridos com sucesso.')
+        # Retornando a lista de novos contratos adicionados
+        return novos_sistemas
+    except SQLAlchemyError as e:
+        # Em caso de erro, realizando o rollback da transação e retornando uma lista vazia
+        log.error(f'Erro ao inserir sistema: {e}')
+        # Realizando o rollback da transação e retornando uma lista vazia
+        db.session.rollback()
+        return []
 
 
 def criar_tipodata(lista: List[dict]) -> List[TipoData]:
@@ -1029,9 +1091,9 @@ def criar_tramitacao(lista: List[dict]) -> List[TramitacaoOrdem]:
         ordemservico_id=item['ordem_servico'],
         usuario_id=usuarios[item['usuario']],
         situacaoordem_id=situacoes_ordem[item['situacaoordem']],
-        data_inicio=item['data_inicio'],
-        data_termino=item['data_termino'],
-        observacao=item['observacao']) for item in lista]
+        data=item['data'],
+        observacao=item['observacao'])
+        for item in lista]
 
     try:
         # Adicionando as novas ordens de serviços na sessão e realizando o commit
@@ -1090,20 +1152,20 @@ criar_telas(telas_lista)
 criar_telascontrato(telascontrato_lista)
 criar_interessados(interessado_lista)
 criar_tipos_empresa(tipo_empresa_lista)
-criar_empresas()
-#
-# # carregamento para os perfis e usuários
-criar_perfis()
-generate_viewroles()
-criar_senhas()
-criar_usuarios()
-#
-# # carregamento para os equipamentos
-criar_grupo()
-criar_equipamento()
-criar_sistema()
-#
-# # carregamento para os fornecedores
+criar_empresas(empresa_lista)
+
+# carregamento para os perfis e usuários
+criar_perfis(perfis_lista)
+criar_telasperfil(telasperfil_lista)
+criar_senhas(senha_lista)
+criar_usuarios(usuario_lista)
+
+# carregamento para os equipamentos
+criar_grupo(grupo_lista)
+criar_equipamento(equipamento_lista)
+criar_sistema(sistema_lista)
+
+# carregamento para os fornecedores
 
 criar_tipodata(tipoData_lista)
 criar_unidades(unidade_lista)

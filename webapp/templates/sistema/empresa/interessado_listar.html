@@ -4,7 +4,9 @@
 
     <h2> INTERESSADOS </h2>
 
-    <table class="table">
+    <input class="form-control" id="myInput" type="text" placeholder="Filtrar.."><br>
+    <
+    table class="table">
         <thead>
             <tr>
                 <th scope="col">CNPJ</th>
@@ -17,7 +19,7 @@
             </tr>
         </thead>
 
-        <tbody>
+        <tbody id="myTable">
             {% for interessado in interessados %}
                 <tr>
                     <th scope="row">{{ interessado.cnpj }}</th>
@@ -44,4 +46,6 @@
     <a href="{{url_for('sistema.index')}}">Voltar</a>
 
     </body>
+
+<script type="text/javascript" src="/static/js/filtro_coluna.js"></script>
 {% endblock %}

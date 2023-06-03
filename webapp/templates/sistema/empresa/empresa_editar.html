@@ -13,7 +13,7 @@
             {{form.cnpj.label}}             {{form.cnpj(size=20)}} <button onclick="pesquisar_cnpj()" type="button"> Validar CNPJ </button> <br>
             {{form.razao_social.label}}     {{form.razao_social(size=100)}}<br>
             {{form.nome_fantasia.label}}    {{form.nome_fantasia(size=100)}}<br>
-            {{form.data_abertura.label}}    {{form.data_abertura(size=10)}}<br>
+            {{form.data_abertura.label}}    {{form.data_abertura}}<br>
             {{form.situacao.label}}    {{form.situacao(size=10)}}<br>
             {{form.porte.label}}    {{form.porte(size=20)}}<br>
             {{form.natureza_juridica.label}}    {{form.natureza_juridica(size=50)}}<br>
@@ -59,6 +59,7 @@
 
     <script type="text/javascript" src="/static/js/consulta_cep.js"></script>
     <script type="text/javascript" src="/static/js/consulta_cnpj.js"></script>
+
 
 {% endblock %}
 

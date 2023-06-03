@@ -1,11 +1,12 @@
 {% extends "sistema_base.html" %}
 {% block body %}
-    <body>
-
+<body>
     <h2> LISTA DAS TELAS PARA O CONTRATO {{ contrato.nome }}</h2>
     <a href="{{ url_for('contrato.telacontrato_editar', contrato_id=contrato.id) }}">
         Adicionar
     </a>
+
+    <input class="form-control" id="myInput" type="text" placeholder="Filtrar.."><br>
 
     <table class="table">
         <thead>
@@ -16,7 +17,7 @@
             </tr>
         </thead>
 
-        <tbody>
+        <tbody id="myTable">
         {% for telacontrato in telascontrato %}
             <tr>
                 <td>{{ telacontrato.tela.nome }}</td>
@@ -43,8 +44,9 @@
             </tr>
         </tbody>
     </table>
+    <a href="{{ url_for('contrato.contrato_listar') }}">Voltar </a>
 
-    <a href="{{ url_for('contrato.contrato_listar') }}">Voltar</a>
+</body>
 
-    </body>
+<script type="text/javascript" src="/static/js/filtro_coluna.js"></script>
 {% endblock %}

@@ -39,7 +39,7 @@ class EmpresaForm(Form):
     ativo = BooleanField('Ativo', render_kw={"placeholder": "Informe se a empresa está ativa"})
 
     nome_fantasia = StringField('Nome Fantasia', validators=[InputRequired()], render_kw={"placeholder": "Digite o nome fantasia"})
-    data_abertura = DateField('Data de Abertura', format='%Y-%m-%d',default=datetime.now().strftime("%Y-%m-%d"), validators=[InputRequired()], render_kw={"placeholder": "Digite de criação do cnpj"})
+    data_abertura = DateField('Data de Abertura', format='%Y-%m-%d', validators=[InputRequired()], render_kw={"placeholder": "Digite de criação do cnpj"})
     situacao = StringField('Situação', render_kw={"placeholder": "Digite a situação do cnpj"})
     tipo = StringField('Tipo',  validators=[InputRequired()], render_kw={"placeholder": "Matriz/Filial"})
     nome_responsavel = StringField('Nome do Responsável', render_kw={"placeholder": "Digite o nome do responsável"})

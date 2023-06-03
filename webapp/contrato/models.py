@@ -8,6 +8,7 @@ log = logging.getLogger(__name__)
 
 class Contrato(db.Model):
     """    Classe o Contrato de Assinaturas   """
+    __tablename__ = 'contrato'
     id = db.Column(db.Integer(), primary_key=True)
     nome = db.Column(db.String(50), nullable=False, index=True )
     empresa = db.relationship("Empresa", back_populates="contrato")
@@ -32,6 +33,7 @@ class Contrato(db.Model):
 
 class Tela(db.Model):
     """    Classe das telas    """
+    __tablename__ = 'tela'
     id = db.Column(db.Integer(), primary_key=True)
     nome = db.Column(db.String(50), nullable=False, index=True)
     icon = db.Column(db.String(50), nullable=False)
@@ -62,6 +64,7 @@ class Tela(db.Model):
 
 class Telacontrato(db.Model):
     """    Classe Relacionando Telas e Planos    """
+    __tablename__ = 'tela_contrato'
     id = db.Column(db.Integer(), primary_key=True)
     ativo = db.Column(db.Boolean, default=False)
 

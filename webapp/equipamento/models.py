@@ -9,6 +9,7 @@ log = logging.getLogger(__name__)
 
 class Sistema(db.Model):
     """    Classe de sistemas nos ativos   """
+    __tablename__ = 'sistema'
     id = db.Column(db.Integer(), primary_key=True)
     nome = db.Column(db.String(50), nullable=False, index=True)
     ativo = db.Column(db.Boolean, nullable=False, default=True)
@@ -38,6 +39,7 @@ class Sistema(db.Model):
 
 class Grupo(db.Model):
     """    Classe de grupo de ativos    """
+    __tablename__ = 'grupo'
     id = db.Column(db.Integer(), primary_key=True)
     nome = db.Column(db.String(50), nullable=False, index=True)
     ativo = db.Column(db.Boolean, nullable=False, default=True)
@@ -77,6 +79,7 @@ class Equipamento(db.Model):
    # titulos obrigatórios
     titulos_obg = ['Código*', 'Descrição_Curta*','Tag*']
 
+    __tablename__ = 'equipamento'
     id = db.Column(db.Integer(), primary_key=True)
     cod = db.Column(db.String(50), nullable=True, index=True)
     descricao_curta = db.Column(db.String(50), nullable=False)

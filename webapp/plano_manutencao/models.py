@@ -19,6 +19,7 @@ class TipoData(db.Model):
 
 class Unidade(db.Model):
     """    Classe de tipos de periodicidade   """
+    __tablename__ = 'unidade'
     id = db.Column(db.Integer(), primary_key=True)
     nome = db.Column(db.String(50), nullable=False, index=True)
     periodicidade = db.relationship("Periodicidade", back_populates="unidade")

@@ -7,6 +7,7 @@
     Adicionar
 </a>
 
+<input class="form-control" id="myInput" type="text" placeholder="Filtrar.."><br>
 
 <table class="table">
     <thead>
@@ -16,7 +17,7 @@
     </tr>
     </thead>
 
-    <tbody>
+    <tbody id="myTable">
     {% for perfil in perfis %}
     <tr>
         <td>{{ perfil.nome }}</td>
@@ -35,4 +36,5 @@
 <a href="{{ url_for('usuario.usuario_listar') }}">Voltar</a>
 
 </body>
+<script type="text/javascript" src="/static/js/filtro_coluna.js"></script>
 {% endblock %}

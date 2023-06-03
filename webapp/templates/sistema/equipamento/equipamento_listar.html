@@ -7,6 +7,7 @@
         Adicionar
     </a>
 
+    <input class="form-control" id="myInput" type="text" placeholder="Filtrar.."><br>
 
     <table class="table">
         <thead>
@@ -22,7 +23,7 @@
             </tr>
         </thead>
 
-        <tbody>
+        <tbody id="myTable">
         {% for equipamento in equipamentos %}
             <tr>
                 <th scope="row">{{ equipamento.id }}</th>
@@ -62,4 +63,6 @@
 
 
     </body>
+
+<script type="text/javascript" src="/static/js/filtro_coluna.js"></script>
 {% endblock %}

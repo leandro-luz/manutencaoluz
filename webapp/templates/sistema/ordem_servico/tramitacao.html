@@ -1,0 +1,33 @@
+<!-- Add New Modal -->
+    <!-- Modal -->
+    <div class="modal fade" id="modal" tabindex="-1"
+         aria-labelledby="modalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalLabel">Tramitação</h5>
+                    <button class="btn-close" type="button"
+                            data-bs-dismiss="modal" aria-label="Close">
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{ url_for('ordem_servico.tramitacao', ordem_id=ordem.id) }}" method="POST">
+                        {{form.csrf_token}}
+
+                        {{ form_tramitacao.situacaoordem.label }}    {{ form_tramitacao.situacaoordem }}<br>
+                        {{ form_tramitacao.observacao.label }}    {{ form_tramitacao.observacao }}<br>
+
+                        <input type="submit" value="Salvar"/>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+{% if form.errors %}
+
+<script>$('#modal').modal('show');</script>
+
+{% endif %}

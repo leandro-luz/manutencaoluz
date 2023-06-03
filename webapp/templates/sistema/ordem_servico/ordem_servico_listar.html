@@ -7,6 +7,8 @@
         Adicionar
     </a>
 
+    <input class="form-control" id="myInput" type="text" placeholder="Filtrar.."><br>
+
     <table class="table">
         <thead>
             <tr>
@@ -20,7 +22,7 @@
             </tr>
         </thead>
 
-        <tbody>
+        <tbody id="myTable">
         {% for ordem in ordens %}
             <tr>
                 <th scope="row">{{ ordem.codigo }}</th>
@@ -43,4 +45,6 @@
     </table>
 
 </body>
+<script type="text/javascript" src="/static/js/filtro_coluna.js"></script>
+
 {% endblock %}

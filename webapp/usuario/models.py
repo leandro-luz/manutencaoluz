@@ -18,6 +18,7 @@ log = logging.getLogger(__name__)
 
 class Perfil(db.Model):
     """    Classe do perfil de acesso    """
+    __tablename__ = 'perfil'
     id = db.Column(db.Integer(), primary_key=True)
     nome = db.Column(db.String(50), unique=False, index=True)
     descricao = db.Column(db.String(50))
@@ -53,6 +54,7 @@ class Perfil(db.Model):
 
 
 class Senha(db.Model):
+    __tablename__ = 'senha'
     id = db.Column(db.Integer(), primary_key=True)
     senha = db.Column(db.String(50), nullable=False, index=True)
     senha_temporaria = db.Column(db.Boolean, nullable=False, default=True)
@@ -250,6 +252,7 @@ class Usuario(db.Model):
 
 class Telaperfil(db.Model):
     """    Classe relacionamento entre Tela e Perfil    """
+    __tablename__ = 'tela_perfil'
     id = db.Column(db.Integer(), primary_key=True)
     ativo = db.Column(db.Boolean, default=True)
 

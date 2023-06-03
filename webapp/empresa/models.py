@@ -12,6 +12,7 @@ log = logging.getLogger(__name__)
 
 class Interessado(db.Model):
     """    Classe de interessados no sistema    """
+    __tablename__ = 'interessado'
     id = db.Column(db.Integer(), primary_key=True)
     nome_fantasia = db.Column(db.String(50), nullable=False, unique=True)
     cnpj = db.Column(db.String(18), nullable=False, unique=True)
@@ -49,6 +50,7 @@ class Interessado(db.Model):
 
 
 class Tipoempresa(db.Model):
+    __tablename__ = 'tipo_empresa'
     id = db.Column(db.Integer(), primary_key=True)
     nome = db.Column(db.String(50), nullable=False, index=True, unique=True)
     empresa = db.relationship("Empresa", back_populates="tipoempresa")
@@ -70,6 +72,7 @@ class Tipoempresa(db.Model):
 
 
 class Empresa(db.Model):
+    __tablename__ = 'empresa'
     id = db.Column(db.Integer(), primary_key=True)
     cnpj = db.Column(db.String(18), nullable=False, unique=True)
     razao_social = db.Column(db.String(100), nullable=False, index=True, unique=True)
@@ -96,10 +99,10 @@ class Empresa(db.Model):
     email = db.Column(db.String(50), nullable=False, unique=True)
     ativo = db.Column(db.Boolean, default=False)
     data_cadastro = db.Column(db.DateTime(), nullable=True)
-    empresa_gestora_id = db.Column(db.Integer(), nullable=False)
+    empresa_gestora_id = db.Column(db.Integer(), nullable=False, default=1)
 
     contrato_id = db.Column(db.Integer(), db.ForeignKey("contrato.id"), nullable=False)
-    tipoempresa_id = db.Column(db.Integer(), db.ForeignKey("tipoempresa.id"), nullable=False)
+    tipoempresa_id = db.Column(db.Integer(), db.ForeignKey("tipo_empresa.id"), nullable=False)
 
     contrato = db.relationship("Contrato", back_populates="empresa")
     tipoempresa = db.relationship("Tipoempresa", back_populates="empresa")
@@ -111,8 +114,8 @@ class Empresa(db.Model):
     def __repr__(self) -> str:
         return f'<Empresa: {self.id}-{self.nome_fantasia}>'
 
-    def __init__(self, nome="") -> None:
-        self.razao_social = nome
+    # def __init__(self, nome="") -> None:
+    #     self.razao_social = nome
 
     def alterar_atributos_externo(self, form, empresa_id, tipoempresa_id, new=False) -> None:
         """    Alterações dos atributos da empresa     """
