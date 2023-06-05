@@ -8,7 +8,6 @@ class OrdemServicoForm(Form):
     descricao = StringField('Descrição', validators=[InputRequired(), Length(max=50)],
                          render_kw={"placeholder": "Descrição da atividade"})
     equipamento = SelectField('Equipamento', choices=[], coerce=int)
-    # situacaoordem = SelectField('Situação', choices=[], coerce=int, validate_choice=False)
 
     submit = SubmitField("Salvar")
 

@@ -6,6 +6,7 @@ from webapp.empresa.models import Empresa
 from webapp.usuario.models import Perfil, Telaperfil
 from webapp.usuario import has_view
 from webapp.utils.erros import flash_errors
+from webapp import db
 
 
 contrato_blueprint = Blueprint(
@@ -35,8 +36,9 @@ def contrato_editar(contrato_id: int):
         contrato = Contrato()  # instancia um novo contrato
         contrato.id = 0  # atribui 0 para o id deste novo contrato
         form = ContratoFomr()  # instância um novo formulário
-
+        new = True
     else:
+        new = False
         # --------- ATUALIZAR
         # gera uma consulta dos planos cadastrados no banco de dados
         contrato = Contrato.query.filter_by(id=contrato_id).first()
@@ -44,7 +46,7 @@ def contrato_editar(contrato_id: int):
         form = ContratoFomr(obj=contrato)
 
         # --------- ATUALIZAR AS LISTAS DO FORMULÁRIO
-        # consulta dos planos com 'id' e nome
+        # consulta das telas para o contrato existente
         form.tela.choices = [(telasplano.id, telasplano.contrato.nome) for telasplano
                              in Telacontrato.query.filter_by(contrato_id=contrato_id).all()]
 
@@ -53,8 +55,7 @@ def contrato_editar(contrato_id: int):
     if form.validate_on_submit():
         # coleta as informações do formulário e insere no contrato
         contrato.alterar_atributos(form)
-        if contrato.salvar():
-
+        if contrato.salvar(new, form):
             # --------- MENSAGENS
             if contrato_id > 0:
                 flash("Contrato atualizado", category="success")

@@ -20,11 +20,20 @@ class Contrato(db.Model):
     def alterar_atributos(self, form) -> None:
         self.nome = form.nome.data
 
-    def salvar(self) -> bool:
+    def salvar(self, new, form) -> bool:
         """    Função para salvar no banco de dados o objeto"""
         try:
             db.session.add(self)
             db.session.commit()
+
+            if new:
+            #     # cadastrar todas as telas para o novo contrato
+                new_contrato = Contrato.query.filter_by(nome=form.nome.data).one_or_none()
+                telascontrato = [Telacontrato(tela_id=tela.id, contrato_id=new_contrato.id, ativo=False)
+                                 for tela in Tela.query.all()]
+                db.session.add_all(telascontrato)
+                db.session.commit()
+
             return True
         except Exception as e:
             log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
@@ -75,7 +84,7 @@ class Telacontrato(db.Model):
     tela = db.relationship("Tela", back_populates="telacontrato")
 
     def __repr__(self):
-        return f'<Telacontrato: {self.id}-{self.id}>'
+        return f'<Telacontrato: {self.id}-{self.contrato_id}-{self.tela_id}>'
 
     def alterar_atributos(self, form) -> None:
         """    Altera os valores do contrato e tela    """
