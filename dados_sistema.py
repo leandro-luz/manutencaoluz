@@ -354,22 +354,22 @@ periodicidade_lista = [{'nome': 'Diária', 'tempo': 1, 'unidade': 'dia'},
 
 
 planosmanutencao_lista = [{'nome': 'Inspeção Diária Gerador', 'codigo': 'gera0001', 'ativo': True,
-                           'empresa': 'empresa_1.ltda',
+                           'empresa': 'empresa_1.ltda', 'data_inicio': '01/05/2023',
                            'tipodata': 'Data_Fixa', 'periodicidade': 'Diária', 'equipamento': '000.001'},
                           {'nome': 'Inspeção Semanal Subestação 13.8KV', 'codigo': 'sube0001', 'ativo': True,
-                           'empresa': 'empresa_1.ltda',
+                           'empresa': 'empresa_1.ltda', 'data_inicio': '01/05/2023',
                            'tipodata': 'Data_Fixa', 'periodicidade': 'Semanal', 'equipamento': '000.002'},
                           {'nome': 'Manutenção Preventiva Anual Subestação 13.8KV', 'codigo': 'sube0002', 'ativo': True,
-                           'empresa': 'empresa_1.ltda',
+                           'empresa': 'empresa_1.ltda', 'data_inicio': '01/05/2023',
                            'tipodata': 'Data_Fixa', 'periodicidade': 'Anual', 'equipamento': '000.002'},
                           {'nome': 'Manutenção Preventiva Mensal Chiller', 'codigo': 'chil0001', 'ativo': True,
-                           'empresa': 'empresa_1.ltda',
+                           'empresa': 'empresa_1.ltda', 'data_inicio': '01/05/2023',
                            'tipodata': 'Data_Móvel', 'periodicidade': 'Mensal', 'equipamento': '000.003'},
                           {'nome': 'Inspeção Diária Carro 001', 'codigo': 'carr0001', 'ativo': True, 'empresa':
-                              'empresa_1.ltda',
+                              'empresa_1.ltda', 'data_inicio': '01/05/2023',
                            'tipodata': 'Data_Fixa', 'periodicidade': 'Diária', 'equipamento': '000.004'},
                           {'nome': 'Manutenção Preventiva Semestral Carro', 'codigo': 'carr0002', 'ativo': True,
-                           'empresa': 'empresa_1.ltda',
+                           'empresa': 'empresa_1.ltda', 'data_inicio': '01/05/2023',
                            'tipodata': 'Data_Fixa', 'periodicidade': 'Semestral', 'equipamento': '000.004'},
                           ]
 
@@ -956,10 +956,6 @@ def criar_periodicidades(lista: List[dict]) -> List[Periodicidade]:
         return []
 
 
-#  {'nome': 'Inspeção Diária Gerador', 'codigo': 'gera0001', 'ativo': True,
-#                            'empresa': 'empresa_1.ltda',
-#                            'tipodata': 'Data_Fixa', 'periodicidade': 'Diária', 'equipamento': '000.001'}
-
 def criar_planosmanutencao(lista: List[dict]) -> List[PlanoManutencao]:
 
     # Buscando os objetos necessários
@@ -973,6 +969,7 @@ def criar_planosmanutencao(lista: List[dict]) -> List[PlanoManutencao]:
                         codigo=item['codigo'],
                         ativo=item['ativo'],
                         tipodata_id=tipodatas[item['tipodata']],
+                        data_inicio=item['data_inicio'],
                         periodicidade_id=periodicidades[item['periodicidade']],
                         equipamento_id=equipamentos[item['equipamento']],
                         empresa_id=empresas[item['empresa']])

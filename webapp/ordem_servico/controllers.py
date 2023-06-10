@@ -90,6 +90,9 @@ def ordem_editar(ordem_id):
             if ordem_id > 0:
                 flash("Ordem de Serviço Atualizado", category="success")
             else:
+                print('a')
+                TramitacaoOrdem.insere_tramitacao(form.descricao.data, situacao, "ABERTURA DA ORDEM DE SERVIÇO")
+
                 flash("Ordem de Serviço Cadastrado", category="success")
             return redirect(url_for("ordem_servico.ordem_listar"))
         else:

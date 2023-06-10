@@ -91,6 +91,17 @@ class TramitacaoOrdem(db.Model):
             ordem.data_fechamento = datetime.datetime.now()
         ordem.salvar()
 
+    @staticmethod
+    def insere_tramitacao(descricao, situacao, texto):
+        tramitacao = TramitacaoOrdem()
+        ordem = OrdemServico.query.filter_by(descricao=descricao).order_by(OrdemServico.id.desc()).first()
+        tramitacao.ordemservico_id = ordem.id
+        tramitacao.usuario_id = current_user.id
+        tramitacao.situacaoordem_id = situacao.id
+        tramitacao.observacao = texto
+        tramitacao.data = datetime.datetime.now()
+        tramitacao.salvar()
+
 
 class OrdemServico(db.Model):
     __tablename__ = 'ordem_servico'

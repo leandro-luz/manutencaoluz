@@ -9,11 +9,14 @@ class PlanoForm(Form):
                        render_kw={"placeholder": "Digite o nome do plano de manutenção"})
     codigo = StringField('Código', validators=[InputRequired(), Length(max=50)],
                        render_kw={"placeholder": "Digite o código do plano de manutenção"})
+    data_inicio = DateField('Data de Início', validators=[InputRequired()],
+                               render_kw={"placeholder": "Digite a data de início"})
 
-    tipodata = SelectField('Tipo de data inicial', choices=[], coerce=int)
-    periodicidade = SelectField('Periodicidade', choices=[], coerce=int)
-    equipamento = SelectField('Equipamento', choices=[], coerce=int)
-    file = FileField('Escolha um arquivo para o cadastro de planos de manutenção em Lote (4MB):', validators=[Optional()],
+    tipodata = SelectField('Tipo de data inicial', choices=[], coerce=int, validators=[InputRequired()])
+    periodicidade = SelectField('Periodicidade', choices=[], coerce=int, validators=[InputRequired()])
+    equipamento = SelectField('Equipamento', choices=[], coerce=int, validators=[InputRequired()])
+    file = FileField('Escolha um arquivo para o cadastro de planos de manutenção em Lote (4MB):',
+                     validators=[Optional()],
                      render_kw={"placeholder": "Selecione o arquivo"})
 
     ativo = BooleanField('Ativo', render_kw={"placeholder": "Informe se o plano está ativo"})

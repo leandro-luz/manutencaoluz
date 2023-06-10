@@ -19,8 +19,10 @@ class LoginForm(Form):
         check_validate = super(LoginForm, self).validate()
 
         if check_validate:
+            print(self.nome.data)
             # Verifica se o usuário existe
             usuario = Usuario.query.filter_by(nome=self.nome.data).one_or_none()
+            print(usuario)
             if not usuario:
                 flash("Usuário ou senha não válidos!", category="danger")
                 return False
@@ -37,6 +39,7 @@ class LoginForm(Form):
                 if usuario.senha.senha_expira and not usuario.senha.verificar_data_expiracao():
                     return False
             else:
+                print('senhas erradas')
                 flash("Usuário ou senha não válidos!", category="danger")
                 return False
 
@@ -103,19 +106,36 @@ class EditarUsuarioForm(Form):
     def validate(self, **kwargs):
         # if our validators do not pass
         check_validate = super(EditarUsuarioForm, self).validate()
+
         if check_validate:
-            usuario = Usuario.query.filter_by(id=self.id.data).one_or_none()
-            # Verifica se já existe um usuário com o mesmo nome
-            if not usuario.nome == self.nome.data:
-                if Usuario.query.filter_by(nome=self.nome.data).first() is not None:
+
+            # Verificando se eh um novo usuário
+            if self.id.data == 0:
+                # Criando uma instância do usuário com base no nome
+                usuario = Usuario.query.filter_by(nome=self.nome.data).one_or_none()
+                # Verifica se já existe um usuário com o mesmo nome
+                if usuario:
                     flash("Usuário já cadastrado com este nome", category="danger")
                     return False
 
-            # Verifica se existe um usuário com o mesmo email
-            if not usuario.email == self.email.data:
+                # Verifica se existe um usuário com o mesmo email
                 if Usuario.query.filter_by(email=self.email.data).first() is not None:
                     flash("Usuário já cadastrado com este email", category="danger")
                     return False
+            else:
+                # Criando uma instância do usuário com base no id
+                usuario = Usuario.query.filter_by(id=self.id.data).one_or_none()
+
+                if not usuario.nome == self.nome.data:
+                    if Usuario.query.filter_by(nome=self.nome.data).first() is not None:
+                        flash("Usuário já cadastrado com este nome", category="danger")
+                        return False
+
+                if not usuario.email == self.email.data:
+                    if Usuario.query.filter_by(email=self.email.data).first() is not None:
+                        flash("Usuário já cadastrado com este email", category="danger")
+                        return False
+
             return True
         else:
             return False
@@ -198,7 +218,7 @@ class PerfilForm(Form):
                        render_kw={"placeholder": "Digite o nome do perfil"})
     descricao = StringField('Descrição', validators=[InputRequired(), Length(max=50)],
                               render_kw={"placeholder": "Digite a descrição do perfil"})
-    tela = SelectField('Tela', choices=[], coerce=int)
+    tela = SelectField('Tela', choices=[], coerce=int, validate_choice=False)
     submit = SubmitField("Cadastrar")
 
     def validate(self, **kwargs):

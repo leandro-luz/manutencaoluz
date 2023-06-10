@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm as Form
 from wtforms import IntegerField, StringField, DateField, BooleanField, TextAreaField, SubmitField, SelectField, FileField
 from wtforms.validators import InputRequired, Length, Optional
-
+from flask import flash
 
 
 class OrdemServicoForm(Form):
@@ -16,7 +16,12 @@ class OrdemServicoForm(Form):
         check_validate = super(OrdemServicoForm, self).validate()
 
         if check_validate:
-            return True
+
+            if self.equipamento.data == 0:
+                flash("Equipamento não informado", category="danger")
+                return False
+            else:
+                return True
 
         return False
 

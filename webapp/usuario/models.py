@@ -230,17 +230,16 @@ class Usuario(db.Model):
         self.empresa_id = empresa_id
         self.perfil_id = form.perfil.data
         self.ativo = form.ativo.data
-        print(f'perfil: {self.perfil.id}')
+
         if new:
             self.data_assinatura = datetime.datetime.now()
 
-    def change_active(self):
+    def ativar_desativar(self):
         if self.ativo:
             self.ativo = False
-            flash("Usuário desativado com sucesso", category="success")
         else:
             self.ativo = True
-            flash("Usuário ativado com sucesso", category="success")
+
 
     def retornar_telas_by_regras(self):
         telas = []

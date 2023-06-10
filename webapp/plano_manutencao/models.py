@@ -1,5 +1,6 @@
 import logging
 from webapp import db
+from flask_login import current_user
 
 logging.basicConfig(format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
 logging.getLogger().setLevel(logging.DEBUG)
@@ -55,6 +56,7 @@ class PlanoManutencao(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     nome = db.Column(db.String(50), nullable=False, index=True)
     codigo = db.Column(db.String(50), nullable=False, index=True)
+    data_inicio = db.Column(db.DateTime(), nullable=False)
     ativo = db.Column(db.Boolean, nullable=False, default=True)
 
     tipodata_id = db.Column(db.Integer(), db.ForeignKey("tipo_data.id"), nullable=False)
@@ -73,11 +75,14 @@ class PlanoManutencao(db.Model):
 
     def alterar_atributos(self, form):
         """    Função para alterar os atributos do objeto    """
+        self.nome = form.nome.data
         self.codigo = form.codigo.data
         self.ativo = form.ativo.data
         self.tipodata_id = form.tipodata.data
         self.periodicidade_id = form.periodicidade.data
         self.equipamento_id = form.equipamento.data
+        self.data_inicio = form.data_inicio.data
+        self.empresa_id = current_user.empresa_id
 
     def alterar_ativo(self, ativo):
         self.ativo = ativo

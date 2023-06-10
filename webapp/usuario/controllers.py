@@ -41,6 +41,7 @@ def login():
     # instância um formulário vazio
     form = LoginForm()
     # valida as informações passadas
+    print(form.nome.data)
     if form.validate_on_submit():
         usuario = Usuario.query.filter_by(nome=form.nome.data).one_or_none()
         if usuario:
@@ -271,6 +272,7 @@ def usuario_editar(usuario_id):
         # instância um formulário com as informações do usuário
         form = EditarUsuarioForm(obj=usuario)
         new = False  # não é um usuário novo
+        form.id.data = usuario_id
 
         # --------- ATUALIZAR/LER OS DADOS
         if form.perfil.data:
@@ -285,6 +287,7 @@ def usuario_editar(usuario_id):
         form = EditarUsuarioForm()  # instância um formulário em branco
         new = True  # é um usuário novo
         r_d = form.perfil.data
+        form.id.data = 0
 
     # --------- LISTAS
     form.perfil.choices = [(perfis.id, perfis.nome) for perfis in
@@ -305,7 +308,7 @@ def usuario_editar(usuario_id):
         usuario.alterar_atributos(form, current_user.empresa_id, new)
         if usuario.salvar():
             if new:
-                usuario = Usuario.query.filter_by(id=usuario_id).one_or_none()
+                usuario = Usuario.query.filter_by(nome=form.nome.data).one_or_none()
                 # envia o email com as informações de login
                 send_email(usuario.email,
                            'Manutenção Luz - Informações para login',
@@ -314,13 +317,12 @@ def usuario_editar(usuario_id):
                 flash("Usuário cadastrado", category="success")
             else:
                 flash("Usuário atualizado", category="success")
-                return redirect(url_for("usuario.usuario_listar"))
+            return redirect(url_for("usuario.usuario_listar"))
         else:
             flash("Usuário não cadastrado/atualizado", category="danger")
             return redirect(url_for("usuario.usuario_editar", usuario_id=usuario_id))
     else:
         flash_errors(form)
-
     return render_template("usuario_editar.html", form=form, usuario=usuario)
 
 
@@ -352,7 +354,6 @@ def perfil_editar(perfil_id):
     # Lista
     form.tela.choices = [(telasperfil.id, telasperfil.tela.nome)
                          for telasperfil in Telaperfil.query.filter_by(perfil_id=perfil_id, ativo=True).all()]
-
     # Validação
     if form.validate_on_submit():
         perfil.alterar_atributos(form, current_user.empresa.id)
@@ -366,7 +367,7 @@ def perfil_editar(perfil_id):
                     telaperfil.ativo = False
                     telaperfil.perfil_id = perfil.id
                     telaperfil.tela_id = telacontrato.tela_id
-                    if telaperfil.salvar():
+                    if not telaperfil.salvar():
                         flash("Tela do perfil não cadastrado", category="danger")
             # Mensagens
             if perfil_id > 0:
@@ -376,6 +377,8 @@ def perfil_editar(perfil_id):
             return redirect(url_for("usuario.perfil_listar"))
         else:
             flash("Perfil não cadastrado/atualizado", category="danger")
+    else:
+        flash_errors(form)
     return render_template("perfil_editar.html", form=form, perfil=perfil)
 
 
