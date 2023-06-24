@@ -13,7 +13,7 @@ from webapp.contrato.models import Contrato, Tela, Telacontrato
 from webapp.plano_manutencao.models import TipoData, Unidade, Periodicidade, PlanoManutencao
 from webapp.ordem_servico.models import SituacaoOrdem, FluxoOrdem, OrdemServico, TramitacaoOrdem
 
-env = os.environ.get('WEBAPP_ENV', 'prod')
+env = os.environ.get('WEBAPP_ENV', 'dev')
 app = create_app('config.%sConfig' % env.capitalize())
 app.app_context().push()
 
@@ -79,7 +79,7 @@ tipo_empresa_lista = [{'nome': 'Cliente'}, {'nome': 'Fornecedor'}, {'nome': 'Par
 
 empresa_lista = [{'razao_social': 'empresa_1.ltda', 'nome_fantasia': 'empresa_1',
                   'cnpj': '39.262.527/0001-20',
-                  'cep': '65058864',
+                  'cep': '65.058-864',
                   'logradouro': 'Rua Aderson Lago', 'bairro': 'Vila Janaína',
                   'municipio': 'São Luís', 'uf': 'MA',
                   'numero': '0', 'complemento': 'qd05 lt05',
@@ -90,7 +90,7 @@ empresa_lista = [{'razao_social': 'empresa_1.ltda', 'nome_fantasia': 'empresa_1'
 
                  {'razao_social': 'empresa_2.ltda', 'nome_fantasia': 'empresa_2',
                   'cnpj': '10.540.017/0001-95',
-                  'cep': '69921728',
+                  'cep': '69.921-728',
                   'logradouro': 'Rua São Francisco', 'bairro': 'Tancredo Neves',
                   'municipio': 'Rio Branco', 'uf': 'AC',
                   'numero': '59', 'complemento': '',
@@ -101,7 +101,7 @@ empresa_lista = [{'razao_social': 'empresa_1.ltda', 'nome_fantasia': 'empresa_1'
 
                  {'razao_social': 'empresa_21.ltda', 'nome_fantasia': 'empresa_21',
                   'cnpj': '88.496.773/0001-51',
-                  'cep': '78717650',
+                  'cep': '78.717-650',
                   'logradouro': 'Avenida José Agostinho Neto', 'bairro': 'Jardim São Bento',
                   'municipio': 'Rondonópolis', 'uf': 'MT',
                   'numero': '45', 'complemento': 'qd45',
@@ -112,7 +112,7 @@ empresa_lista = [{'razao_social': 'empresa_1.ltda', 'nome_fantasia': 'empresa_1'
 
                  {'razao_social': 'empresa_22.ltda', 'nome_fantasia': 'empresa_22',
                   'cnpj': '50.201.802/0001-38',
-                  'cep': '69037097',
+                  'cep': '69.037-097',
                   'logradouro': 'Alameda Namíbia', 'bairro': 'Ponta Negra',
                   'municipio': 'Manaus', 'uf': 'AM',
                   'numero': '789', 'complemento': '',
@@ -123,7 +123,7 @@ empresa_lista = [{'razao_social': 'empresa_1.ltda', 'nome_fantasia': 'empresa_1'
 
                  {'razao_social': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'nome_fantasia': 'COMERCIAL SEMEENTE CASA E CONSTRUCAO',
                   'cnpj': '30.722.226/0001-67',
-                  'cep': '74905-230',
+                  'cep': '74.905-230',
                   'logradouro': 'RUA CAIAPOS', 'bairro': 'VILA BRASILIA',
                   'municipio': 'APARECIDA DE GOIÂNIA', 'uf': 'GO',
                   'numero': '0', 'complemento': '',
@@ -318,6 +318,9 @@ usuario_lista = [{'nome': 'admin', 'email': 'admin@admin.com',
                  {'nome': 'admin_empresa_22', 'email': 'admin_empresa_22@admin.com',
                   'senha': 'aaa66666', 'perfil': 'admin',
                   'data_assinatura': '1980/05/10 12:45:10', 'empresa': 'empresa_22.ltda'},
+                 {'nome': 'adminluz_semeente', 'email': 'guguleo2019@gmail.com',
+                  'senha': 'aaa11111', 'perfil': 'admin',
+                  'data_assinatura': '1980/05/10 12:45:10', 'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA'},
                  {'nome': 'admin_Semeente', 'email': 'contato.luzengenharia@gmail.com',
                   'senha': '12345678', 'perfil': 'admin',
                   'data_assinatura': '2023/06/05 18:00:00', 'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA'},

@@ -36,7 +36,7 @@ class EmpresaForm(Form):
     uf = StringField('UF', validators=[InputRequired()],  render_kw={"placeholder": "Digite o UF"})
     localizacao = StringField('Localização', render_kw={"placeholder": "Digite as coordenadas"})
 
-    ativo = BooleanField('Ativo', render_kw={"placeholder": "Informe se a empresa está ativa"})
+    ativo = BooleanField('Ativo')
 
     nome_fantasia = StringField('Nome Fantasia', validators=[InputRequired()], render_kw={"placeholder": "Digite o nome fantasia"})
     data_abertura = DateField('Data de Abertura', format='%Y-%m-%d', validators=[InputRequired()], render_kw={"placeholder": "Digite de criação do cnpj"})
@@ -51,9 +51,9 @@ class EmpresaForm(Form):
     inscricao_estadual = StringField('Inscrição Estadual', render_kw={"placeholder": "Digite a inscrição estadual"})
     inscricao_municipal = StringField('Inscrição Municipal', render_kw={"placeholder": "Digite a inscrição municipal"})
 
-    business = SelectField('Ramo de Negócio', choices=[], validate_choice=False, coerce=int)
-    subbusiness = SelectField('Sub-Ramo de Negócio', choices=[], validate_choice=False, coerce=int)
+
     contrato = SelectField('Contrato', choices=[], validate_choice=False, coerce=int)
+    enviar_email = BooleanField('Enviar Email?')
 
     submit = SubmitField("Cadastrar")
 

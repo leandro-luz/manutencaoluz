@@ -41,7 +41,6 @@ def login():
     # instância um formulário vazio
     form = LoginForm()
     # valida as informações passadas
-    print(form.nome.data)
     if form.validate_on_submit():
         usuario = Usuario.query.filter_by(nome=form.nome.data).one_or_none()
         if usuario:
@@ -61,19 +60,6 @@ def logout():
     return redirect(url_for('main.index'))
 
 
-# @usuario_blueprint.route('/<string:nome>/confirm', methods=['GET', 'POST'])
-# def resend_confirmation(nome):
-#     usuario = Usuario.query.filter_by(nome=nome).one_or_none()
-#     token = create_token(usuario.id, usuario.email)
-#     send_email(usuario.email,
-#                'Confirmação de Conta',
-#                'usuario/email/confirm',
-#                usuario=usuario,
-#                token=token)
-#     flash("Um novo email de confirmação foi enviado para o seu email.", category="warning")
-#     return redirect(url_for('main.index'))
-
-
 # alteração de senha quando logado
 @usuario_blueprint.route('/trocar_senha', methods=['GET', 'POST'])
 @login_required
@@ -90,7 +76,7 @@ def trocar_senha():
                 # enviar email com a senha atualizada
                 send_email(current_user.email,
                            'Alteração de Senha',
-                           'usuario/email/trocar_senha',
+                           'usuario/email/dados_usuario',
                            usuario=current_user)
                 flash("Sua senha foi atualizada", category="success")
                 return redirect(url_for('main.index'))

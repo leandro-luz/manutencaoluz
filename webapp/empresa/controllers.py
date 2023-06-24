@@ -90,7 +90,7 @@ def empresa_editar(empresa_id):
         if empresa.salvar():
             if new:
                 empresa = Empresa.query.filter_by(nome_fantasia=form.nome_fantasia.data).one_or_none()
-                new_admin(empresa)
+                new_admin(empresa, form.enviar_email.data)
             # --------- MENSAGENS
             if empresa_id > 0:
                 flash("Empresa atualizada", category="success")
@@ -105,7 +105,7 @@ def empresa_editar(empresa_id):
     return render_template("empresa_editar.html", form=form, empresa=empresa)
 
 
-def new_admin(empresa: [Empresa]):
+def new_admin(empresa: [Empresa], enviar_email):
     """    Função para cadastrar os (administradores, grupos) da empresa    """
 
     # salvar um modelo de grupo vazio para os equipamentos da empresa
@@ -117,9 +117,9 @@ def new_admin(empresa: [Empresa]):
 
     # lista dos administradores
     lista = [{'nome': 'admin', 'descricao': 'administrador',
-              'email': empresa.email, 'senha_temporaria': True},
+              'email': empresa.email,'enviar_email': True, 'senha_temporaria': True},
              {'nome': 'adminluz', 'descricao': 'administrador do sistema',
-              'email': config.Config.MAIL_USERNAME, 'senha_temporaria': False},
+              'email': config.Config.MAIL_USERNAME,'enviar_email': False, 'senha_temporaria': False},
              ]
 
     # laço de repetição
@@ -162,14 +162,15 @@ def new_admin(empresa: [Empresa]):
                                       perfil_id=perfil.id, senha_id=senha.id)
 
         if usuario.salvar():
-            # envia o email com as informações de login
-
-            if not send_email(valor['email'],
-                              'Manutenção Luz - Informações para login',
-                              'usuario/email/usuario_cadastrado',
-                              usuario=usuario):
-                flash("Erro ao cadastrar o usuário administrador para esta empresa", category="danger")
-                break
+            # Se está permitido o envio do email pelo usuario e ignora o email para adminstracao
+            if enviar_email and valor['enviar_email']:
+                # envia o email com as informações de login
+                if not send_email(valor['email'],
+                                  'Manutenção Luz - Informações para login',
+                                  'usuario/email/usuario_cadastrado',
+                                  usuario=usuario):
+                    flash("Erro ao cadastrar o usuário administrador para esta empresa", category="danger")
+                    break
         else:
             flash("Usuário administrador não cadastrado", category="danger")
             break
@@ -272,7 +273,7 @@ def empresa_registrar(token):
                 # registra o lead como cadastrado
                 interessado.registrado()
                 # criar os admnistradores para a empresa
-                new_admin(empresa)
+                new_admin(empresa, True)
                 flash("Empresa registrada, informações de acesso enviadas ao email", category="success")
                 return redirect(url_for('usuario.login'))
                 # else:

@@ -132,7 +132,7 @@ class Usuario(db.Model):
 
     id = db.Column(db.Integer(), primary_key=True)
     nome = db.Column(db.String(50), nullable=False, index=True, unique=True)
-    email = db.Column(db.String(50), nullable=False, unique=True)
+    email = db.Column(db.String(50), nullable=False, unique=False)
     data_assinatura = db.Column(db.DateTime(), nullable=True)
     data_ultima_entrada = db.Column(db.DateTime(), nullable=True)
     ativo = db.Column(db.Boolean, nullable=False, default=False)

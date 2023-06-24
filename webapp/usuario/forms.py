@@ -19,10 +19,8 @@ class LoginForm(Form):
         check_validate = super(LoginForm, self).validate()
 
         if check_validate:
-            print(self.nome.data)
             # Verifica se o usuário existe
             usuario = Usuario.query.filter_by(nome=self.nome.data).one_or_none()
-            print(usuario)
             if not usuario:
                 flash("Usuário ou senha não válidos!", category="danger")
                 return False
@@ -39,7 +37,6 @@ class LoginForm(Form):
                 if usuario.senha.senha_expira and not usuario.senha.verificar_data_expiracao():
                     return False
             else:
-                print('senhas erradas')
                 flash("Usuário ou senha não válidos!", category="danger")
                 return False
 
