@@ -20,17 +20,11 @@ class Config(object):
 
 
 class ProdConfig(Config):
-    # SQLALCHEMY_DATABASE_URI = 'mysql://{username}:{password}@{hostname}/{databasename}'.format(
-    #     username="manutencaoluz",
-    #     password="aaa11111",
-    #     hostname="manutencaoluz.mysql.pythonanywhere-services.com",
-    #     databasename="manutencaoluz$manutencaoluz_prod",
-    # )
     SQLALCHEMY_DATABASE_URI = 'mysql://{username}:{password}@{hostname}/{databasename}'.format(
-        username="root",
-        password="ZxOAyFuXZgz6m0EBAfhH",
-        hostname="containers-us-west-39.railway.app",
-        databasename="railway",
+        username="manutencaoluz",
+        password="aaa11111",
+        hostname="manutencaoluz.mysql.pythonanywhere-services.com",
+        databasename="manutencaoluz$manutencaoluz_prod",
     )
     SQLALCHMEY_POOL_RECYCLE = 299
     SQLALCHEMY_TRACK_MODIFICATIONS = False
