@@ -1,11 +1,22 @@
-import os
-from webapp import create_app
-from webapp.cli import register
+# import os
+# from webapp import create_app
+# from webapp.cli import register
+#
+# env = os.environ.get('WEBAPP_ENV', 'dev')
+# app = create_app('config.%sConfig' % env.capitalize())
+#
+# register(app)
+#
+# if __name__ == '__main__':
+#     app.run()
 
-env = os.environ.get('WEBAPP_ENV', 'dev')
-app = create_app('config.%sConfig' % env.capitalize())
 
-register(app)
+from flask import Flask
 
-if __name__ == '__main__':
-    app.run()
+app = Flask(__name__)
+
+@app.route('/')
+def helloIndex():
+    return 'Hello World from Python Flask!'
+
+app.run()
