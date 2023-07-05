@@ -1,31 +1,31 @@
 {% extends "sistema_base.html" %}
 {% block body %}
-    <body>
-        <form action="{{ url_for('contrato.contrato_editar', contrato_id=contrato.id) }}" method="POST">
-            {{form.csrf_token}}
+<body>
+    <form action="{{ url_for('contrato.contrato_editar', contrato_id=contrato.id) }}" method="POST">
+        {{form.csrf_token}}
 
-            {% if contrato.id == 0 %}
-                <h2>Cadastro de Contrato</h2>
-                {{form.nome.label}}                {{form.nome(size=20)}}<br>
-                <input type="submit" value="Cadastrar"/>
-            {% else %}
-                <h2>Contrato</h2>
+        {% if contrato.id == 0 %}
+            <h2>Cadastro de Contrato</h2>
+            {{form.nome.label}}                {{form.nome(size=50)}}<br>
+            <input type="submit" value="Cadastrar"/>
+        {% else %}
+            <h2>Contrato</h2>
 
-                {{form.nome.label}}                {{form.nome(size=20)}}<br>
-                <input type="submit" value="Atualizar"/><br>
+            {{form.nome.label}}                {{form.nome(size=50)}}<br>
+            <input type="submit" value="Atualizar"/><br>
 
-                {{form.tela.label}}
-                <a href="{{ url_for('contrato.telacontrato_listar', contrato_id=contrato.id) }}">
-                    <span data-tooltip="Atualizar">
-                        <i class="bi-caret-down fs-6"></i>
-                    </span>
-                </a> <br>
+            {{form.tela.label}}
+            <a href="{{ url_for('contrato.telacontrato_listar', contrato_id=contrato.id) }}">
+                <span data-tooltip="Atualizar">
+                    <i class="bi-caret-down fs-6"></i>
+                </span>
+            </a> <br>
 
-            {% endif %}
+        {% endif %}
 
-        </form>
+    </form>
 
-    <a href="{{ url_for('contrato.contrato_listar') }}">Voltar</a>
+<a href="{{ url_for('contrato.contrato_listar') }}">Voltar</a>
 
-    </body>
+</body>
 {% endblock %}

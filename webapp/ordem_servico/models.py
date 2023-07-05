@@ -9,20 +9,34 @@ logging.getLogger().setLevel(logging.DEBUG)
 log = logging.getLogger(__name__)
 
 
+class TipoOrdem(db.Model):
+    __tablename__ = 'tipo_ordem'
+
+    id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    nome = db.Column(db.String(50), nullable=False, index=True)
+    sigla = db.Column(db.String(5), nullable=False, index=True)
+    plano = db.Column(db.Boolean, nullable=False)
+    ordemservico = db.relationship("OrdemServico", back_populates="tipoordem")
+    planomanutencao = db.relationship("PlanoManutencao", back_populates="tipoordem")
+
+    def __repr__(self) -> str:
+        return f'<Tipo de Ordem: {self.id}-{self.nome}>'
+
+
+
 class SituacaoOrdem(db.Model):
     __tablename__ = 'situacao_ordem'
 
     id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
     nome = db.Column(db.String(50), nullable=False, index=True)
     sigla = db.Column(db.String(5), nullable=False, index=True)
-    descricao = db.Column(db.String(100), nullable=False, index=True)
     ordemservico = db.relationship("OrdemServico", back_populates="situacaoordem")
     tramitacaoordem = db.relationship("TramitacaoOrdem", back_populates="situacaoordem")
 
-    def __init__(self, nome, sigla, descricao):
-        self.nome = nome
-        self.sigla = sigla
-        self.descricao = descricao
+    # def __init__(self, nome, sigla, descricao):
+    #     self.nome = nome
+    #     self.sigla = sigla
+    #     self.descricao = descricao
 
     def __repr__(self) -> str:
         return f'<Situação de Ordem: {self.id}-{self.nome}>'
@@ -76,7 +90,7 @@ class TramitacaoOrdem(db.Model):
         self.ordemservico_id = ordem_id
         self.usuario_id = current_user.id
         self.situacaoordem_id = form.situacaoordem.data
-        self.observacao = form.observacao.data
+        self.observacao = form.observacao.data.upper()
         self.data = datetime.datetime.now()
 
         # Criando o objeto OrdemServiço
@@ -115,17 +129,18 @@ class OrdemServico(db.Model):
     equipamento_id = db.Column(db.Integer(), db.ForeignKey("equipamento.id"), nullable=False)
     situacaoordem_id = db.Column(db.Integer(), db.ForeignKey("situacao_ordem.id"), nullable=False)
     solicitante_id = db.Column(db.Integer(), db.ForeignKey("usuario.id"), nullable=False)
+    tipoordem_id = db.Column(db.Integer(), db.ForeignKey("tipo_ordem.id"), nullable=False)
     planomanutencao_id = db.Column(db.Integer(), nullable=True)
-
 
     equipamento = db.relationship("Equipamento", back_populates="ordemservico")
     situacaoordem = db.relationship("SituacaoOrdem", back_populates="ordemservico")
     usuario = db.relationship("Usuario", back_populates="ordemservico")
+    tipoordem = db.relationship("TipoOrdem", back_populates="ordemservico")
     tramitacaoordem = db.relationship("TramitacaoOrdem", back_populates="ordemservico")
 
-
     def __repr__(self) -> str:
-        return f'<Ordem de Serviço: {self.id}-{self.descricao}-{self.equipamento.descricao_curta}-{self.situacaoordem.nome}>'
+        return f'<Ordem de Serviço: {self.id}-{self.descricao}-' \
+               f'{self.equipamento.descricao_curta}-{self.situacaoordem.nome}>'
 
     def salvar(self) -> bool:
         """    Função para salvar no banco de dados o objeto"""
@@ -144,11 +159,9 @@ class OrdemServico(db.Model):
             self.codigo = consulta.first()[0]+1
             self.data_abertura = datetime.datetime.now()
             self.solicitante_id = current_user.id
-
             # Inserindo o id da situação "Pendente" na OrdemServico
             sit = SituacaoOrdem.query.filter_by(nome="Pendente").one_or_none()
             self.situacaoordem_id = sit.id
-
-        self.descricao = form.descricao.data
-        self.equipamento_id = form.equipamento.data
-
+            self.tipoordem_id = form.tipo.data
+            self.descricao = form.descricao.data.upper()
+            self.equipamento_id = form.equipamento.data

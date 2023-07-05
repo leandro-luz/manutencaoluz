@@ -1,7 +1,7 @@
 {% extends "sistema_base.html" %}
 {% block body %}
     <body>
-        <form action="{{ url_for('equipamento.grupo_editar', grupo_id=grupo.id, equipamento_id=equipamento_id) }}" method="POST">
+        <form action="{{ url_for('equipamento.grupo_editar', grupo_id=grupo.id, subgrupo_id=subgrupo_id, equipamento_id=equipamento_id) }}" method="POST">
             {{form.csrf_token}}
 
             {% if grupo.id == 0 %}
@@ -9,7 +9,7 @@
             {% else %}
                 <h2>Grupo de Equipamentos</h2>
             {% endif %}
-            {{form.nome.label}}    {{form.nome(size=20)}}<br>
+            {{form.nome.label}}    {{form.nome(size=80)}}<br>
             {{form.ativo.label}}    {{form.ativo(size=20)}}<br>
 
             {% if grupo.id == 0 %}
@@ -20,6 +20,6 @@
 
         </form>
 
-    <a href="{{ url_for('equipamento.grupo_listar', equipamento_id=equipamento_id) }}">Voltar</a>
+    <a href="{{ url_for('equipamento.grupo_listar', subgrupo_id=subgrupo_id, equipamento_id=equipamento_id) }}">Voltar</a>
     </body>
 {% endblock %}

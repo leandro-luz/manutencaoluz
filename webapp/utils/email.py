@@ -1,4 +1,4 @@
-# from threading import Thread
+from threading import Thread
 from flask import current_app, render_template
 from flask_mail import Message
 from webapp import mail
@@ -24,7 +24,7 @@ def send_email(to, subject, template, **kwargs) -> bool:
         msg.recipients = [to]
         msg.body = render_template(template + '.txt', **kwargs)
         msg.html = render_template(template + '.html', **kwargs)
-        # Thread(name='enviar_email', target=send_async_email, args=(app, msg)).start()
+        Thread(name='enviar_email', target=send_async_email, args=(app, msg)).start()
         send_async_email(app, msg)
         return True
     except Exception as e:

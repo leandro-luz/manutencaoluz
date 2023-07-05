@@ -63,21 +63,22 @@ class PlanoManutencao(db.Model):
     periodicidade_id = db.Column(db.Integer(), db.ForeignKey("periodicidade.id"), nullable=False)
     equipamento_id = db.Column(db.Integer(), db.ForeignKey("equipamento.id"), nullable=False)
     empresa_id = db.Column(db.Integer(), nullable=False)
+    tipoordem_id = db.Column(db.Integer(), db.ForeignKey("tipo_ordem.id"), nullable=False)
 
     tipodata = db.relationship("TipoData", back_populates="planomanutencao")
     periodicidade = db.relationship("Periodicidade", back_populates="planomanutencao")
     equipamento = db.relationship("Equipamento", back_populates="planomanutencao")
-    # ordemservico = db.relationship("OrdemServico", back_populates="planomanutencao")
-
+    tipoordem = db.relationship("TipoOrdem", back_populates="planomanutencao")
 
     def __repr__(self):
         return f'<Plano de Manutenção: {self.id}-{self.codigo}>'
 
     def alterar_atributos(self, form):
         """    Função para alterar os atributos do objeto    """
-        self.nome = form.nome.data
+        self.nome = form.nome.data.upper()
         self.codigo = form.codigo.data
         self.ativo = form.ativo.data
+        self.tipoordem_id = form.tipoordem.data
         self.tipodata_id = form.tipodata.data
         self.periodicidade_id = form.periodicidade.data
         self.equipamento_id = form.equipamento.data
@@ -92,7 +93,6 @@ class PlanoManutencao(db.Model):
             self.alterar_ativo(False)
         else:
             self.alterar_ativo(True)
-
 
     def salvar(self) -> bool:
         """    Função para salvar no banco de dados o objeto"""

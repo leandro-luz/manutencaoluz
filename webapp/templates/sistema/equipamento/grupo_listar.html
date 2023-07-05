@@ -3,7 +3,7 @@
     <body>
 
     <h2> LISTA DOS GRUPO DE EQUIPAMENTOS </h2>
-    <a href="{{ url_for('equipamento.grupo_editar', grupo_id=0, equipamento_id=equipamento_id) }}">
+    <a href="{{ url_for('equipamento.grupo_editar', grupo_id=0, subgrupo_id=subgrupo_id, equipamento_id=equipamento_id) }}">
         Adicionar
     </a>
 
@@ -23,19 +23,19 @@
             <tr>
                 <td>{{ grupo.nome }}</td>
                 <td>{{ grupo.ativo }}</td>
-                <td>
-                    <a href="{{ url_for('equipamento.equipamento_editar', grupo_id=grupo.id, equipamento_id=equipamento_id) }}">
-                            <span data-tooltip="Informações">
-                                <i class="bi-caret-right fs-6"></i>
-                            </span>
-                    </a>
-                </td>
+<!--                <td>-->
+<!--                    <a href="{{ url_for('equipamento.equipamento_editar', grupo_id=grupo.id, equipamento_id=equipamento_id) }}">-->
+<!--                            <span data-tooltip="Informações">-->
+<!--                                <i class="bi-caret-right fs-6"></i>-->
+<!--                            </span>-->
+<!--                    </a>-->
+<!--                </td>-->
             </tr>
         {% endfor %}
         </tbody>
     </table>
 
-    <a href="{{ url_for('equipamento.equipamento_editar', equipamento_id=equipamento_id) }}">Voltar</a>
+    <a href="{{ url_for('equipamento.subgrupo_editar', subgrupo_id=subgrupo_id, equipamento_id=equipamento_id) }}">Voltar</a>
 
     </body>
 <script type="text/javascript" src="/static/js/filtro_coluna.js"></script>

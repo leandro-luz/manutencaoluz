@@ -16,6 +16,7 @@
                 <th scope="col">CODIGO</th>
                 <th scope="col">NOME</th>
                 <th scope="col">ATIVO</th>
+                <th scope="col">TIPO</th>
                 <th scope="col">PERIODICIDADE</th>
                 <th scope="col">EQUIPAMENTO</th>
                 <th scope="col"></th>
@@ -30,6 +31,7 @@
                 <td>{{ plano.codigo }}</td>
                 <td>{{ plano.nome }}</td>
                 <td>{{ plano.ativo }}</td>
+                <td>{{ plano.tipoordem.nome }}</td>
                 <td>{{ plano.periodicidade.nome }}</td>
                 <td>{{ plano.equipamento.descricao_curta }}</td>
                 <td>
@@ -43,7 +45,7 @@
                     <td>
                        <a href="{{ url_for('plano_manutencao.plano_ativar', plano_id=plano.id) }}">
                                 <span data-tooltip="Desativar">
-                                    <i class="bi-caret-down fs-6"></i>
+                                     <i class="bi-hand-thumbs-up fs-6"></i>
                                 </span>
                         </a>
                     </td>
@@ -51,7 +53,7 @@
                     <td>
                         <a href="{{ url_for('plano_manutencao.plano_ativar', plano_id=plano.id) }}">
                                 <span data-tooltip="Ativar">
-                                    <i class="bi-caret-up fs-6"></i>
+                                    <i class="bi-hand-thumbs-down fs-6"></i>
                                 </span>
                         </a>
                     </td>

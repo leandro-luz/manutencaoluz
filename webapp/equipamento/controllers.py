@@ -1,7 +1,8 @@
 from flask import (render_template, Blueprint, redirect, request, url_for, flash)
 from flask_login import current_user, login_required
-from .models import Equipamento, Grupo, Sistema
-from .forms import EquipamentoForm, GrupoForm, SistemaForm
+from webapp.empresa.models import Empresa
+from .models import Equipamento, Grupo, Subgrupo
+from .forms import EquipamentoForm, GrupoForm, SubgrupoForm
 from werkzeug.utils import secure_filename
 from webapp.usuario import has_view
 from webapp.utils.files import arquivo_padrao
@@ -20,7 +21,12 @@ equipamento_blueprint = Blueprint(
 @has_view('Equipamento')
 def equipamento_listar():
     """Retorna a lista de equipamentos"""
-    equipamentos = Equipamento.query.filter_by(empresa_id=current_user.empresa_id).all()
+    equipamentos = Equipamento.query.filter(
+        Equipamento.subgrupo_id == Subgrupo.id,
+        Subgrupo.grupo_id == Grupo.id,
+        Grupo.empresa_id == Empresa.id,
+        Empresa.id == current_user.empresa_id).order_by(
+        Equipamento.descricao_curta)
     return render_template('equipamento_listar.html', equipamentos=equipamentos)
 
 
@@ -34,12 +40,11 @@ def equipamento_editar(equipamento_id):
 
         if equipamento:
             form = EquipamentoForm(obj=equipamento)
-
             # Atualizar ou Ler dados
-            if form.grupo.data:
-                g_d = form.grupo.data
+            if form.subgrupo.data:
+                sg_d = form.subgrupo.data
             else:
-                g_d = equipamento.grupo_id
+                sg_d = equipamento.subgrupo_id
         else:
             flash("Equipamento não localizado", category="danger")
             return redirect(url_for("equipamento.equipamento_listar"))
@@ -48,15 +53,16 @@ def equipamento_editar(equipamento_id):
         equipamento = Equipamento()
         equipamento.id = 0
         form = EquipamentoForm()
-        g_d = form.grupo.data
+        sg_d = form.subgrupo.data
 
     # Listas
-    form.grupo.choices = [(groups.id, groups.nome) for groups in
-                          Grupo.query.filter_by(empresa_id=current_user.empresa_id, ativo=True).all()]
-    form.grupo.data = g_d
-
-    form.sistema.choices = [(systems.id, systems.nome) for systems in
-                            Sistema.query.filter_by(equipamento_id=equipamento.id, ativo=True).all()]
+    subgrupos = Subgrupo.query.filter(
+        Subgrupo.grupo_id == Grupo.id,
+        Grupo.empresa_id == Empresa.id,
+        Empresa.id == current_user.empresa_id).order_by(
+        Subgrupo.nome)
+    form.subgrupo.choices = [(0, '')] + [(sg.id, sg.nome) for sg in subgrupos]
+    form.subgrupo.data = sg_d
 
     # Validação
     if form.validate_on_submit():
@@ -105,8 +111,6 @@ def gerar_padrao_equipamentos():
 @login_required
 @has_view('Equipamento')
 def cadastrar_lote_equipamentos(equipamento_id):
-
-
     import pandas as pd
 
     form = EquipamentoForm()
@@ -120,16 +124,12 @@ def cadastrar_lote_equipamentos(equipamento_id):
     # total de linhas
     total = int(len(df[df.columns[0]].count()))
     # percorre pelos titulos obrigatórios
-    for eq in total :
+    for eq in total:
 
         for tit in Equipamento.titulos_obg:
-            #verifica se o valor foi preenchido, caso contrário, ignora equipamento
+            # verifica se o valor foi preenchido, caso contrário, ignora equipamento
 
             print(tit)
-
-
-
-
 
     # if file:
     #     df = pd.read_excel(files_excel["file"])
@@ -145,7 +145,6 @@ def cadastrar_lote_equipamentos(equipamento_id):
     #     # reader = csv.reader(f)
     #     for linha in leitor_csv:
     #         print(linha)
-
 
     #
     # if 'file' not in request.files:
@@ -177,18 +176,22 @@ def cadastrar_lote_equipamentos(equipamento_id):
     return redirect(url_for("equipamento.equipamento_listar"))
 
 
-@equipamento_blueprint.route('/grupo_listar/<int:equipamento_id>', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/grupo_listar/<int:subgrupo_id>/<int:equipamento_id>', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def grupo_listar(equipamento_id):
-    grupos = Grupo.query.filter_by(empresa_id=current_user.empresa_id).filter(Grupo.nome.notlike("%None%")).all()
-    return render_template('grupo_listar.html', grupos=grupos, equipamento_id=equipamento_id)
+def grupo_listar(subgrupo_id, equipamento_id):
+    grupos = Grupo.query.filter(
+        Grupo.empresa_id == Empresa.id,
+        Empresa.id == current_user.empresa_id).order_by(
+        Grupo.nome)
+    return render_template('grupo_listar.html', grupos=grupos, subgrupo_id=subgrupo_id, equipamento_id=equipamento_id)
 
 
-@equipamento_blueprint.route('/grupo_editar/<int:grupo_id>/<int:equipamento_id>', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/grupo_editar/<int:grupo_id>/<int:subgrupo_id>/<int:equipamento_id>',
+                             methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def grupo_editar(grupo_id, equipamento_id):
+def grupo_editar(grupo_id, subgrupo_id, equipamento_id):
     if grupo_id > 0:
         # Atualizar
         grupo = Grupo.query.filter_by(id=grupo_id).first()
@@ -197,7 +200,7 @@ def grupo_editar(grupo_id, equipamento_id):
             form = GrupoForm(obj=grupo)
         else:
             flash("Grupo não localizado", category="danger")
-            return redirect(url_for("equipamento.grupo_listar", equipamento_id=equipamento_id))
+            return redirect(url_for("equipamento.grupo_listar", subgrupo_id=subgrupo_id, equipamento_id=equipamento_id))
     else:
         # Cadastrar
         grupo = Grupo()
@@ -214,54 +217,75 @@ def grupo_editar(grupo_id, equipamento_id):
             else:
                 flash("Grupo cadastrado", category="success")
 
-            return redirect(url_for("equipamento.grupo_listar", equipamento_id=equipamento_id))
+            return redirect(url_for("equipamento.grupo_listar", subgrupo_id=subgrupo_id, equipamento_id=equipamento_id))
         else:
             flash("Grupo não cadastrado/atualizado", category="danger")
     else:
         flash_errors(form)
-    return render_template("grupo_editar.html", form=form, grupo=grupo, equipamento_id=equipamento_id)
+    return render_template("grupo_editar.html", form=form, grupo=grupo, subgrupo_id=subgrupo_id,
+                           equipamento_id=equipamento_id)
 
 
-@equipamento_blueprint.route('/sistema_listar/<int:equipamento_id>', methods=['GET', 'POST'])
+
+@equipamento_blueprint.route('/subgrupo_listar/<int:equipamento_id>', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def sistema_listar(equipamento_id):
-    sistemas = Sistema.query.filter_by(equipamento_id=equipamento_id).all()
-    return render_template('sistema_listar.html', sistemas=sistemas, equipamento_id=equipamento_id)
+def subgrupo_listar(equipamento_id):
+    subgrupos = Subgrupo.query.filter(
+        Subgrupo.grupo_id == Grupo.id,
+        Grupo.empresa_id == Empresa.id,
+        Empresa.id == current_user.empresa_id).order_by(
+        Subgrupo.nome)
+    return render_template('subgrupo_listar.html', subgrupos=subgrupos, equipamento_id=equipamento_id)
 
 
-@equipamento_blueprint.route('/sistema_editar/<int:sistema_id>/<int:equipamento_id>', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/subgrupo_editar/<int:subgrupo_id>/<int:equipamento_id>', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def sistema_editar(sistema_id, equipamento_id):
-    if sistema_id > 0:
+def subgrupo_editar(subgrupo_id, equipamento_id):
+    if subgrupo_id > 0:
         # Atualizar
-        sistema = Sistema.query.filter_by(id=sistema_id).first()
+        subgrupo = Subgrupo.query.filter_by(id=subgrupo_id).first()
 
-        if sistema:
-            form = SistemaForm(obj=sistema)
+        if subgrupo:
+            form = SubgrupoForm(obj=subgrupo)
+
+            if form.grupo.data:
+                g_d = form.grupo.data
+            else:
+                g_d = subgrupo.grupo_id
+
         else:
-            flash("Sistema não localizado", category="danger")
-            return redirect(url_for("equipamento.sistema_editar", equipamento_id=equipamento_id))
+            flash("Subgrupo não localizado", category="danger")
+            return redirect(url_for("equipamento.subgrupo_editar", equipamento_id=equipamento_id))
     else:
         # Cadastrar
-        sistema = Sistema()
-        sistema.id = 0
-        form = SistemaForm()
+        subgrupo = Subgrupo()
+        subgrupo.id = 0
+        form = SubgrupoForm()
+        g_d = form.grupo.data
+
+    # Lista
+    grupos = Grupo.query.filter(
+        Grupo.empresa_id == Empresa.id,
+        Empresa.id == current_user.empresa_id).all()
+    form.grupo.choices = [(0, '')] + [(sg.id, sg.nome) for sg in grupos]
+    form.grupo.data = g_d
 
     # Validação
     if form.validate_on_submit():
-        sistema.alterar_atributos(form)
-        sistema.equipamento_id = equipamento_id
-        if sistema.salvar():
+        subgrupo.alterar_atributos(form)
+        subgrupo.equipamento_id = equipamento_id
+        if subgrupo.salvar():
             # Mensagens
-            if sistema_id > 0:
-                flash("Sistema atualizado", category="success")
+            if subgrupo_id > 0:
+                flash("Subgrupo atualizado", category="success")
             else:
-                flash("Sistema cadastrado", category="success")
-            return redirect(url_for("equipamento.sistema_listar", equipamento_id=equipamento_id))
+                flash("Subgrupo cadastrado", category="success")
+            return redirect(url_for("equipamento.subgrupo_listar", equipamento_id=equipamento_id))
         else:
-            flash("Sistema não cadastrado/atualizado", category="danger")
+            flash("Subgrupo não cadastrado/atualizado", category="danger")
     else:
         flash_errors(form)
-    return render_template("sistema_editar.html", form=form, sistema=sistema, sistema_id=sistema_id, equipamento_id=equipamento_id)
+    return render_template("subgrupo_editar.html", form=form, subgrupo=subgrupo, subgrupo_id=subgrupo_id,
+                           equipamento_id=equipamento_id)

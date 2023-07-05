@@ -7,6 +7,7 @@ from flask import flash
 class OrdemServicoForm(Form):
     descricao = StringField('Descrição', validators=[InputRequired(), Length(max=50)],
                          render_kw={"placeholder": "Descrição da atividade"})
+    tipo = SelectField('Tipo de Ordem', choices=[], coerce=int)
     equipamento = SelectField('Equipamento', choices=[], coerce=int)
 
     submit = SubmitField("Salvar")
@@ -16,9 +17,11 @@ class OrdemServicoForm(Form):
         check_validate = super(OrdemServicoForm, self).validate()
 
         if check_validate:
-
             if self.equipamento.data == 0:
                 flash("Equipamento não informado", category="danger")
+                return False
+            elif self.tipo.data == 0:
+                flash("Tipo de Ordem não informado", category="danger")
                 return False
             else:
                 return True

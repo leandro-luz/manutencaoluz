@@ -133,6 +133,10 @@ class EditarUsuarioForm(Form):
                         flash("Usuário já cadastrado com este email", category="danger")
                         return False
 
+            if self.perfil.data == 0:
+                flash("Perfil não selecionado", category="danger")
+                return False
+
             return True
         else:
             return False

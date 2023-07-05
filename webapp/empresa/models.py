@@ -10,6 +10,7 @@ logging.basicConfig(format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
 logging.getLogger().setLevel(logging.DEBUG)
 log = logging.getLogger(__name__)
 
+
 class Interessado(db.Model):
     """    Classe de interessados no sistema    """
     __tablename__ = 'interessado'
@@ -108,27 +109,26 @@ class Empresa(db.Model):
     tipoempresa = db.relationship("Tipoempresa", back_populates="empresa")
     usuario = db.relationship("Usuario", back_populates="empresa")
     perfil = db.relationship("Perfil", back_populates="empresa")
-    equipamento = db.relationship("Equipamento", back_populates="empresa")
+
+    grupo = db.relationship("Grupo", back_populates="empresa")
+
     supplier = db.relationship("Supplier", back_populates="empresa")
 
     def __repr__(self) -> str:
         return f'<Empresa: {self.id}-{self.nome_fantasia}>'
 
-    # def __init__(self, nome="") -> None:
-    #     self.razao_social = nome
-
     def alterar_atributos_externo(self, form, empresa_id, tipoempresa_id, new=False) -> None:
         """    Alterações dos atributos da empresa     """
-        self.nome_fantasia = form.nome_fantasia.data
+        self.nome_fantasia = form.nome_fantasia.data.upper()
         self.cnpj = form.cnpj.data
         self.cep = form.cep.data
-        self.logradouro = form.logradouro.data
-        self.bairro = form.bairro.data
-        self.municipio = form.municipio.data
-        self.uf = form.uf.data
+        self.logradouro = form.logradouro.data.upper()
+        self.bairro = form.bairro.data.upper()
+        self.municipio = form.municipio.data.upper()
+        self.uf = form.uf.data.upper()
         self.numero = form.numero.data
-        self.complemento = form.complemento.data
-        self.email = form.email.data
+        self.complemento = form.complemento.data.upper()
+        self.email = form.email.data.upper()
         self.telefone = form.telefone.data
         self.contrato_id = form.contrato.data
         self.empresa_gestora_id = empresa_id
@@ -138,17 +138,17 @@ class Empresa(db.Model):
 
     def alterar_atributos(self, form, empresa_id, tipoempresa_id, new=False) -> None:
         self.alterar_atributos_externo(form, empresa_id, tipoempresa_id, new)
-        self.razao_social = form.razao_social.data
+        self.razao_social = form.razao_social.data.upper()
         self.data_abertura = form.data_abertura.data
-        self.situacao = form.situacao.data
-        self.tipo = form.tipo.data
-        self.nome_responsavel = form.nome_responsavel.data
-        self.porte = form.porte.data
-        self.natureza_juridica = form.natureza_juridica.data
-        self.cnae_principal = form.cnae_principal.data
-        self.cnae_principal_texto = form.cnae_principal_texto.data
-        self.inscricao_estadual = form.inscricao_estadual.data
-        self.inscricao_municipal = form.inscricao_municipal.data
+        self.situacao = form.situacao.data.upper()
+        self.tipo = form.tipo.data.upper()
+        self.nome_responsavel = form.nome_responsavel.data.upper()
+        self.porte = form.porte.data.upper()
+        self.natureza_juridica = form.natureza_juridica.data.upper()
+        self.cnae_principal = form.cnae_principal.data.upper()
+        self.cnae_principal_texto = form.cnae_principal_texto.data.upper()
+        self.inscricao_estadual = form.inscricao_estadual.data.upper()
+        self.inscricao_municipal = form.inscricao_municipal.data.upper()
         self.localizacao = form.localizacao.data
         self.ativo = form.ativo.data
 
@@ -171,9 +171,9 @@ class Empresa(db.Model):
             return False
 
     def importar_interessado(self, interessado: [Interessado]) -> None:
-        self.nome_fantasia = interessado.nome_fantasia
+        self.nome_fantasia = interessado.nome_fantasia.upper()
         self.cnpj = interessado.cnpj
-        self.email = interessado.email
+        self.email = interessado.email.upper()
         self.telefone = interessado.telefone
 
     @staticmethod

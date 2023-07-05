@@ -7,23 +7,25 @@ logging.getLogger().setLevel(logging.DEBUG)
 log = logging.getLogger(__name__)
 
 
-class Sistema(db.Model):
-    """    Classe de sistemas nos ativos   """
-    __tablename__ = 'sistema'
+class Grupo(db.Model):
+    """    Classe de grupo de ativos    """
+    __tablename__ = 'grupo'
     id = db.Column(db.Integer(), primary_key=True)
     nome = db.Column(db.String(50), nullable=False, index=True)
     ativo = db.Column(db.Boolean, nullable=False, default=True)
-    equipamento_id = db.Column(db.Integer(), db.ForeignKey("equipamento.id"), nullable=False)
-    equipamento = db.relationship("Equipamento", back_populates="sistema")
+    empresa_id = db.Column(db.Integer(), db.ForeignKey("empresa.id"), nullable=False)
+
+    empresa = db.relationship("Empresa", back_populates="grupo")
+    subgrupo = db.relationship("Subgrupo", back_populates="grupo")
 
     def __repr__(self):
-        return f'<Sistema: {self.id}-{self.nome}>'
+        return f'<Grupo: {self.id}-{self.nome}>'
 
     def alterar_atributos(self, form):
         """    Função para alterar os atributos do objeto    """
-        self.nome = form.nome.data
+        self.nome = form.nome.data.upper()
         self.ativo = form.ativo.data
-
+        self.empresa_id = current_user.empresa_id
 
     def salvar(self) -> bool:
         """    Função para salvar no banco de dados o objeto"""
@@ -37,23 +39,25 @@ class Sistema(db.Model):
             return False
 
 
-class Grupo(db.Model):
-    """    Classe de grupo de ativos    """
-    __tablename__ = 'grupo'
+class Subgrupo(db.Model):
+    """    Classe de sistemas nos ativos   """
+    __tablename__ = 'subgrupo'
     id = db.Column(db.Integer(), primary_key=True)
     nome = db.Column(db.String(50), nullable=False, index=True)
     ativo = db.Column(db.Boolean, nullable=False, default=True)
-    empresa_id = db.Column(db.Integer(), nullable=False)
-    equipamento = db.relationship("Equipamento", back_populates="grupo")
+    grupo_id = db.Column(db.Integer(), db.ForeignKey("grupo.id"), nullable=True)
+
+    grupo = db.relationship("Grupo", back_populates="subgrupo")
+    equipamento = db.relationship("Equipamento", back_populates="subgrupo")
 
     def __repr__(self):
-        return f'<Grupo: {self.id}-{self.nome}>'
+        return f'<Subgrupo: {self.id}-{self.nome}>'
 
     def alterar_atributos(self, form):
         """    Função para alterar os atributos do objeto    """
-        self.nome = form.nome.data
+        self.nome = form.nome.data.upper()
         self.ativo = form.ativo.data
-        self.empresa_id = current_user.empresa_id
+        self.grupo_id = form.grupo.data
 
     def salvar(self) -> bool:
         """    Função para salvar no banco de dados o objeto"""
@@ -73,11 +77,11 @@ class Equipamento(db.Model):
     nome_doc = 'padrão_equipamentos'
     # titulos para cadastro
     titulos_doc = ['Código*', 'Descrição_Curta*', 'Tag*', 'Descrição_Longa', 'Fábrica', 'Marca', 'Modelo',
-              'Número_Série', 'Largura', 'Comprimento', 'Altura', 'Peso','Potência', 'Tensão', 'Ano_Fabricação',
-              'Data_Aquisição', 'Data_Instalação', 'Custo_Aquisição', 'Taxa_Depreciação',
-              'Patrimônio', 'Localização', 'Centro_Custo', 'Grupo_Equipamentos', 'Sistema', 'Ativo']
-   # titulos obrigatórios
-    titulos_obg = ['Código*', 'Descrição_Curta*','Tag*']
+                   'Número_Série', 'Largura', 'Comprimento', 'Altura', 'Peso', 'Potência', 'Tensão', 'Ano_Fabricação',
+                   'Data_Aquisição', 'Data_Instalação', 'Custo_Aquisição', 'Taxa_Depreciação',
+                   'Patrimônio', 'Localização', 'Centro_Custo', 'Grupo_Equipamentos', 'Sistema', 'Ativo']
+    # titulos obrigatórios
+    titulos_obg = ['Código*', 'Descrição_Curta*', 'Tag*']
 
     __tablename__ = 'equipamento'
     id = db.Column(db.Integer(), primary_key=True)
@@ -98,20 +102,19 @@ class Equipamento(db.Model):
     data_fabricacao = db.Column(db.DateTime(), nullable=True)
     data_aquisicao = db.Column(db.DateTime(), nullable=True)
     data_instalacao = db.Column(db.DateTime(), nullable=True)
-    custo_aquisicao = db.Column(db.Integer(), nullable=True)
+    custo_aquisicao = db.Column(db.Float(), nullable=True)
     depreciacao = db.Column(db.Integer(), nullable=True)
     tag = db.Column(db.String(20), nullable=False)
     patrimonio = db.Column(db.String(20), nullable=True)
     localizacao = db.Column(db.String(50), nullable=True)
+    latitude = db.Column(db.String(20), nullable=True)
+    longitude = db.Column(db.String(20), nullable=True)
     centro_custo = db.Column(db.String(50), nullable=True)
     ativo = db.Column(db.Boolean, nullable=False, default=True)
 
-    grupo_id = db.Column(db.Integer(), db.ForeignKey("grupo.id"), nullable=True)
-    empresa_id = db.Column(db.Integer(), db.ForeignKey("empresa.id"), nullable=False)
+    subgrupo_id = db.Column(db.Integer(), db.ForeignKey("subgrupo.id"), nullable=True)
 
-    grupo = db.relationship("Grupo", back_populates="equipamento")
-    empresa = db.relationship("Empresa", back_populates="equipamento")
-    sistema = db.relationship("Sistema", back_populates="equipamento")
+    subgrupo = db.relationship("Subgrupo", back_populates="equipamento")
     planomanutencao = db.relationship("PlanoManutencao", back_populates="equipamento")
     ordemservico = db.relationship("OrdemServico", back_populates="equipamento")
 
@@ -127,12 +130,12 @@ class Equipamento(db.Model):
     def alterar_atributos(self, form):
         """    Função para alterar os atributos do objeto    """
         self.cod = form.cod.data
-        self.descricao_curta = form.descricao_curta.data
-        self.descricao_longa = form.descricao_longa.data
-        self.fabricante = form.fabricante.data
-        self.marca = form.marca.data
-        self.modelo = form.modelo.data
-        self.ns = form.ns.data
+        self.descricao_curta = form.descricao_curta.data.upper()
+        self.descricao_longa = form.descricao_longa.data.upper()
+        self.fabricante = form.fabricante.data.upper()
+        self.marca = form.marca.data.upper()
+        self.modelo = form.modelo.data.upper()
+        self.ns = form.ns.data.upper()
         self.largura = form.largura.data
         self.comprimento = form.comprimento.data
         self.altura = form.altura.data
@@ -144,13 +147,14 @@ class Equipamento(db.Model):
         self.data_instalacao = form.data_instalacao.data
         self.custo_aquisicao = form.custo_aquisicao.data
         self.depreciacao = form.depreciacao.data
-        self.tag = form.tag.data
+        self.tag = form.tag.data.upper()
         self.patrimonio = form.patrimonio.data
-        self.localizacao = form.localizacao.data
-        self.centro_custo = form.centro_custo.data
+        self.localizacao = form.localizacao.data.upper()
+        self.latitude = form.latitude.data
+        self.longitude = form.longitude.data
+        self.centro_custo = form.centro_custo.data.upper()
         self.ativo = form.ativo.data
-        self.grupo_id = form.grupo.data
-        self.empresa_id = current_user.empresa_id
+        self.subgrupo_id = form.subgrupo.data
 
     def ativar_desativar(self):
         if self.ativo:

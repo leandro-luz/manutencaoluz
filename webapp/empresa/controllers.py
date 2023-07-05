@@ -2,7 +2,7 @@ import config
 from flask import (render_template, Blueprint,
                    redirect, url_for,
                    flash)
-from flask_login import current_user, login_required
+from flask_login import current_user, login_required, login_user, logout_user
 from webapp.empresa.models import Interessado, Tipoempresa, Empresa
 from webapp.empresa.forms import EmpresaForm, EmpresaSimplesForm, RegistroInteressadoForm
 from webapp.contrato.models import Contrato
@@ -78,7 +78,7 @@ def empresa_editar(empresa_id):
         p_d = form.contrato.data
 
     # --------- LISTAS
-    form.contrato.choices = [(plans.id, plans.nome) for plans in Contrato.query.all()]
+    form.contrato.choices = [(0, '')] + [(plans.id, plans.nome) for plans in Contrato.query.all()]
     form.contrato.data = p_d
 
     # atribuindo o tipo "Cliente" para a empresa
@@ -117,9 +117,9 @@ def new_admin(empresa: [Empresa], enviar_email):
 
     # lista dos administradores
     lista = [{'nome': 'admin', 'descricao': 'administrador',
-              'email': empresa.email,'enviar_email': True, 'senha_temporaria': True},
+              'email': empresa.email, 'enviar_email': True, 'senha_temporaria': True},
              {'nome': 'adminluz', 'descricao': 'administrador do sistema',
-              'email': config.Config.MAIL_USERNAME,'enviar_email': False, 'senha_temporaria': False},
+              'email': config.Config.MAIL_USERNAME, 'enviar_email': False, 'senha_temporaria': False},
              ]
 
     # laço de repetição
@@ -287,3 +287,22 @@ def empresa_registrar(token):
     else:
         flash("O link para confirmação é invalido ou está expirado!", category="danger")
     return redirect(url_for('main.index'))
+
+
+@empresa_blueprint.route('/empresa_acessar/<int:empresa_id>', methods=['GET', 'POST'])
+@login_required
+@has_view('Empresa')
+def empresa_acessar(empresa_id):
+    """Função para acesso rápido a empresa subsidiária"""
+    if empresa_id != current_user.empresa_id:
+        usuario= Usuario.query.filter_by(empresa_id=empresa_id). \
+            filter(Usuario.nome.like("%admin%"),Usuario.nome.notlike("%luz%")).one_or_none()
+        # caso o usuário exista
+        if usuario:
+            login_user(usuario)
+            return redirect(url_for('sistema.index'))
+        else:
+            flash("Acesso não permitido!", category="danger")
+    else:
+        flash("Empresa atual", category="danger")
+    return redirect(url_for('empresa.empresa_listar'))

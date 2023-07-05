@@ -1,8 +1,9 @@
 from flask import (render_template, Blueprint, redirect, url_for, flash)
 from flask_login import current_user, login_required
-from webapp.ordem_servico.models import OrdemServico, SituacaoOrdem, FluxoOrdem, TramitacaoOrdem
+from webapp.empresa.models import Empresa
+from webapp.ordem_servico.models import OrdemServico, SituacaoOrdem, FluxoOrdem, TramitacaoOrdem, TipoOrdem
 from webapp.ordem_servico.forms import OrdemServicoForm, TramitacaoForm
-from webapp.equipamento.models import Equipamento
+from webapp.equipamento.models import Equipamento, Subgrupo, Grupo
 from webapp.usuario import has_view
 from webapp.utils.erros import flash_errors
 
@@ -19,10 +20,14 @@ ordem_servico_blueprint = Blueprint(
 @has_view('Ordem de Serviço')
 def ordem_listar():
     """Retorna a lista dos planos de manutenção"""
-
-    ordens = OrdemServico.query.filter(OrdemServico.equipamento_id == Equipamento.id,
-                                       Equipamento.empresa_id == current_user.empresa_id).order_by(OrdemServico.codigo.desc())
-
+    ordens = OrdemServico.query.filter(
+        OrdemServico.equipamento_id == Equipamento.id,
+        Equipamento.subgrupo_id == Subgrupo.id,
+        Subgrupo.grupo_id == Grupo.id,
+        Grupo.empresa_id == Empresa.id,
+        Empresa.id == current_user.empresa_id).order_by(
+        Equipamento.descricao_curta).order_by(
+        OrdemServico.codigo.desc())
     return render_template('ordem_servico_listar.html', ordens=ordens)
 
 
@@ -57,11 +62,8 @@ def ordem_editar(ordem_id):
         form_tramitacao.situacaoordem.data = ordem.situacaoordem_id
 
         # Lista das tramitações realizadas na ordem de serviço
-        tramitacoes = TramitacaoOrdem.query.filter_by(ordemservico_id=ordem.id).\
+        tramitacoes = TramitacaoOrdem.query.filter_by(ordemservico_id=ordem.id). \
             order_by(TramitacaoOrdem.data.desc())
-
-
-
     else:
         # Cadastrar
         ordem = OrdemServico()
@@ -74,12 +76,22 @@ def ordem_editar(ordem_id):
 
         # FILTRA SOMENTE A SITUAÇÃO PENDENTE
         situacao = SituacaoOrdem.query.filter_by(nome="Pendente").one_or_none()
-        form_tramitacao.situacaoordem.choices = [(si.id, si.nome) for si in SituacaoOrdem.query.filter_by(nome="Pendente").all()]
+        form_tramitacao.situacaoordem.choices = [(si.id, si.nome) for si in
+                                                 SituacaoOrdem.query.filter_by(nome="Pendente").all()]
         form_tramitacao.situacaoordem.data = situacao.id
 
+        form.tipo.choices = [(0, '')] + [(tipo.id, tipo.nome)
+                                         for tipo in TipoOrdem.query.filter_by(plano=False)]
+
     # Listas
-    form.equipamento.choices = [(0, '')] + [(eq.id, eq.descricao_curta)
-                                            for eq in Equipamento.query.filter_by(empresa_id=current_user.empresa_id)]
+    equipamentos = Equipamento.query.filter(
+        Equipamento.subgrupo_id == Subgrupo.id,
+        Subgrupo.grupo_id == Grupo.id,
+        Grupo.empresa_id == Empresa.id,
+        Empresa.id == current_user.empresa_id).order_by(
+        Equipamento.descricao_curta).order_by(
+        Equipamento.descricao_curta.desc())
+    form.equipamento.choices = [(0, '')] + [(eq.id, eq.descricao_curta) for eq in equipamentos]
     form.equipamento.data = eq_d
 
     # Validação
@@ -98,7 +110,8 @@ def ordem_editar(ordem_id):
             flash("Ordem de Serviço não cadastrado/atualizado", category="danger")
     else:
         flash_errors(form)
-    return render_template("ordem_servico_editar.html", form=form, form_tramitacao=form_tramitacao,  ordem=ordem, tramitacoes=tramitacoes)
+    return render_template("ordem_servico_editar.html", form=form, form_tramitacao=form_tramitacao, ordem=ordem,
+                           tramitacoes=tramitacoes)
 
 
 @ordem_servico_blueprint.route('/tramitacao/<int:ordem_id>', methods=['GET', 'POST'])
@@ -109,7 +122,7 @@ def tramitacao(ordem_id):
     tramitacao = TramitacaoOrdem()
 
     if form_tramitacao.validate_on_submit():
-        tramitacao.alterar_atributos(form_tramitacao,ordem_id)
+        tramitacao.alterar_atributos(form_tramitacao, ordem_id)
         if tramitacao.salvar():
             flash("Tramitação cadastrado", category="success")
         else:

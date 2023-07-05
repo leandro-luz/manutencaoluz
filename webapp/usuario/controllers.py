@@ -240,7 +240,7 @@ def usuario(usuario_id):
 def usuario_listar() -> str:
     """    Função que retorna uma lista de usuários    """
     # retorna uma lista de usuários da empresa, exceto os adminluz(administradores de sistema)
-    usuarios = Usuario.query.filter_by(empresa_id=current_user.empresa_id).\
+    usuarios = Usuario.query.filter_by(empresa_id=current_user.empresa_id). \
         filter(Usuario.nome.notlike("%adminluz%")).all()
 
     return render_template('usuario_listar.html', usuarios=usuarios)
@@ -276,8 +276,9 @@ def usuario_editar(usuario_id):
         form.id.data = 0
 
     # --------- LISTAS
-    form.perfil.choices = [(perfis.id, perfis.nome) for perfis in
-                           Perfil.query.filter_by(empresa_id=current_user.empresa_id).filter(Perfil.nome.notlike("%adminluz%")).all()]
+    form.perfil.choices = [(0, '')] + [(perfis.id, perfis.nome) for perfis in
+                           Perfil.query.filter_by(empresa_id=current_user.empresa_id).filter(
+                               Perfil.nome.notlike("%adminluz%")).all()]
     form.perfil.data = r_d
 
     # --------- VALIDAÇÕES
@@ -316,7 +317,7 @@ def usuario_editar(usuario_id):
 @login_required
 @has_view('RH')
 def perfil_listar():
-    perfis = Perfil.query.filter_by(empresa_id=current_user.empresa_id).\
+    perfis = Perfil.query.filter_by(empresa_id=current_user.empresa_id). \
         filter(Perfil.nome.notlike("%adminluz%")).all()
     return render_template('perfil_listar.html', perfis=perfis)
 
@@ -385,7 +386,8 @@ def telaperfil_editar(perfil_id):
     form.perfil.choices = [(perfis.id, perfis.nome) for perfis in Perfil.query.filter_by(id=perfil_id)]
 
     form.tela.choices = [(telascontrato.tela.id, telascontrato.tela.nome)
-                         for telascontrato in Telacontrato.query.filter_by(contrato_id=current_user.empresa.contrato_id, ativo=True)]
+                         for telascontrato in
+                         Telacontrato.query.filter_by(contrato_id=current_user.empresa.contrato_id, ativo=True)]
 
     # Validação
     if form.validate_on_submit():

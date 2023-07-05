@@ -1,7 +1,7 @@
 from flask import (render_template, Blueprint, redirect, url_for, flash)
 from flask_login import login_required
 from .models import Contrato, Tela, Telacontrato
-from webapp.contrato.forms import ContratoFomr, TelaForm, TelaContratoForm
+from webapp.contrato.forms import ContratoForm, TelaForm, TelaContratoForm
 from webapp.empresa.models import Empresa
 from webapp.usuario.models import Perfil, Telaperfil
 from webapp.usuario import has_view
@@ -35,7 +35,7 @@ def contrato_editar(contrato_id: int):
         # --------- CADASTRAR
         contrato = Contrato()  # instancia um novo contrato
         contrato.id = 0  # atribui 0 para o id deste novo contrato
-        form = ContratoFomr()  # instância um novo formulário
+        form = ContratoForm()  # instância um novo formulário
         new = True
     else:
         new = False
@@ -43,7 +43,7 @@ def contrato_editar(contrato_id: int):
         # gera uma consulta dos planos cadastrados no banco de dados
         contrato = Contrato.query.filter_by(id=contrato_id).first()
         # inclui a consulta para dentro do formulário
-        form = ContratoFomr(obj=contrato)
+        form = ContratoForm(obj=contrato)
 
         # --------- ATUALIZAR AS LISTAS DO FORMULÁRIO
         # consulta das telas para o contrato existente

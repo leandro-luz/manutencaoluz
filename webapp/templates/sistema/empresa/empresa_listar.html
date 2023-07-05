@@ -18,6 +18,7 @@
                 <th scope="col">ATIVO</th>
                 <th scope="col"></th>
                 <th scope="col"></th>
+                <th scope="col"></th>
             </tr>
         </thead>
 
@@ -39,7 +40,7 @@
                     <td>
                         <a href="{{ url_for('empresa.empresa_ativar', empresa_id=empresa.id) }}">
                             <span data-tooltip="Desativar">
-                                <i class="bi-caret-down fs-6"></i>
+                                <i class="bi-hand-thumbs-up fs-6"></i>
                             </span>
                         </a>
                     </td>
@@ -47,11 +48,20 @@
                     <td>
                         <a href="{{ url_for('empresa.empresa_ativar', empresa_id=empresa.id) }}">
                             <span data-tooltip="Ativar">
-                                <i class="bi-caret-up fs-6"></i>
+                                <i class="bi-hand-thumbs-down fs-6"></i>
                             </span>
                         </a>
                     </td>
                 {% endif %}
+
+                <td>
+                    <a href="{{ url_for('empresa.empresa_acessar', empresa_id=empresa.id) }}">
+                        <span data-tooltip="Acesso">
+                            <i class="bi-box-arrow-in-down fs-6"></i>
+                        </span>
+                    </a>
+                </td>
+
             </tr>
         {% endfor %}
         </tbody>

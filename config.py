@@ -13,7 +13,7 @@ class Config(object):
     MAIL_SERVER = 'smtp-mail.outlook.com'
     MAIL_PORT = 587
     MAIL_SENDER = 'Time Manutenção Luz <manutencaoluz@outlook.com>'
-    MAIL_USERNAME = 'manutencaoluz@outlook.com'
+    MAIL_USERNAME = 'manutencaoluz' #@outlook.com'
     MAIL_PASSWORD = 'Aaa-22222'
     MAIL_USE_TLS = True
     MAIL_USE_SSL = False

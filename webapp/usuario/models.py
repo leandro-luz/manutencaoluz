@@ -44,8 +44,8 @@ class Perfil(db.Model):
             return False
 
     def alterar_atributos(self, form, empresa_id):
-        self.nome = form.nome.data
-        self.descricao = form.descricao.data
+        self.nome = form.nome.data.upper()
+        self.descricao = form.descricao.data.upper()
         self.empresa_id = empresa_id
 
     @staticmethod
@@ -152,8 +152,8 @@ class Usuario(db.Model):
 
     def usuario_administrador(self, nome: str, email: str, empresa_id: int, perfil_id: int, senha_id: int) -> None:
         """    Função para cadastrar as informações de administrador     """
-        self.nome = nome
-        self.email = email
+        self.nome = nome.upper()
+        self.email = email.upper()
         self.senha_id = senha_id
         self.empresa_id = empresa_id
         self.perfil_id = perfil_id
@@ -186,7 +186,7 @@ class Usuario(db.Model):
         return self.id
 
     def alterar_email(self, email):
-        self.email = email
+        self.email = email.upper()
 
     def set_active(self, ativo):
         self.ativo = ativo
@@ -225,8 +225,8 @@ class Usuario(db.Model):
         return token
 
     def alterar_atributos(self, form, empresa_id, new=False):
-        self.nome = form.nome.data
-        self.email = form.email.data
+        self.nome = form.nome.data.upper()
+        self.email = form.email.data.upper()
         self.empresa_id = empresa_id
         self.perfil_id = form.perfil.data
         self.ativo = form.ativo.data
@@ -239,7 +239,6 @@ class Usuario(db.Model):
             self.ativo = False
         else:
             self.ativo = True
-
 
     def retornar_telas_by_regras(self):
         telas = []

@@ -4,6 +4,7 @@ from webapp.plano_manutencao.models import PlanoManutencao, TipoData, Periodicid
 from webapp.equipamento.models import Equipamento
 from webapp.plano_manutencao.forms import PlanoForm
 from webapp.usuario import has_view
+from webapp.ordem_servico.models import TipoOrdem
 from webapp.utils.erros import flash_errors
 
 plano_manutencao_blueprint = Blueprint(
@@ -50,10 +51,12 @@ def plano_editar(plano_id):
 
             # Atualizar ou Ler dados
             if form.tipodata.data:
+                to_d = form.tipoordem.data
                 tp_d = form.tipodata.data
                 e_d = form.equipamento.data
                 p_d = form.periodicidade.data
             else:
+                to_d = plano.tipoordem_id
                 tp_d = plano.tipodata_id
                 e_d = plano.equipamento_id
                 p_d = plano.periodicidade_id
@@ -69,12 +72,15 @@ def plano_editar(plano_id):
         tp_d = form.tipodata.data
         e_d = form.equipamento.data
         p_d = form.periodicidade.data
+        to_d = form.tipoordem.data
 
     # Listas
+    form.tipoordem.choices = [(0, '')] + [(to.id, to.nome) for to in TipoOrdem.query.filter_by(plano=True)]
     form.tipodata.choices = [(tp.id, tp.nome) for tp in TipoData.query.all()]
-    form.periodicidade.choices = [(p.id, p.nome) for p in Periodicidade.query.all()]
-    form.equipamento.choices = [(e.id, e.descricao_curta) for e in Equipamento.query.all()]
+    form.periodicidade.choices = [(0, '')] + [(p.id, p.nome) for p in Periodicidade.query.all()]
+    form.equipamento.choices = [(0, '')] + [(e.id, e.descricao_curta) for e in Equipamento.query.all()]
 
+    form.tipoordem.data = to_d
     form.tipodata.data = tp_d
     form.equipamento.data = e_d
     form.periodicidade.data = p_d

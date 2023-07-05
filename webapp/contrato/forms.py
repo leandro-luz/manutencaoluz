@@ -1,20 +1,21 @@
 from flask_wtf import FlaskForm as Form
-from wtforms import StringField, SelectField, SubmitField
+from wtforms import StringField, SelectField, SubmitField, BooleanField
 from wtforms.validators import InputRequired, Length
 from flask import flash
 from webapp.contrato.models import Contrato, Telacontrato
 
 
-class ContratoFomr(Form):
+class ContratoForm(Form):
     """    Classe do formulário de contrato de assinaturas    """
     nome = StringField('Nome', validators=[InputRequired(), Length(max=50)],
                        render_kw={"placeholder": "Digite o nome do contrato"})
     tela = SelectField('Telas', choices=[], validate_choice=False, coerce=int)
+    ativo = BooleanField('Ativo')
     submit = SubmitField("Cadastrar")
 
     def validate(self, **kwargs) -> bool:
         """        Função que válida as informações do formulário        """
-        check_validate = super(ContratoFomr, self).validate()  # valida de forma inicial as informações
+        check_validate = super(ContratoForm, self).validate()  # valida de forma inicial as informações
 
         if check_validate:  # checa a validação inicial
             # busca se existe algum contrato com o nome

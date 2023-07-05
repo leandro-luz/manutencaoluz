@@ -10,8 +10,8 @@
                 <h2>Perfil</h2>
             {% endif %}
 
-            {{form.nome.label}}    {{form.nome(size=20)}}<br>
-            {{form.descricao.label}}    {{form.descricao(size=20)}}<br>
+            {{form.nome.label}}    {{form.nome(size=50)}}<br>
+            {{form.descricao.label}}    {{form.descricao(size=50)}}<br>
 
             {% if perfil.id == 0 %}
                 <input type="submit" value="Cadastrar"/>

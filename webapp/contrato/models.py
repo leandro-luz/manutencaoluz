@@ -11,6 +11,7 @@ class Contrato(db.Model):
     __tablename__ = 'contrato'
     id = db.Column(db.Integer(), primary_key=True)
     nome = db.Column(db.String(50), nullable=False, index=True )
+    ativo = db.Column(db.Boolean, nullable=False, default=False)
     empresa = db.relationship("Empresa", back_populates="contrato")
     telacontrato = db.relationship("Telacontrato", back_populates="contrato")
 
@@ -19,6 +20,7 @@ class Contrato(db.Model):
 
     def alterar_atributos(self, form) -> None:
         self.nome = form.nome.data
+        self.ativo = form.ativo.data
 
     def salvar(self, new, form) -> bool:
         """    Função para salvar no banco de dados o objeto"""

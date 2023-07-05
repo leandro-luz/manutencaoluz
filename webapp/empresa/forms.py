@@ -101,6 +101,10 @@ class EmpresaForm(Form):
                 flash("Já existe uma empresa vinculada a este email", category="danger")
                 return False
 
+            if self.contrato.data == 0:
+                flash("Não informado o contrato para a empresa", category="danger")
+                return False
+
             return True
         else:
             return False

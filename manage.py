@@ -8,7 +8,7 @@ from webapp.contrato.models import Contrato, Telacontrato, Tela
 from webapp.plano_manutencao.models import TipoData, Unidade, Periodicidade, PlanoManutencao
 from webapp.ordem_servico.models import SituacaoOrdem, FluxoOrdem, OrdemServico, TramitacaoOrdem
 
-env = os.environ.get('WEBAPP_ENV', 'prod')
+env = os.environ.get('WEBAPP_ENV', 'dev')
 app = create_app('config.%sConfig' % env.capitalize())
 
 
