@@ -226,6 +226,47 @@ def grupo_editar(grupo_id, subgrupo_id, equipamento_id):
                            equipamento_id=equipamento_id)
 
 
+@equipamento_blueprint.route('/grupo_ativar/<int:grupo_id>//<int:subgrupo_id>//<int:equipamento_id>', methods=['GET', 'POST'])
+@login_required
+@has_view('Equipamento')
+def grupo_ativar(grupo_id, subgrupo_id, equipamento_id):
+    """    Função que ativa/desativa um grupo    """
+    # instância um grupo com base no identificador
+    grupo = Grupo.query.filter_by(id=grupo_id).one_or_none()
+    # se o grupo existir
+    if grupo:
+        # ativa/inativa o grupo
+        grupo.ativar_desativar()
+        # salva no banco de dados a alteração
+        if grupo.salvar():
+            flash("Grupo ativado/desativado com sucesso", category="success")
+        else:
+            flash("Grupo não foi ativado/desativado", category="danger")
+    else:
+        flash("Grupo não registrado", category="danger")
+    return redirect(url_for('equipamento.grupo_listar', subgrupo_id=subgrupo_id, equipamento_id=equipamento_id))
+
+
+@equipamento_blueprint.route('/subgrupo_ativar/<int:subgrupo_id>/<int:equipamento_id>', methods=['GET', 'POST'])
+@login_required
+@has_view('Equipamento')
+def subgrupo_ativar(subgrupo_id, equipamento_id):
+    """    Função que ativa/desativa um subgrupo    """
+    # instância um subgrupo com base no identificador
+    subgrupo = Subgrupo.query.filter_by(id=subgrupo_id).one_or_none()
+    # se o subgrupo existir
+    if subgrupo:
+        # ativa/inativa o subgrupo
+        subgrupo.ativar_desativar()
+        # salva no banco de dados a alteração
+        if subgrupo.salvar():
+            flash("Subgrupo ativado/desativado com sucesso", category="success")
+        else:
+            flash("Subgrupo não foi ativado/desativado", category="danger")
+    else:
+        flash("Subgrupo não registrado", category="danger")
+    return redirect(url_for("equipamento.subgrupo_listar", equipamento_id=equipamento_id))
+
 
 @equipamento_blueprint.route('/subgrupo_listar/<int:equipamento_id>', methods=['GET', 'POST'])
 @login_required

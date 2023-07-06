@@ -1,76 +1,75 @@
 {% extends "sistema_base.html" %}
 {% block body %}
-    <body>
+<body>
 
-    <h2> EMPRESAS </h2>
-    <a href="{{ url_for('empresa.empresa_editar', empresa_id=0) }}">
-        Adicionar
-    </a>
+<h2> EMPRESAS </h2>
+<a href="{{ url_for('empresa.empresa_editar', empresa_id=0) }}">
+    Adicionar
+</a>
 
-    <input class="form-control" id="myInput" type="text" placeholder="Filtrar.."><br>
+<input class="form-control" id="myInput" placeholder="Filtrar.." type="text"><br>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th scope="col">CNPJ</th>
-                <th scope="col">NOME FANTASIA</th>
-                <th scope="col">CONTRATO</th>
-                <th scope="col">ATIVO</th>
-                <th scope="col"></th>
-                <th scope="col"></th>
-                <th scope="col"></th>
-            </tr>
-        </thead>
+<table class="table">
+    <thead>
+    <tr>
+        <th scope="col">CNPJ</th>
+        <th scope="col">NOME FANTASIA</th>
+        <th scope="col">CONTRATO</th>
+        <th scope="col">ATIVO</th>
+        <th scope="col"></th>
+        <th scope="col"></th>
+        <th scope="col"></th>
+    </tr>
+    </thead>
 
-       <tbody id="myTable">
-        {% for empresa in empresas %}
-            <tr>
-                <th scope="row">{{ empresa.cnpj }}</th>
-                <td>{{ empresa.nome_fantasia }}</td>
-                <td>{{ empresa.contrato.nome }}</td>
-                <td>{{ empresa.ativo }}</td>
-                <td>
-                    <a href="{{ url_for('empresa.empresa_editar', empresa_id=empresa.id) }}">
-                        <span data-tooltip="Informações">
-                            <i class="bi-caret-right fs-6"></i>
-                        </span>
-                    </a>
-                </td>
-                {% if empresa.ativo == True %}
-                    <td>
-                        <a href="{{ url_for('empresa.empresa_ativar', empresa_id=empresa.id) }}">
-                            <span data-tooltip="Desativar">
-                                <i class="bi-hand-thumbs-up fs-6"></i>
-                            </span>
-                        </a>
-                    </td>
-                {% else %}
-                    <td>
-                        <a href="{{ url_for('empresa.empresa_ativar', empresa_id=empresa.id) }}">
-                            <span data-tooltip="Ativar">
-                                <i class="bi-hand-thumbs-down fs-6"></i>
-                            </span>
-                        </a>
-                    </td>
-                {% endif %}
+    <tbody id="myTable">
+    {% for empresa in empresas %}
+    <tr>
+        <th scope="row">{{ empresa.cnpj }}</th>
+        <td>{{ empresa.nome_fantasia }}</td>
+        <td>{{ empresa.contrato.nome }}</td>
+        {% if empresa.ativo == True %}
+        <td>
+            <a href="{{ url_for('empresa.empresa_ativar', empresa_id=empresa.id) }}">
+                <span data-tooltip="Desativar">
+                    <i class="bi-hand-thumbs-up fs-6"></i>
+                </span>
+            </a>
+        </td>
+        {% else %}
+        <td>
+            <a href="{{ url_for('empresa.empresa_ativar', empresa_id=empresa.id) }}">
+                <span data-tooltip="Ativar">
+                    <i class="bi-hand-thumbs-down fs-6"></i>
+                </span>
+            </a>
+        </td>
+        {% endif %}
+        <td>
+            <a href="{{ url_for('empresa.empresa_editar', empresa_id=empresa.id) }}">
+                <span data-tooltip="Informações">
+                    <i class="bi-caret-right fs-6"></i>
+                </span>
+            </a>
+        </td>
 
-                <td>
-                    <a href="{{ url_for('empresa.empresa_acessar', empresa_id=empresa.id) }}">
-                        <span data-tooltip="Acesso">
-                            <i class="bi-box-arrow-in-down fs-6"></i>
-                        </span>
-                    </a>
-                </td>
+        <td>
+            <a href="{{ url_for('empresa.empresa_acessar', empresa_id=empresa.id) }}">
+                <span data-tooltip="Acesso">
+                    <i class="bi-box-arrow-in-down fs-6"></i>
+                </span>
+            </a>
+        </td>
 
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
 
-    <a href="{{url_for('sistema.index')}}">Voltar</a>
+<a href="{{url_for('sistema.index')}}">Voltar</a>
 
-    </body>
+</body>
 
-    <script type="text/javascript" src="/static/js/filtro_coluna.js"></script>
+<script src="/static/js/filtro_coluna.js" type="text/javascript"></script>
 
 {% endblock %}

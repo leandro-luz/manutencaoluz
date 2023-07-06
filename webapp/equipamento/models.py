@@ -27,6 +27,12 @@ class Grupo(db.Model):
         self.ativo = form.ativo.data
         self.empresa_id = current_user.empresa_id
 
+    def ativar_desativar(self):
+        if self.ativo:
+            self.ativo = False
+        else:
+            self.ativo = True
+
     def salvar(self) -> bool:
         """    Função para salvar no banco de dados o objeto"""
         try:
@@ -58,6 +64,12 @@ class Subgrupo(db.Model):
         self.nome = form.nome.data.upper()
         self.ativo = form.ativo.data
         self.grupo_id = form.grupo.data
+
+    def ativar_desativar(self):
+        if self.ativo:
+            self.ativo = False
+        else:
+            self.ativo = True
 
     def salvar(self) -> bool:
         """    Função para salvar no banco de dados o objeto"""

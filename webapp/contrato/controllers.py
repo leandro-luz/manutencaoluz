@@ -71,6 +71,27 @@ def contrato_editar(contrato_id: int):
     return render_template("contrato_editar.html", form=form, contrato=contrato)
 
 
+@contrato_blueprint.route('/contrato_ativar/<int:contrato_id>', methods=['GET', 'POST'])
+@login_required
+@has_view('Contrato')
+def contrato_ativar(contrato_id):
+    """    Função que ativa/desativa um contrato    """
+    # instância um contrato com base no identificador
+    contrato = Contrato.query.filter_by(id=contrato_id).one_or_none()
+    # se o contrato existir
+    if contrato:
+        # ativa/inativa o contrato
+        contrato.ativar_desativar()
+        # salva no banco de dados a alteração
+        if contrato.salvar(None, None):
+            flash("Contrato ativado/desativado com sucesso", category="success")
+        else:
+            flash("Contrato não foi ativado/desativado", category="danger")
+    else:
+        flash("Contrato não registrado", category="danger")
+    return redirect(url_for('contrato.contrato_listar'))
+
+
 @contrato_blueprint.route('/telacontrato_listar/<int:contrato_id>', methods=['GET', 'POST'])
 @login_required
 @has_view('Contrato')

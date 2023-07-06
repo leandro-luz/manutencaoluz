@@ -22,7 +22,7 @@ class Perfil(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     nome = db.Column(db.String(50), unique=False, index=True)
     descricao = db.Column(db.String(50))
-
+    ativo = db.Column(db.Boolean, nullable=False, default=False)
     empresa_id = db.Column(db.Integer(), db.ForeignKey("empresa.id"), nullable=False)
 
     usuario = db.relationship("Usuario", back_populates="perfil")
@@ -31,6 +31,12 @@ class Perfil(db.Model):
 
     def __repr__(self) -> str:
         return f'<Perfil: {self.id}-{self.nome}>'
+
+    def ativar_desativar(self):
+        if self.ativo:
+            self.ativo = False
+        else:
+            self.ativo = True
 
     def salvar(self) -> bool:
         """    Função para salvar no banco de dados o objeto"""

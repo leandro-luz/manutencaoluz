@@ -7,32 +7,50 @@
     Adicionar
 </a>
 
-<input class="form-control" id="myInput" type="text" placeholder="Filtrar.."><br>
+<input class="form-control" id="myInput" placeholder="Filtrar.." type="text"><br>
 
 <table class="table">
     <thead>
-        <tr>
-            <th scope="col">NOME</th>
-            <th scope="col">ATIVO</th>
-            <th scope="col"></th>
-        </tr>
+    <tr>
+        <th scope="col">NOME</th>
+        <th scope="col">ATIVO</th>
+        <th scope="col"></th>
+    </tr>
 
     </thead>
 
     <tbody id="myTable">
-        {% for contrato in contratos %}
-            <tr>
-                <td>{{ contrato.nome }}</td>
-                <td>{{ contrato.ativo }}</td>
-                <td>
-                    <a href="{{ url_for('contrato.contrato_editar', contrato_id=contrato.id) }}">
+    {% for contrato in contratos %}
+    <tr>
+        <td>{{ contrato.nome }}</td>
+
+        {% if contrato.ativo == True %}
+        <td>
+            <a href="{{ url_for('contrato.contrato_ativar', contrato_id=contrato.id) }}">
+                    <span data-tooltip="Desativar">
+                        <i class="bi-hand-thumbs-up fs-6"></i>
+                    </span>
+            </a>
+        </td>
+        {% else %}
+        <td>
+            <a href="{{ url_for('contrato.contrato_ativar', contrato_id=contrato.id) }}">
+                    <span data-tooltip="Ativar">
+                        <i class="bi-hand-thumbs-down fs-6"></i>
+                    </span>
+            </a>
+        </td>
+        {% endif %}
+
+        <td>
+            <a href="{{ url_for('contrato.contrato_editar', contrato_id=contrato.id) }}">
                         <span data-tooltip="Informações">
                             <i class="bi-caret-right fs-6"></i>
                         </span>
-                    </a>
-                </td>
-            </tr>
-        {% endfor %}
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
     </tbody>
 </table>
 
@@ -40,6 +58,6 @@
 
 </body>
 
-<script type="text/javascript" src="/static/js/filtro_coluna.js"></script>
+<script src="/static/js/filtro_coluna.js" type="text/javascript"></script>
 
 {% endblock %}

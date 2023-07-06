@@ -7,7 +7,7 @@
     Adicionar
 </a>
 
-<input class="form-control" id="myInput" type="text" placeholder="Filtrar.."><br>
+<input class="form-control" id="myInput" placeholder="Filtrar.." type="text"><br>
 
 <table class="table">
     <thead>
@@ -24,7 +24,23 @@
     <tr>
         <td>{{ subgrupo.nome }}</td>
         <td>{{ subgrupo.grupo.nome }}</td>
-        <td>{{ subgrupo.ativo }}</td>
+        {% if subgrupo.ativo == True %}
+        <td>
+            <a href="{{ url_for('equipamento.subgrupo_ativar', subgrupo_id=subgrupo.id, equipamento_id=equipamento_id) }}">
+                <span data-tooltip="Desativar">
+                   <i class="bi-hand-thumbs-up fs-6"></i>
+                </span>
+            </a>
+        </td>
+        {% else %}
+        <td>
+            <a href="{{ url_for('equipamento.subgrupo_ativar', subgrupo_id=subgrupo.id, equipamento_id=equipamento_id) }}">
+                <span data-tooltip="Ativar">
+                    <i class="bi-hand-thumbs-down fs-6"></i>
+                </span>
+            </a>
+        </td>
+        {% endif %}
         <td>
             <a href="{{ url_for('equipamento.subgrupo_editar', subgrupo_id=subgrupo.id, equipamento_id=equipamento_id) }}">
                     <span data-tooltip="Informações">
@@ -40,5 +56,5 @@
 <a href="{{ url_for('equipamento.equipamento_editar', equipamento_id=equipamento_id) }}">Voltar</a>
 
 </body>
-<script type="text/javascript" src="/static/js/filtro_coluna.js"></script>
+<script src="/static/js/filtro_coluna.js" type="text/javascript"></script>
 {% endblock %}

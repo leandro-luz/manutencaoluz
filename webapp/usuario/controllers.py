@@ -277,8 +277,8 @@ def usuario_editar(usuario_id):
 
     # --------- LISTAS
     form.perfil.choices = [(0, '')] + [(perfis.id, perfis.nome) for perfis in
-                           Perfil.query.filter_by(empresa_id=current_user.empresa_id).filter(
-                               Perfil.nome.notlike("%adminluz%")).all()]
+                                       Perfil.query.filter_by(empresa_id=current_user.empresa_id).filter(
+                                           Perfil.nome.notlike("%adminluz%")).all()]
     form.perfil.data = r_d
 
     # --------- VALIDAÇÕES
@@ -367,6 +367,27 @@ def perfil_editar(perfil_id):
     else:
         flash_errors(form)
     return render_template("perfil_editar.html", form=form, perfil=perfil)
+
+
+@usuario_blueprint.route('/perfil_ativar/<int:perfil_id>', methods=['GET', 'POST'])
+@login_required
+@has_view('RH')
+def perfil_ativar(perfil_id):
+    """    Função que ativa/desativa um perfil    """
+    # instância um perfil com base no identificador
+    perfil = Perfil.query.filter_by(id=perfil_id).one_or_none()
+    # se o perfil existir
+    if perfil:
+        # ativa/inativa o perfil
+        perfil.ativar_desativar()
+        # salva no banco de dados a alteração
+        if perfil.salvar():
+            flash("Perfil ativado/desativado com sucesso", category="success")
+        else:
+            flash("Perfil não foi ativado/desativado", category="danger")
+    else:
+        flash("Perfil não registrado", category="danger")
+    return redirect(url_for('usuario.perfil_listar'))
 
 
 @usuario_blueprint.route('/telaperfil_listar/<int:perfil_id>', methods=['GET', 'POST'])

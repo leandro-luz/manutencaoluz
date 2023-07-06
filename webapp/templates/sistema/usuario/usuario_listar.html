@@ -27,14 +27,7 @@
         <th scope="row">{{ usuario.nome }}</th>
         <td scope="row">{{ usuario.email }}</td>
         <td scope="row">{{ usuario.perfil.nome }}</td>
-        <td scope="row">{{ usuario.ativo }}</td>
-        <td>
-            <a href="{{ url_for('usuario.usuario_editar', usuario_id=usuario.id) }}">
-                <span data-tooltip="Informações">
-                    <i class="bi-caret-right fs-6"></i>
-                </span>
-            </a>
-        </td>
+
         {% if usuario.ativo == True %}
         <td>
             <a href="{{ url_for('usuario.usuario_ativar', usuario_id=usuario.id) }}">
@@ -52,6 +45,14 @@
             </a>
         </td>
         {% endif %}
+
+        <td>
+            <a href="{{ url_for('usuario.usuario_editar', usuario_id=usuario.id) }}">
+                <span data-tooltip="Informações">
+                    <i class="bi-caret-right fs-6"></i>
+                </span>
+            </a>
+        </td>
     </tr>
     {% endfor %}
     </tbody>
