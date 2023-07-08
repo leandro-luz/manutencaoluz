@@ -1,6 +1,7 @@
 from flask import (render_template, Blueprint, redirect, url_for, flash)
 from flask_login import current_user, login_required
 from webapp.empresa.models import Empresa
+from webapp.plano_manutencao.models import PlanoManutencao
 from webapp.ordem_servico.models import OrdemServico, SituacaoOrdem, FluxoOrdem, TramitacaoOrdem, TipoOrdem
 from webapp.ordem_servico.forms import OrdemServicoForm, TramitacaoForm
 from webapp.equipamento.models import Equipamento, Subgrupo, Grupo
@@ -36,11 +37,21 @@ def ordem_listar():
 @has_view('Ordem de Serviço')
 def ordem_editar(ordem_id):
     tramitacoes = []
+    situacao = ''
     if ordem_id > 0:
         # Atualizar
-        ordem = OrdemServico.query.filter_by(id=ordem_id).one_or_none()
         new = False
 
+        ordem = OrdemServico.query.filter(
+            current_user.empresa_id == Empresa.id,
+            Empresa.id == Grupo.empresa_id,
+            Grupo.id == Subgrupo.grupo_id,
+            Subgrupo.id == Equipamento.subgrupo_id,
+            Equipamento.id == OrdemServico.equipamento_id,
+            OrdemServico.id == ordem_id
+        ).one_or_none()
+
+        # verifica se a ordem existe
         if ordem:
             form = OrdemServicoForm(obj=ordem)
             form_tramitacao = TramitacaoForm()
@@ -119,12 +130,45 @@ def ordem_editar(ordem_id):
 @has_view('Ordem de Serviço')
 def tramitacao(ordem_id):
     form_tramitacao = TramitacaoForm()
-    tramitacao = TramitacaoOrdem()
+    tramitacao_ = TramitacaoOrdem()
 
     if form_tramitacao.validate_on_submit():
-        tramitacao.alterar_atributos(form_tramitacao, ordem_id)
-        if tramitacao.salvar():
+        tramitacao_.alterar_atributos(form_tramitacao, ordem_id)
+        if tramitacao_.salvar():
             flash("Tramitação cadastrado", category="success")
+
+            ordem_antiga = OrdemServico.query.filter_by(id=ordem_id).one_or_none()
+
+            # verifica se a Ordem está concluída
+            situacao = ordem_antiga.situacaoordem.nome
+            if situacao == "Concluída" or situacao == "Cancelada":
+                # Verifica se o plano está ativo
+                plano = PlanoManutencao.query.filter_by(id=ordem_antiga.planomanutencao_id).one_or_none()
+                if plano.ativo:
+
+                    # Verifica o tipo_data
+                    if plano.tipodata.nome == "Data_Móvel":
+                        tempo = plano.periodicidade.tempo
+                        unidade = plano.periodicidade.unidade.nome
+                        # Calcula a data prevista
+                        dta_prevista = ordem_antiga.data_futura(tempo, unidade)
+
+                        # insere as informações da ordem de serviço do novo plano
+                        form_os = OrdemServicoForm()
+                        ordem_nova = OrdemServico()
+
+                        form_os.descricao.data = ordem_antiga.descricao
+                        form_os.tipo.data = ordem_antiga.tipoordem_id
+                        form_os.equipamento.data = ordem_antiga.equipamento_id
+                        ordem_nova.planomanutencao_id = ordem_antiga.id
+                        ordem_nova.alterar_atributos(form_os, True, dta_prevista)
+
+                        # salva a nova ordem de serviço
+                        if ordem_nova.salvar():
+                            flash("Ordem de Serviço Cadastrado", category="success")
+                        else:
+                            flash("Ordem de Serviço não Cadastrado", category="success")
+
         else:
             flash("Tramitação não cadastrado", category="danger")
     else:

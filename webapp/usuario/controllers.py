@@ -1,6 +1,7 @@
 from flask import (render_template, Blueprint, redirect, url_for, flash)
 from flask_login import login_user, logout_user, current_user, login_required
 from webapp.usuario.models import Senha, Usuario, Perfil, Telaperfil
+from webapp.empresa.models import Empresa
 from webapp.contrato.models import Telacontrato
 from .forms import LoginForm, AlterarSenhaForm, SolicitarNovaSenhaForm, AlterarSenhaTokenForm, \
     AlterarEmailForm, EditarUsuarioForm, PerfilForm, TelaPerfilForm
@@ -254,17 +255,27 @@ def usuario_editar(usuario_id):
     if usuario_id > 0:  # se o identificador foi passado com parâmetro
         # --------- ATUALIZAR
         # instância um usuário com base no identificador
-        usuario = Usuario.query.filter_by(id=usuario_id).one_or_none()
-        # instância um formulário com as informações do usuário
-        form = EditarUsuarioForm(obj=usuario)
-        new = False  # não é um usuário novo
-        form.id.data = usuario_id
+        usuario = Usuario.query.filter(
+            current_user.empresa_id == Empresa.id,
+            Empresa.id == Usuario.empresa_id,
+            Usuario.id == usuario_id
+        ).one_or_none()
 
-        # --------- ATUALIZAR/LER OS DADOS
-        if form.perfil.data:
-            r_d = form.perfil.data
+        # verifica se o usuario existe
+        if usuario:
+            # instância um formulário com as informações do usuário
+            form = EditarUsuarioForm(obj=usuario)
+            new = False  # não é um usuário novo
+            form.id.data = usuario_id
+
+            # --------- ATUALIZAR/LER OS DADOS
+            if form.perfil.data:
+                r_d = form.perfil.data
+            else:
+                r_d = usuario.perfil_id
         else:
-            r_d = usuario.perfil_id
+            flash("Usuário não localizado", category="danger")
+            return redirect(url_for("usuario.usuario_listar"))
 
     else:
         # --------- CADASTRAR
@@ -328,9 +339,20 @@ def perfil_listar():
 def perfil_editar(perfil_id):
     if perfil_id > 0:
         # Atualizar
-        perfil = Perfil.query.filter_by(id=perfil_id).first()
-        form = PerfilForm(obj=perfil)
-        new = False
+        perfil = Perfil.query.filter(
+            current_user.empresa_id == Empresa.id,
+            Empresa.id == Perfil.empresa_id,
+            Perfil.id == perfil_id
+        ).one_or_none()
+
+        # verifica se o perfil existe
+        if perfil:
+            form = PerfilForm(obj=perfil)
+            new = False
+        else:
+            flash("Perfil não localizado", category="danger")
+            return redirect(url_for("usuario.perfil_listar"))
+
     else:
         # Cadastrar
         perfil = Perfil()

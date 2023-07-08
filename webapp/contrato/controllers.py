@@ -31,24 +31,31 @@ def contrato_listar() -> str:
 @has_view('Contrato')
 def contrato_editar(contrato_id: int):
     """    Função que cadastra ou atualiza um contrato de assinatura    """
-    if contrato_id == 0:
+
+    if contrato_id > 0:
+        new = False
+        # --------- ATUALIZAR
+        # gera uma consulta dos planos cadastrados no banco de dados
+        contrato = Contrato.query.filter_by(id=contrato_id).first()
+
+        if contrato:
+            # inclui a consulta para dentro do formulário
+            form = ContratoForm(obj=contrato)
+
+            # --------- ATUALIZAR AS LISTAS DO FORMULÁRIO
+            # consulta das telas para o contrato existente
+            form.tela.choices = [(telasplano.id, telasplano.contrato.nome) for telasplano
+                                 in Telacontrato.query.filter_by(contrato_id=contrato_id).all()]
+        else:
+            flash("Contrato não localizado", category="danger")
+            return redirect(url_for("contrato.contrato_listar"))
+
+    else:
         # --------- CADASTRAR
         contrato = Contrato()  # instancia um novo contrato
         contrato.id = 0  # atribui 0 para o id deste novo contrato
         form = ContratoForm()  # instância um novo formulário
         new = True
-    else:
-        new = False
-        # --------- ATUALIZAR
-        # gera uma consulta dos planos cadastrados no banco de dados
-        contrato = Contrato.query.filter_by(id=contrato_id).first()
-        # inclui a consulta para dentro do formulário
-        form = ContratoForm(obj=contrato)
-
-        # --------- ATUALIZAR AS LISTAS DO FORMULÁRIO
-        # consulta das telas para o contrato existente
-        form.tela.choices = [(telasplano.id, telasplano.contrato.nome) for telasplano
-                             in Telacontrato.query.filter_by(contrato_id=contrato_id).all()]
 
     # --------- VALIDAÇÕES E AÇÕES
     # válida as informações do formulário

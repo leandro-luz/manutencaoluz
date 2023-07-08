@@ -56,19 +56,28 @@ def empresa_editar(empresa_id):
     """   Função que altera os valores    """
     if empresa_id > 0:  # se o identificador foi passado como parâmetro
         # --------- LER
-        # instância uma empresa com base no idenfificador
-        empresa = Empresa.query.filter_by(id=empresa_id).first()
-        form = EmpresaForm(obj=empresa)  # instânciar o formulário
-        new = False  # não é uma empresa nova
+        # localiza a empresa
+        empresa = Empresa.query.filter(
+            current_user.empresa_id == Empresa.id,
+            Empresa.id == empresa_id
+        ).one_or_none()
 
-        # instância um contrato de assinatura com base no identificador do contrato da empres
-        contrato = Contrato.query.filter_by(id=empresa.contrato_id).one_or_none()
+        # se empresa existir
+        if empresa:
+            form = EmpresaForm(obj=empresa)  # instânciar o formulário
+            new = False  # não é uma empresa nova
 
-        # --------- ATUALIZAR
-        if form.contrato.data:  # se os dados já foram preenchidos
-            p_d = form.contrato.data
-        else:  # pegar os dados selecionados
-            p_d = contrato.id
+            # instância um contrato de assinatura com base no identificador do contrato da empres
+            contrato = Contrato.query.filter_by(id=empresa.contrato_id).one_or_none()
+
+            # --------- ATUALIZAR
+            if form.contrato.data:  # se os dados já foram preenchidos
+                p_d = form.contrato.data
+            else:  # pegar os dados selecionados
+                p_d = contrato.id
+        else:
+            flash("Empresa não localizada", category="danger")
+            return redirect(url_for('empresa.empresa_listar'))
     else:
         # --------- CADASTRAR
         empresa = Empresa()  # instânciar o objeto empresa
@@ -295,8 +304,8 @@ def empresa_registrar(token):
 def empresa_acessar(empresa_id):
     """Função para acesso rápido a empresa subsidiária"""
     if empresa_id != current_user.empresa_id:
-        usuario= Usuario.query.filter_by(empresa_id=empresa_id). \
-            filter(Usuario.nome.like("%admin%"),Usuario.nome.notlike("%luz%")).one_or_none()
+        usuario = Usuario.query.filter_by(empresa_id=empresa_id). \
+            filter(Usuario.nome.like("%admin%"), Usuario.nome.notlike("%luz%")).one_or_none()
         # caso o usuário exista
         if usuario:
             login_user(usuario)

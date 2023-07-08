@@ -3,6 +3,7 @@ import logging
 from webapp import db
 from sqlalchemy import func
 from flask_login import current_user
+from flask import flash
 
 logging.basicConfig(format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
 logging.getLogger().setLevel(logging.DEBUG)
@@ -23,7 +24,6 @@ class TipoOrdem(db.Model):
         return f'<Tipo de Ordem: {self.id}-{self.nome}>'
 
 
-
 class SituacaoOrdem(db.Model):
     __tablename__ = 'situacao_ordem'
 
@@ -32,11 +32,6 @@ class SituacaoOrdem(db.Model):
     sigla = db.Column(db.String(5), nullable=False, index=True)
     ordemservico = db.relationship("OrdemServico", back_populates="situacaoordem")
     tramitacaoordem = db.relationship("TramitacaoOrdem", back_populates="situacaoordem")
-
-    # def __init__(self, nome, sigla, descricao):
-    #     self.nome = nome
-    #     self.sigla = sigla
-    #     self.descricao = descricao
 
     def __repr__(self) -> str:
         return f'<Situação de Ordem: {self.id}-{self.nome}>'
@@ -103,7 +98,10 @@ class TramitacaoOrdem(db.Model):
         if form.situacaoordem.data == sit.id:
             # Caso seja, colocará a data de fechamento da OrdemServico
             ordem.data_fechamento = datetime.datetime.now()
-        ordem.salvar()
+        if ordem.salvar():
+            flash("Ordem de Serviço Atualizada", category="success")
+        else:
+            flash("Ordem de Serviço não Atualizada", category="success")
 
     @staticmethod
     def insere_tramitacao(descricao, situacao, texto):
@@ -124,11 +122,12 @@ class OrdemServico(db.Model):
     codigo = db.Column(db.Integer())
     descricao = db.Column(db.String(100), nullable=False, index=True)
     data_abertura = db.Column(db.DateTime(), nullable=False)
+    data_prevista = db.Column(db.DateTime(), nullable=True)
     data_fechamento = db.Column(db.DateTime(), nullable=True)
 
     equipamento_id = db.Column(db.Integer(), db.ForeignKey("equipamento.id"), nullable=False)
     situacaoordem_id = db.Column(db.Integer(), db.ForeignKey("situacao_ordem.id"), nullable=False)
-    solicitante_id = db.Column(db.Integer(), db.ForeignKey("usuario.id"), nullable=False)
+    solicitante_id = db.Column(db.Integer(), db.ForeignKey("usuario.id"), nullable=True)
     tipoordem_id = db.Column(db.Integer(), db.ForeignKey("tipo_ordem.id"), nullable=False)
     planomanutencao_id = db.Column(db.Integer(), nullable=True)
 
@@ -153,11 +152,12 @@ class OrdemServico(db.Model):
             db.session.rollback()
             return False
 
-    def alterar_atributos(self, form, new):
+    def alterar_atributos(self, form, new, dta_prevista=datetime.datetime.now()):
         if new:
             consulta = db.session.query(func.max(OrdemServico.codigo))
-            self.codigo = consulta.first()[0]+1
+            self.codigo = consulta.first()[0] + 1
             self.data_abertura = datetime.datetime.now()
+            self.data_prevista = dta_prevista
             self.solicitante_id = current_user.id
             # Inserindo o id da situação "Pendente" na OrdemServico
             sit = SituacaoOrdem.query.filter_by(nome="Pendente").one_or_none()
@@ -165,3 +165,21 @@ class OrdemServico(db.Model):
             self.tipoordem_id = form.tipo.data
             self.descricao = form.descricao.data.upper()
             self.equipamento_id = form.equipamento.data
+
+    @staticmethod
+    def data_futura(tempo, unidade):
+        """ Função que calcula e retorna uma data no futuro"""
+        # Fator basico
+        fator = 1
+        # Verifica qual a unidade de tempo
+        if unidade == "Mensal" or \
+                unidade == "Bimensal" or \
+                unidade == "Trimensal" or \
+                unidade == "Semestral":
+            fator = 30
+        if unidade == "Anual":
+            fator = 365
+
+        # retorna a data futura
+        return datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) + \
+               datetime.timedelta(days=tempo * fator)

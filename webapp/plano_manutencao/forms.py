@@ -1,3 +1,5 @@
+import datetime
+
 from flask_wtf import FlaskForm as Form
 from wtforms import IntegerField, StringField, DateField, BooleanField, SubmitField, SelectField, FileField
 from wtforms.validators import InputRequired, Length, Optional
@@ -35,6 +37,9 @@ class PlanoForm(Form):
                 return False
             elif self.tipoordem.data == 0:
                 flash("Tipo de Ordem de Serviço não informado", category="danger")
+                return False
+            elif datetime.datetime.combine(self.data_inicio.data, datetime.time(0, 0)) < datetime.datetime.now():
+                flash("A data de início não pode ser retroativa", category="danger")
                 return False
             else:
                 return True

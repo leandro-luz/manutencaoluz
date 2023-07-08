@@ -1,6 +1,6 @@
 
 # from dotenv import dotenv_values
-
+import datetime
 import os
 
 # using SendGrid's Python Library
@@ -26,8 +26,34 @@ from sendgrid.helpers.mail import Mail
 
 
 # print(environ.get('SENDGRID_API_KEY'))
-for a in os.environ:
-    print(a)
+# for a in os.environ:
+#     print(a)
 
 # config = dotenv_values("sendgrid.env", encoding="utf-8")
 # print(config)
+
+
+
+def data_futura(tempo, unidade):
+    """ Função que calcula e retorna uma data no futuro"""
+    # Fator basico
+    fator = 1
+    # Verifica qual a unidade de tempo
+    if unidade == "Mensal" or  \
+            unidade == "Bimensal" or  \
+            unidade == "Trimensal" or  \
+            unidade == "Semestral":
+        fator = 30
+    if unidade == "Anual":
+        fator  = 365
+
+    # retorna a data futura
+    return datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) + \
+           datetime.timedelta(days=tempo * fator)
+
+print(data_futura(7, "Semanal"))
+print(data_futura(1, "Mensal"))
+print(data_futura(2, "Bimensal"))
+print(data_futura(3, "Trimensal"))
+print(data_futura(6, "Semestral"))
+print(data_futura(1, "Anual"))

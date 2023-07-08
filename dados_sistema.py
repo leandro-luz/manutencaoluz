@@ -21,10 +21,10 @@ logging.basicConfig(format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
 logging.getLogger().setLevel(logging.DEBUG)
 log = logging.getLogger(__name__)
 
-print("Exluindo todas as tabelas")
-db.drop_all()
-print("Criando todas as tabelas")
-db.create_all()
+# print("Exluindo todas as tabelas")
+# db.drop_all()
+# print("Criando todas as tabelas")
+# db.create_all()
 
 telas_lista = [
     {'nome': 'Interessado', 'icon': 'bi-card-list', 'url': 'empresa.interessado_listar'},

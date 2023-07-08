@@ -36,8 +36,16 @@ def equipamento_listar():
 def equipamento_editar(equipamento_id):
     if equipamento_id > 0:
         # Atualizar
-        equipamento = Equipamento.query.filter_by(id=equipamento_id).one_or_none()
+        # localiza a empresa do equipamento
+        equipamento = Equipamento.query.filter(
+            current_user.empresa_id == Empresa.id,
+            Empresa.id == Grupo.empresa_id,
+            Grupo.id == Subgrupo.grupo_id,
+            Subgrupo.id == Equipamento.subgrupo_id,
+            Equipamento.id == equipamento_id
+        ).one_or_none()
 
+        # verifica se o equipamento existe e se pertence a empresa do usuário
         if equipamento:
             form = EquipamentoForm(obj=equipamento)
             # Atualizar ou Ler dados
@@ -194,8 +202,14 @@ def grupo_listar(subgrupo_id, equipamento_id):
 def grupo_editar(grupo_id, subgrupo_id, equipamento_id):
     if grupo_id > 0:
         # Atualizar
-        grupo = Grupo.query.filter_by(id=grupo_id).first()
+        # localiza a empresa do grupo
+        grupo = Grupo.query.filter(
+            current_user.empresa_id == Empresa.id,
+            Empresa.id == Grupo.empresa_id,
+            Grupo.id == grupo_id
+        ).one_or_none()
 
+        # verifica se o grupo existe e se pertence a empresa do usuario logado
         if grupo:
             form = GrupoForm(obj=grupo)
         else:
@@ -226,7 +240,8 @@ def grupo_editar(grupo_id, subgrupo_id, equipamento_id):
                            equipamento_id=equipamento_id)
 
 
-@equipamento_blueprint.route('/grupo_ativar/<int:grupo_id>//<int:subgrupo_id>//<int:equipamento_id>', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/grupo_ativar/<int:grupo_id>//<int:subgrupo_id>//<int:equipamento_id>',
+                             methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
 def grupo_ativar(grupo_id, subgrupo_id, equipamento_id):
@@ -286,8 +301,15 @@ def subgrupo_listar(equipamento_id):
 def subgrupo_editar(subgrupo_id, equipamento_id):
     if subgrupo_id > 0:
         # Atualizar
-        subgrupo = Subgrupo.query.filter_by(id=subgrupo_id).first()
+        # localiza a empresa do equipamento
+        subgrupo = Subgrupo.query.filter(
+            current_user.empresa_id == Empresa.id,
+            Empresa.id == Grupo.empresa_id,
+            Grupo.id == Subgrupo.grupo_id,
+            Subgrupo.id == subgrupo_id
+        ).one_or_none()
 
+        # verifica se o subgrupo existe
         if subgrupo:
             form = SubgrupoForm(obj=subgrupo)
 
