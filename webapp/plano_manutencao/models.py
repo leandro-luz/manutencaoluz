@@ -1,6 +1,7 @@
 import logging
 from webapp import db
 from flask_login import current_user
+
 logging.basicConfig(format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
 logging.getLogger().setLevel(logging.DEBUG)
 log = logging.getLogger(__name__)
@@ -50,8 +51,16 @@ class Periodicidade(db.Model):
 
 
 class PlanoManutencao(db.Model):
-    __tablename__ = 'plano_manutencao'
     """    Classe de Plano de Manutenção   """
+
+    nome_doc = 'padrão_plano_manutenção'
+    # titulos para cadastro
+    titulos_doc = {'Nome*': 'nome', 'Código*': 'codigo', 'Tipo_Ordem*': 'tipoordem_id',
+                   'Tipo_Data_Inicial*': 'tipodata_id', 'Data_Início*': 'data_inicio',
+                   'Periodicidade*': 'periodicidade_id', 'Equipamento_cod*': 'equipamento_id'}
+
+    __tablename__ = 'plano_manutencao'
+
     id = db.Column(db.Integer(), primary_key=True)
     nome = db.Column(db.String(50), nullable=False, index=True)
     codigo = db.Column(db.String(50), nullable=False, index=True)
@@ -61,7 +70,7 @@ class PlanoManutencao(db.Model):
     tipodata_id = db.Column(db.Integer(), db.ForeignKey("tipo_data.id"), nullable=False)
     periodicidade_id = db.Column(db.Integer(), db.ForeignKey("periodicidade.id"), nullable=False)
     equipamento_id = db.Column(db.Integer(), db.ForeignKey("equipamento.id"), nullable=False)
-    empresa_id = db.Column(db.Integer(), nullable=False)
+    # empresa_id = db.Column(db.Integer(), nullable=False)
     tipoordem_id = db.Column(db.Integer(), db.ForeignKey("tipo_ordem.id"), nullable=False)
 
     tipodata = db.relationship("TipoData", back_populates="planomanutencao")
@@ -82,7 +91,7 @@ class PlanoManutencao(db.Model):
         self.periodicidade_id = form.periodicidade.data
         self.equipamento_id = form.equipamento.data
         self.data_inicio = form.data_inicio.data
-        self.empresa_id = current_user.empresa_id
+        # self.empresa_id = current_user.empresa_id
 
     def alterar_ativo(self, ativo):
         self.ativo = ativo
@@ -104,3 +113,14 @@ class PlanoManutencao(db.Model):
             log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
             db.session.rollback()
             return False
+
+    @staticmethod
+    def salvar_lote(lote):
+        try:
+            db.session.add_all(lote)
+            db.session.commit()
+            return True
+        except Exception as e:
+            log.error(f'Erro salvar ao tentar salvar o lote:{e}')
+            db.session.rollback()
+        return False

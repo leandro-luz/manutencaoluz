@@ -6,10 +6,10 @@ import random
 from flask import flash
 from webapp.usuario import bcrypt, AnonymousUserMixin, jwt
 from webapp import db
-from webapp.contrato.models import Tela
+from webapp.contrato.models import Tela, Telacontrato
+from flask_login import current_user
 from flask_jwt_extended import create_access_token, get_jwt_identity
 from webapp.utils.tools import password_random
-
 
 logging.basicConfig(format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
 logging.getLogger().setLevel(logging.DEBUG)
@@ -18,6 +18,12 @@ log = logging.getLogger(__name__)
 
 class Perfil(db.Model):
     """    Classe do perfil de acesso    """
+
+    # nome do arquivo para cadastro em lote
+    nome_doc = 'padrão_perfis'
+    # titulos para cadastro
+    titulos_doc = {'Nome*': 'nome', 'Descrição': 'descricao', 'Ativo': 'ativo'}
+
     __tablename__ = 'perfil'
     id = db.Column(db.Integer(), primary_key=True)
     nome = db.Column(db.String(50), unique=False, index=True)
@@ -38,11 +44,24 @@ class Perfil(db.Model):
         else:
             self.ativo = True
 
-    def salvar(self) -> bool:
+    def salvar(self, new) -> bool:
         """    Função para salvar no banco de dados o objeto"""
         try:
+            nome = self.nome
             db.session.add(self)
             db.session.commit()
+            if new:
+                perfil_ = Perfil.query.filter_by(nome=nome, empresa_id=current_user.empresa.id).one_or_none()
+                telascontrato = Telacontrato.query.filter_by(contrato_id=current_user.empresa.contrato.id).all()
+
+                for telacontrato in telascontrato:
+                    telaperfil = Telaperfil()
+                    telaperfil.ativo = False
+                    telaperfil.perfil_id = perfil_.id
+                    telaperfil.tela_id = telacontrato.tela_id
+                    if not telaperfil.salvar():
+                        flash("Tela do perfil não cadastrado", category="danger")
+
             return True
         except Exception as e:
             log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
@@ -97,7 +116,7 @@ class Senha(db.Model):
         # self.senha = bcrypt.generate_password_hash(senha)
         self.alterar_senha(form.senha.data)
         self.alterar_senha_temporaria(False)
-        self.contador_acesso_temporario = 0
+        # self.contador_acesso_temporario = 0
         self.alterar_data_expiracao()
 
     def salvar(self) -> bool:
@@ -134,14 +153,19 @@ class Senha(db.Model):
 
 
 class Usuario(db.Model):
-    __tablename__ = 'usuario'
+    """ Classe de usuário    """
+    # nome do arquivo para cadastro em lote
+    nome_doc = 'padrão_usuarios'
+    # titulos para cadastro
+    titulos_doc = {'Nome*': 'nome', 'Email*': 'email', 'Perfil*': 'perfil_id'}
 
+    __tablename__ = 'usuario'
     id = db.Column(db.Integer(), primary_key=True)
     nome = db.Column(db.String(50), nullable=False, index=True, unique=True)
     email = db.Column(db.String(50), nullable=False, unique=False)
     data_assinatura = db.Column(db.DateTime(), nullable=True)
     data_ultima_entrada = db.Column(db.DateTime(), nullable=True)
-    ativo = db.Column(db.Boolean, nullable=False, default=False)
+    ativo = db.Column(db.Boolean, nullable=False, default=True)
 
     perfil_id = db.Column(db.Integer(), db.ForeignKey("perfil.id"), nullable=False)
     empresa_id = db.Column(db.Integer(), db.ForeignKey("empresa.id"), nullable=False)
@@ -176,6 +200,17 @@ class Usuario(db.Model):
             log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
             db.session.rollback()
             return False
+
+    @staticmethod
+    def salvar_lote(lote):
+        try:
+            db.session.add_all(lote)
+            db.session.commit()
+            return True
+        except Exception as e:
+            log.error(f'Erro salvar ao tentar salvar o lote:{e}')
+            db.session.rollback()
+        return False
 
     # # @cache.memoize(60)
     def tela_permitida(self, nome: str) -> bool:

@@ -1,11 +1,13 @@
 import re
 from flask import flash
 from flask_wtf import FlaskForm as Form
-from wtforms import StringField, IntegerField, SelectField, BooleanField, SubmitField, ValidationError, DateField
-from wtforms.validators import InputRequired, Length, Email, NumberRange
+from wtforms import StringField, IntegerField, SelectField, BooleanField, SubmitField, ValidationError, DateField, \
+    FileField
+from wtforms.validators import InputRequired, Length, Email, NumberRange, Optional
 
 from webapp.empresa.models import Interessado, Empresa
 from datetime import datetime
+
 
 def cnpj_validate(form, field):
     if not re.match(r"([0-9]{2}[.]?[0-9]{3}[.]?[0-9]{3}[/]?[0-9]{4}[-]?[0-9]{2})", field.data):
@@ -24,24 +26,27 @@ class EmpresaForm(Form):
                         render_kw={"placeholder": "email@dominio.com"})
     telefone = StringField('Telefone', validators=[InputRequired()],
                            render_kw={"placeholder": "(xx)x xxxx-xxxx"})
-    cep = StringField('Cep', validators=[InputRequired(), Length(min=8, max=10, message="O CEP está no formato errado")],
+    cep = StringField('Cep',
+                      validators=[InputRequired(), Length(min=8, max=10, message="O CEP está no formato errado")],
                       render_kw={"placeholder": "xxxxxxxxx"})
     numero = IntegerField('Número', validators=[InputRequired(), NumberRange(min=0)],
                           render_kw={"placeholder": "Digite o número"})
     complemento = StringField('Complemento', render_kw={"placeholder": "Digite o complemento"})
     logradouro = StringField('Logradouro', validators=[InputRequired()],
                              render_kw={"placeholder": "Digite o logradouro"})
-    bairro = StringField('Bairro', validators=[InputRequired()],  render_kw={"placeholder": "Digite o bairro"})
-    municipio = StringField('Município', validators=[InputRequired()],  render_kw={"placeholder": "Digite o município"})
-    uf = StringField('UF', validators=[InputRequired()],  render_kw={"placeholder": "Digite o UF"})
+    bairro = StringField('Bairro', validators=[InputRequired()], render_kw={"placeholder": "Digite o bairro"})
+    municipio = StringField('Município', validators=[InputRequired()], render_kw={"placeholder": "Digite o município"})
+    uf = StringField('UF', validators=[InputRequired()], render_kw={"placeholder": "Digite o UF"})
     localizacao = StringField('Localização', render_kw={"placeholder": "Digite as coordenadas"})
 
     ativo = BooleanField('Ativo')
 
-    nome_fantasia = StringField('Nome Fantasia', validators=[InputRequired()], render_kw={"placeholder": "Digite o nome fantasia"})
-    data_abertura = DateField('Data de Abertura', format='%Y-%m-%d', validators=[InputRequired()], render_kw={"placeholder": "Digite de criação do cnpj"})
+    nome_fantasia = StringField('Nome Fantasia', validators=[InputRequired()],
+                                render_kw={"placeholder": "Digite o nome fantasia"})
+    data_abertura = DateField('Data de Abertura', format='%Y-%m-%d', validators=[InputRequired()],
+                              render_kw={"placeholder": "Digite de criação do cnpj"})
     situacao = StringField('Situação', render_kw={"placeholder": "Digite a situação do cnpj"})
-    tipo = StringField('Tipo',  validators=[InputRequired()], render_kw={"placeholder": "Matriz/Filial"})
+    tipo = StringField('Tipo', validators=[InputRequired()], render_kw={"placeholder": "Matriz/Filial"})
     nome_responsavel = StringField('Nome do Responsável', render_kw={"placeholder": "Digite o nome do responsável"})
     porte = StringField('Porte', render_kw={"placeholder": "Digite o porte da empresa"})
     natureza_juridica = StringField('Natureza Jurídica', render_kw={"placeholder": "Digite a natureza jurídica"})
@@ -51,9 +56,11 @@ class EmpresaForm(Form):
     inscricao_estadual = StringField('Inscrição Estadual', render_kw={"placeholder": "Digite a inscrição estadual"})
     inscricao_municipal = StringField('Inscrição Municipal', render_kw={"placeholder": "Digite a inscrição municipal"})
 
-
-    contrato = SelectField('Contrato', choices=[], validate_choice=False, coerce=int)
+    contrato = SelectField('Contrato', choices=[], validators=[InputRequired()], coerce=int)
     enviar_email = BooleanField('Enviar Email?')
+
+    file = FileField('Escolha um arquivo para o cadastro de empresas em Lote (4MB):', validators=[Optional()],
+                     render_kw={"placeholder": "Selecione o arquivo"})
 
     submit = SubmitField("Cadastrar")
 
@@ -67,7 +74,8 @@ class EmpresaForm(Form):
         if check_validate:
             # verifica se existe empresa com o mesmo razao_social, ignorando a empresa repassada(se <> 0)
             if empresa:
-                empresa = Empresa.query.filter(Empresa.id != empresa.id, Empresa.razao_social == self.razao_social.data).one_or_none()
+                empresa = Empresa.query.filter(Empresa.id != empresa.id,
+                                               Empresa.razao_social == self.razao_social.data).one_or_none()
             else:
                 empresa = Empresa.query.filter(Empresa.razao_social == self.razao_social.data).one_or_none()
 
@@ -124,9 +132,9 @@ class EmpresaSimplesForm(Form):
     complemento = StringField('Complemento', render_kw={"placeholder": "Digite o complemento"})
     logradouro = StringField('Logradouro', validators=[InputRequired()],
                              render_kw={"placeholder": "Digite o logradouro"})
-    bairro = StringField('Bairro', validators=[InputRequired()],  render_kw={"placeholder": "Digite o bairro"})
-    municipio = StringField('Município', validators=[InputRequired()],  render_kw={"placeholder": "Digite o município"})
-    uf = StringField('UF', validators=[InputRequired()],  render_kw={"placeholder": "Digite o UF"})
+    bairro = StringField('Bairro', validators=[InputRequired()], render_kw={"placeholder": "Digite o bairro"})
+    municipio = StringField('Município', validators=[InputRequired()], render_kw={"placeholder": "Digite o município"})
+    uf = StringField('UF', validators=[InputRequired()], render_kw={"placeholder": "Digite o UF"})
     email = StringField('Email', validators=[InputRequired(), Email()],
                         render_kw={"placeholder": "email@dominio.com"})
     telefone = StringField('Telefone', validators=[InputRequired()],
@@ -145,7 +153,8 @@ class EmpresaSimplesForm(Form):
         if check_validate:
             # verifica se existe empresa com o mesmo razao_social, ignorando a empresa repassada(se <> 0)
             if empresa:
-                empresa = Empresa.query.filter(Empresa.id != empresa.id, Empresa.razao_social == self.nome_fantasia.data).one_or_none()
+                empresa = Empresa.query.filter(Empresa.id != empresa.id,
+                                               Empresa.razao_social == self.nome_fantasia.data).one_or_none()
             else:
                 empresa = Empresa.query.filter(Empresa.razao_social == self.nome_fantasia.data).one_or_none()
 
@@ -185,7 +194,8 @@ class EmpresaSimplesForm(Form):
 
 
 class RegistroInteressadoForm(Form):
-    nome_fantasia = StringField('Nome Fantasia', [InputRequired(), Length(max=50)], render_kw={"placeholder": "Digite a Razão Social da empresa"})
+    nome_fantasia = StringField('Nome Fantasia', [InputRequired(), Length(max=50)],
+                                render_kw={"placeholder": "Digite a Razão Social da empresa"})
     cnpj = StringField('Cnpj', validators=[InputRequired(), Length(min=18, max=18), cnpj_validate],
                        render_kw={"placeholder": "00.000.000/0000-00"})
     email = StringField('Email', [InputRequired(), Email()],

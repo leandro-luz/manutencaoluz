@@ -1,51 +1,56 @@
 {% extends "sistema_base.html" %}
 {% block body %}
-    <body>
+<body>
 
-    <h2> INTERESSADOS </h2>
+<h2> INTERESSADOS </h2>
 
-    <input class="form-control" id="myInput" type="text" placeholder="Filtrar.."><br>
+<input class="form-control" id="myInput" placeholder="Filtrar.." type="text"><br>
+<button onclick="exportar_lista('interessados.csv', 1)" type="button"> Exportar Lista</button>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th scope="col">CNPJ</th>
-                <th scope="col">NOME_FANTASIA</th>
-                <th scope="col">EMAIL</th>
-                <th scope="col">TELEFONE</th>
-                <th scope="col">DATA SOLICITAÇÃO</th>
-                <th scope="col">DATA CADASTRO</th>
-                <th scope="col"></th>
-            </tr>
-        </thead>
+<table class="table">
+    <thead>
+    <tr>
+        <th scope="col">CNPJ</th>
+        <th scope="col">NOME_FANTASIA</th>
+        <th scope="col">EMAIL</th>
+        <th scope="col">TELEFONE</th>
+        <th scope="col">DATA SOLICITAÇÃO</th>
+        <th scope="col">DATA CADASTRO</th>
+        <th scope="col"></th>
+    </tr>
+    </thead>
 
-        <tbody id="myTable">
-            {% for interessado in interessados %}
-                <tr>
-                    <th scope="row">{{ interessado.cnpj }}</th>
-                    <td>{{ interessado.nome_fantasia }}</td>
-                    <td>{{ interessado.email }}</td>
-                    <td>{{ interessado.telefone }}</td>
-                    <td>{{ interessado.data_solicitacao }}</td>
-                    <td>{{ interessado.data_cadastro }}</td>
+    <tbody id="myTable">
+    {% for interessado in interessados %}
+    <tr>
+        <th scope="row">{{ interessado.cnpj }}</th>
+        <td>{{ interessado.nome_fantasia }}</td>
+        <td>{{ interessado.email }}</td>
+        <td>{{ interessado.telefone }}</td>
+        <td>{{ interessado.data_solicitacao }}</td>
+        <td>{{ interessado.data_cadastro }}</td>
 
-                    {% if interessado.data_cadastro == None %}
-                        <td>
-                            <a href="{{ url_for('empresa.enviar_link', interessado_id=interessado.id) }}">
+        {% if interessado.data_cadastro == None %}
+        <td>
+            <a href="{{ url_for('empresa.enviar_link', interessado_id=interessado.id) }}">
                                 <span data-tooltip="Enviar Link">
                                     <i class="bi-caret-right fs-6"></i>
                                 </span>
-                            </a>
-                        </td>
-                     {% endif %}
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </a>
+        </td>
+        {% endif %}
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
 
-    <a href="{{url_for('sistema.index')}}">Voltar</a>
+<a href="{{url_for('sistema.index')}}">Voltar</a>
+<br>
 
-    </body>
 
-<script type="text/javascript" src="/static/js/filtro_coluna.js"></script>
+</body>
+<script src="/static/js/exportar_consulta.js" type="text/javascript"></script>
+<script src="/static/js/filtro_coluna.js" type="text/javascript"></script>
+
+
 {% endblock %}

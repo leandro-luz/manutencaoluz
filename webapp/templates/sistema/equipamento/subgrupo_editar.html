@@ -1,34 +1,52 @@
 {% extends "sistema_base.html" %}
 {% block body %}
-    <body>
-        <form action="{{ url_for('equipamento.subgrupo_editar', subgrupo_id=subgrupo.id, equipamento_id=equipamento_id) }}" method="POST">
-            {{form.csrf_token}}
+<body>
+<form action="{{ url_for('equipamento.subgrupo_editar', subgrupo_id=subgrupo.id, equipamento_id=equipamento_id) }}"
+      method="POST">
+    {{form.csrf_token}}
 
-            {% if subgrupo.id == 0 %}
-                <h2>Cadastro de Subgrupo </h2>
-            {% else %}
-                <h2>Subgrupo</h2>
-            {% endif %}
+    {% if subgrupo.id == 0 %}
+    <h2>Cadastro de Subgrupo </h2>
+    {% else %}
+    <h2>Subgrupo</h2>
+    {% endif %}
 
-            {{form.nome.label}}    {{form.nome(size=80)}}<br>
-            {{form.grupo.label}}    {{form.grupo }}
-            <a href="{{ url_for('equipamento.grupo_listar',subgrupo_id=subgrupo_id, equipamento_id=equipamento_id) }}">
+    {{form.nome.label}} {{form.nome(size=80)}}<br>
+    {{form.grupo.label}} {{form.grupo }}
+    <a href="{{ url_for('equipamento.grupo_listar',subgrupo_id=subgrupo_id, equipamento_id=equipamento_id) }}">
                 <span data-tooltip="Atualizar">
                     <i class="bi-caret-down fs-6"></i>
                 </span>
-            </a> <br>
+    </a> <br>
 
-            {{form.ativo.label}}    {{form.ativo(size=20)}}<br>
+    {{form.ativo.label}} {{form.ativo(size=20)}}<br>
 
-            {% if subgrupo.id == 0 %}
-                <input type="submit" value="Cadastrar"/>
-            {% else %}
-                <input type="submit" value="Atualizar"/>
-            {% endif %}
+    {% if subgrupo.id == 0 %}
+    <input type="submit" value="Cadastrar"/>
+    {% else %}
+    <input type="submit" value="Atualizar"/>
+    {% endif %}
 
-        </form>
+</form>
 
-    <a href="{{ url_for('equipamento.subgrupo_listar', equipamento_id=equipamento_id) }}">Voltar</a>
+{% if subgrupo.id == 0 %}
+<br>
+<br>
+<form action="{{ url_for('equipamento.cadastrar_lote_subgrupos', equipamento_id=equipamento_id) }}"
+      enctype="multipart/form-data"
+      method="POST">
+    {{ form.file.label }} {{ form.file }}
+    <input type="submit" value="Cadastrar"/>
+</form>
 
-    </body>
+<a href="{{ url_for('equipamento.gerar_padrao_subgrupos', equipamento_id=equipamento_id) }}">Gerar
+    Arquivo Base</a>
+<br>
+<br>
+{% endif %}
+
+
+<a href="{{ url_for('equipamento.subgrupo_listar', equipamento_id=equipamento_id) }}">Voltar</a>
+
+</body>
 {% endblock %}

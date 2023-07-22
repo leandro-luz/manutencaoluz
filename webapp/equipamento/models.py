@@ -9,6 +9,11 @@ log = logging.getLogger(__name__)
 
 class Grupo(db.Model):
     """    Classe de grupo de ativos    """
+
+    nome_doc = 'padrão_grupo'
+    # titulos para cadastro
+    titulos_doc = {'Nome*': 'nome'}
+
     __tablename__ = 'grupo'
     id = db.Column(db.Integer(), primary_key=True)
     nome = db.Column(db.String(50), nullable=False, index=True)
@@ -44,9 +49,25 @@ class Grupo(db.Model):
             db.session.rollback()
             return False
 
+    @staticmethod
+    def salvar_lote(lote):
+        try:
+            db.session.add_all(lote)
+            db.session.commit()
+            return True
+        except Exception as e:
+            log.error(f'Erro salvar ao tentar salvar o lote:{e}')
+            db.session.rollback()
+        return False
+
 
 class Subgrupo(db.Model):
     """    Classe de sistemas nos ativos   """
+
+    nome_doc = 'padrão_subgrupo'
+    # titulos para cadastro
+    titulos_doc = {'Nome*': 'nome', 'Grupo*': 'grupo'}
+
     __tablename__ = 'subgrupo'
     id = db.Column(db.Integer(), primary_key=True)
     nome = db.Column(db.String(50), nullable=False, index=True)
@@ -82,18 +103,31 @@ class Subgrupo(db.Model):
             db.session.rollback()
             return False
 
+    @staticmethod
+    def salvar_lote(lote):
+        try:
+            db.session.add_all(lote)
+            db.session.commit()
+            return True
+        except Exception as e:
+            log.error(f'Erro salvar ao tentar salvar o lote:{e}')
+            db.session.rollback()
+        return False
+
 
 class Equipamento(db.Model):
     """    Classe do ativo    """
     # nome do arquivo para cadastro em lote
     nome_doc = 'padrão_equipamentos'
     # titulos para cadastro
-    titulos_doc = ['Código*', 'Descrição_Curta*', 'Tag*', 'Descrição_Longa', 'Fábrica', 'Marca', 'Modelo',
-                   'Número_Série', 'Largura', 'Comprimento', 'Altura', 'Peso', 'Potência', 'Tensão', 'Ano_Fabricação',
-                   'Data_Aquisição', 'Data_Instalação', 'Custo_Aquisição', 'Taxa_Depreciação',
-                   'Patrimônio', 'Localização', 'Centro_Custo', 'Grupo_Equipamentos', 'Sistema', 'Ativo']
-    # titulos obrigatórios
-    titulos_obg = ['Código*', 'Descrição_Curta*', 'Tag*']
+    titulos_doc = {'Código*': 'cod', 'Descrição_Curta*': 'descricao_curta', 'Tag*': 'tag',
+                   'Subgrupo*': 'subgrupo_id', 'Descrição_Longa': 'descricao_longa', 'Fábrica': 'fabricante',
+                   'Marca': 'marca', 'Modelo': 'modelo', 'Número_Série': 'ns', 'Largura': 'largura',
+                   'Comprimento': 'comprimento', 'Altura': 'altura', 'Peso': 'peso', 'Potência': 'potencia',
+                   'Tensão': 'tensao', 'Ano_Fabricação': 'data_fabricacao', 'Data_Aquisição': 'data_aquisicao',
+                   'Data_Instalação': 'data_instalacao', 'Custo_Aquisição': 'custo_aquisicao',
+                   'Taxa_Depreciação': 'depreciacao', 'Patrimônio': 'patrimonio', 'Localização': 'localizacao',
+                   'Latitude': 'latitude', 'Longitude': 'longitude', 'Centro_Custo': 'centro_custo', 'Ativo': 'ativo'}
 
     __tablename__ = 'equipamento'
     id = db.Column(db.Integer(), primary_key=True)
@@ -184,3 +218,14 @@ class Equipamento(db.Model):
             log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
             db.session.rollback()
             return False
+
+    @staticmethod
+    def salvar_lote(lote):
+        try:
+            db.session.add_all(lote)
+            db.session.commit()
+            return True
+        except Exception as e:
+            log.error(f'Erro salvar ao tentar salvar o lote:{e}')
+            db.session.rollback()
+        return False

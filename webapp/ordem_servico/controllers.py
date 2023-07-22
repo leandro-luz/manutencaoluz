@@ -144,30 +144,30 @@ def tramitacao(ordem_id):
             if situacao == "Concluída" or situacao == "Cancelada":
                 # Verifica se o plano está ativo
                 plano = PlanoManutencao.query.filter_by(id=ordem_antiga.planomanutencao_id).one_or_none()
-                if plano.ativo:
+                if plano:
+                    if plano.ativo:
+                        # Verifica o tipo_data
+                        if plano.tipodata.nome == "Data_Móvel":
+                            tempo = plano.periodicidade.tempo
+                            unidade = plano.periodicidade.unidade.nome
+                            # Calcula a data prevista
+                            dta_prevista = ordem_antiga.data_futura(tempo, unidade)
 
-                    # Verifica o tipo_data
-                    if plano.tipodata.nome == "Data_Móvel":
-                        tempo = plano.periodicidade.tempo
-                        unidade = plano.periodicidade.unidade.nome
-                        # Calcula a data prevista
-                        dta_prevista = ordem_antiga.data_futura(tempo, unidade)
+                            # insere as informações da ordem de serviço do novo plano
+                            form_os = OrdemServicoForm()
+                            ordem_nova = OrdemServico()
 
-                        # insere as informações da ordem de serviço do novo plano
-                        form_os = OrdemServicoForm()
-                        ordem_nova = OrdemServico()
+                            form_os.descricao.data = ordem_antiga.descricao
+                            form_os.tipo.data = ordem_antiga.tipoordem_id
+                            form_os.equipamento.data = ordem_antiga.equipamento_id
+                            ordem_nova.planomanutencao_id = ordem_antiga.id
+                            ordem_nova.alterar_atributos(form_os, True, dta_prevista)
 
-                        form_os.descricao.data = ordem_antiga.descricao
-                        form_os.tipo.data = ordem_antiga.tipoordem_id
-                        form_os.equipamento.data = ordem_antiga.equipamento_id
-                        ordem_nova.planomanutencao_id = ordem_antiga.id
-                        ordem_nova.alterar_atributos(form_os, True, dta_prevista)
-
-                        # salva a nova ordem de serviço
-                        if ordem_nova.salvar():
-                            flash("Ordem de Serviço Cadastrado", category="success")
-                        else:
-                            flash("Ordem de Serviço não Cadastrado", category="success")
+                            # salva a nova ordem de serviço
+                            if ordem_nova.salvar():
+                                flash("Ordem de Serviço Cadastrado", category="success")
+                            else:
+                                flash("Ordem de Serviço não Cadastrado", category="success")
 
         else:
             flash("Tramitação não cadastrado", category="danger")

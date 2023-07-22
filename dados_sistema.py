@@ -21,10 +21,10 @@ logging.basicConfig(format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
 logging.getLogger().setLevel(logging.DEBUG)
 log = logging.getLogger(__name__)
 
-# print("Exluindo todas as tabelas")
-# db.drop_all()
-# print("Criando todas as tabelas")
-# db.create_all()
+print("Exluindo todas as tabelas")
+db.drop_all()
+print("Criando todas as tabelas")
+db.create_all()
 
 telas_lista = [
     {'nome': 'Interessado', 'icon': 'bi-card-list', 'url': 'empresa.interessado_listar'},
@@ -227,7 +227,7 @@ grupo_lista = [
 ]
 
 subgrupo_lista = [
-    {'nome': 'ILUMINACAO', 'grupo': 'ELÉTRICO'},
+    {'nome': 'ILUMINAÇÃO', 'grupo': 'ELÉTRICO'},
     {'nome': 'TOMADAS', 'grupo': 'ELÉTRICO'},
     {'nome': 'LOUÇAS', 'grupo': 'HIDRÁULICO'},
     {'nome': 'PORTAS', 'grupo': 'ESQUADRIA'},
@@ -239,15 +239,15 @@ subgrupo_lista = [
 ]
 
 equipamento_lista = [
-    {'cod': '000.001', 'short': 'GERADOR', 'subgrupo': 'GERADOR', 'tag': 'ger.001'},
-    {'cod': '000.002', 'short': 'SUBESTAÇÃO 13.8KV', 'subgrupo': 'SUBESTAÇÃO', 'tag': 'se.001'},
-    {'cod': '000.003', 'short': 'CHILLER', 'subgrupo': 'REFRIGERAÇÃO', 'tag': 'ch.001'},
-    {'cod': '000.004', 'short': 'CARRO', 'subgrupo': 'FROTA', 'tag': 'ca.001'}
+    {'cod': 'A.000.001', 'short': 'GERADOR', 'subgrupo': 'GERADOR', 'tag': 'ger.001'},
+    {'cod': 'A.000.002', 'short': 'SUBESTAÇÃO 13.8KV', 'subgrupo': 'SUBESTAÇÃO', 'tag': 'se.001'},
+    {'cod': 'A.000.003', 'short': 'CHILLER', 'subgrupo': 'REFRIGERAÇÃO', 'tag': 'ch.001'},
+    {'cod': 'A.000.004', 'short': 'CARRO', 'subgrupo': 'FROTA', 'tag': 'ca.001'}
 ]
 
 tipoData_lista = [
-    {'nome': 'Data_Fixa'},
-    {'nome': 'Data_Móvel'}]
+    {'nome': 'DATA_FIXA'},
+    {'nome': 'DATA_MÓVEL'}]
 
 unidade_lista = [
     {'nome': 'hora'},
@@ -258,33 +258,33 @@ unidade_lista = [
 ]
 
 periodicidade_lista = [
-    {'nome': 'Diária', 'tempo': 1, 'unidade': 'dia'},
-    {'nome': 'Semanal', 'tempo': 7, 'unidade': 'dia'},
-    {'nome': 'Mensal', 'tempo': 1, 'unidade': 'mês'},
-    {'nome': 'Bimensal', 'tempo': 2, 'unidade': 'mês'},
-    {'nome': 'Trimensal', 'tempo': 3, 'unidade': 'mês'},
-    {'nome': 'Semestral', 'tempo': 6, 'unidade': 'mês'},
-    {'nome': 'Anual', 'tempo': 1, 'unidade': 'ano'}]
+    {'nome': 'DIÁRIA', 'tempo': 1, 'unidade': 'dia'},
+    {'nome': 'SEMANAL', 'tempo': 7, 'unidade': 'dia'},
+    {'nome': 'MENSAL', 'tempo': 1, 'unidade': 'mês'},
+    {'nome': 'BIMENSAL', 'tempo': 2, 'unidade': 'mês'},
+    {'nome': 'TRIMENSAL', 'tempo': 3, 'unidade': 'mês'},
+    {'nome': 'SEMESTRAL', 'tempo': 6, 'unidade': 'mês'},
+    {'nome': 'ANUAL', 'tempo': 1, 'unidade': 'ano'}]
 
 planosmanutencao_lista = [
     {'nome': 'Inspeção Diária Gerador', 'codigo': 'gera0001', 'ativo': True,
      'empresa': 'empresa_1.ltda', 'data_inicio': '01/05/2023', 'tipo': 'PREV',
-     'tipodata': 'Data_Fixa', 'periodicidade': 'Diária', 'equipamento': '000.001'},
+     'tipodata': 'DATA_FIXA', 'periodicidade': 'DIÁRIA', 'equipamento': 'A.000.001'},
     {'nome': 'Inspeção Semanal Subestação 13.8KV', 'codigo': 'sube0001', 'ativo': True,
      'empresa': 'empresa_1.ltda', 'data_inicio': '01/05/2023', 'tipo': 'PREV',
-     'tipodata': 'Data_Fixa', 'periodicidade': 'Semanal', 'equipamento': '000.002'},
+     'tipodata': 'DATA_FIXA', 'periodicidade': 'SEMANAL', 'equipamento': 'A.000.002'},
     {'nome': 'Manutenção Preventiva Anual Subestação 13.8KV', 'codigo': 'sube0002', 'ativo': True,
      'empresa': 'empresa_1.ltda', 'data_inicio': '01/05/2023', 'tipo': 'PREV',
-     'tipodata': 'Data_Fixa', 'periodicidade': 'Anual', 'equipamento': '000.002'},
+     'tipodata': 'DATA_FIXA', 'periodicidade': 'ANUAL', 'equipamento': 'A.000.002'},
     {'nome': 'Manutenção Preventiva Mensal Chiller', 'codigo': 'chil0001', 'ativo': True,
      'empresa': 'empresa_1.ltda', 'data_inicio': '01/05/2023', 'tipo': 'PREV',
-     'tipodata': 'Data_Móvel', 'periodicidade': 'Mensal', 'equipamento': '000.003'},
+     'tipodata': 'DATA_MÓVEL', 'periodicidade': 'MENSAL', 'equipamento': 'A.000.003'},
     {'nome': 'Inspeção Diária Carro 001', 'codigo': 'carr0001', 'ativo': True, 'empresa':
         'empresa_1.ltda', 'data_inicio': '01/05/2023', 'tipo': 'PREV',
-     'tipodata': 'Data_Fixa', 'periodicidade': 'Diária', 'equipamento': '000.004'},
+     'tipodata': 'DATA_FIXA', 'periodicidade': 'DIÁRIA', 'equipamento': 'A.000.004'},
     {'nome': 'Manutenção Preventiva Semestral Carro', 'codigo': 'carr0002', 'ativo': True,
      'empresa': 'empresa_1.ltda', 'data_inicio': '01/05/2023', 'tipo': 'PREV',
-     'tipodata': 'Data_Fixa', 'periodicidade': 'Semestral', 'equipamento': '000.004'},
+     'tipodata': 'DATA_FIXA', 'periodicidade': 'SEMESTRAL', 'equipamento': 'A.000.004'},
 ]
 
 tipo_ordem_lista = [
@@ -324,18 +324,18 @@ fluxo_ordem_lista = [
 
 ordem_servico_lista = [
     {'codigo': 1001, 'descricao': 'Trocar Lâmpada Queimada', 'data_abertura': '2023/01/02 08:00:00',
-     'data_fechamento': None, 'equipamento': '000.002', 'situacaoordem': 'AGAP', 'tipo': 'PREV',
+     'data_fechamento': None, 'equipamento': 'A.000.002', 'situacaoordem': 'AGAP', 'tipo': 'PREV',
      'planomanutencao': None, 'solicitante': 'leandro'},
     {'codigo': 1002, 'descricao': 'Inspeção Diária Gerador', 'data_abertura': '2023/02/02 08:00:00',
-     'data_fechamento': None, 'equipamento': '000.001', 'situacaoordem': 'AGAP', 'tipo': 'PREV',
+     'data_fechamento': None, 'equipamento': 'A.000.001', 'situacaoordem': 'AGAP', 'tipo': 'PREV',
      'planomanutencao': 'gera0001', 'solicitante': 'leandro'},
     {'codigo': 1003, 'descricao': 'Corrigir o vazamento de óleo lubricante', 'tipo': 'CORR',
      'data_abertura': '2023/02/03 08:00:00',
-     'data_fechamento': None, 'equipamento': '000.002', 'situacaoordem': 'AGAP',
+     'data_fechamento': None, 'equipamento': 'A.000.002', 'situacaoordem': 'AGAP',
      'planomanutencao': None, 'solicitante': 'leandro'},
     {'codigo': 1004, 'descricao': 'Manutenção Preventiva Semestral Carro', 'tipo': 'PREV',
      'data_abertura': '2023/01/02 08:00:00',
-     'data_fechamento': None, 'equipamento': '000.004', 'situacaoordem': 'AGAP',
+     'data_fechamento': None, 'equipamento': 'A.000.004', 'situacaoordem': 'AGAP',
      'planomanutencao': 'carr0002', 'solicitante': 'leandro'},
 ]
 
@@ -752,7 +752,6 @@ def criar_equipamento(lista: List[dict]) -> List[Equipamento]:
            List[TipoData]: Lista das novas datas e adicionados na base de dados.
        """
 
-    empresas = {e.razao_social: e.id for e in Empresa.query.all()}
     subgrupos = {sg.nome: sg.id for sg in Subgrupo.query.all()}
 
     # Criando uma lista de novos tipodatas para serem adicionados
@@ -875,7 +874,7 @@ def criar_planosmanutencao(lista: List[dict]) -> List[PlanoManutencao]:
     tipodatas = {t.nome: t.id for t in TipoData.query.all()}
     periodicidades = {p.nome: p.id for p in Periodicidade.query.all()}
     equipamentos = {e.cod: e.id for e in Equipamento.query.all()}
-    empresas = {em.razao_social: em.id for em in Empresa.query.all()}
+    # empresas = {em.razao_social: em.id for em in Empresa.query.all()}
     tipos_ordem = {to.sigla: to.id for to in TipoOrdem.query.all()}
 
     novos_planosmanutencao = [
@@ -886,8 +885,7 @@ def criar_planosmanutencao(lista: List[dict]) -> List[PlanoManutencao]:
                         data_inicio=item['data_inicio'],
                         periodicidade_id=periodicidades[item['periodicidade']],
                         equipamento_id=equipamentos[item['equipamento']],
-                        tipoordem_id=tipos_ordem[item['tipo']],
-                        empresa_id=empresas[item['empresa']])
+                        tipoordem_id=tipos_ordem[item['tipo']])
         for item in lista if item['codigo'] not in [pm.código for pm in PlanoManutencao.query.all()]]
 
     try:

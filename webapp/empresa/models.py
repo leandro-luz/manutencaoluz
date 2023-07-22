@@ -5,7 +5,6 @@ from flask import flash
 from itertools import cycle
 from webapp import db
 
-
 logging.basicConfig(format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
 logging.getLogger().setLevel(logging.DEBUG)
 log = logging.getLogger(__name__)
@@ -73,10 +72,25 @@ class Tipoempresa(db.Model):
 
 
 class Empresa(db.Model):
+    """  Classe da empresa   """
+    # nome do arquivo para cadastro em lote
+    nome_doc = 'padrão_empresas'
+    # titulos para cadastro
+    titulos_doc = {'CNPJ*': 'cnpj', 'Razão_Social*': 'razao_social', 'Nome_Fantasia*': 'nome_fantasia',
+                   'Tipo*': 'tipo', 'CEP*': 'cep', 'Logradouro*': 'logradouro', 'Número*': 'numero',
+                   'Bairro*': 'bairro', 'Município*': 'municipio', 'UF*': 'uf',
+                   'Email*': 'email', 'Telefone*': 'telefone', 'Contrato*': 'contrato_id',
+                   'Data_Abertura': 'data_abertura',
+                   'Situação': 'situacao', 'Porte': 'porte', 'Natureza_Jurídica': 'natureza_juridica',
+                   'CNAE_P_Código': 'cnae_principal', 'CNAE_P_Texto': 'cnae_principal_texto',
+                   'Inscrição_Estadual': 'inscricao_estadual', 'Inscrição_Municipal': 'inscricao_municipal',
+                   'Localização': 'localizacao', 'Complemento': 'complemento', 'Nome_Responsável': 'nome_responsavel',
+                   'Ativo': 'ativo'}
+
     __tablename__ = 'empresa'
     id = db.Column(db.Integer(), primary_key=True)
-    cnpj = db.Column(db.String(18), nullable=False, unique=True)
-    razao_social = db.Column(db.String(100), nullable=False, index=True, unique=True)
+    cnpj = db.Column(db.String(18), nullable=False, unique=False)
+    razao_social = db.Column(db.String(100), nullable=False, index=True, unique=False)
     nome_fantasia = db.Column(db.String(100), nullable=True, unique=False)
     data_abertura = db.Column(db.DateTime(), nullable=True, unique=False)
     situacao = db.Column(db.String(50), nullable=True, unique=False)
@@ -90,7 +104,7 @@ class Empresa(db.Model):
     inscricao_municipal = db.Column(db.String(20), nullable=True, unique=False)
     cep = db.Column(db.String(10), nullable=False, unique=False)
     numero = db.Column(db.BigInteger(), nullable=False, unique=False)
-    complemento = db.Column(db.String(50), nullable=False, unique=False)
+    complemento = db.Column(db.String(50), nullable=True, unique=False)
     logradouro = db.Column(db.String(50), nullable=False, unique=False)
     bairro = db.Column(db.String(50), nullable=False, unique=False)
     municipio = db.Column(db.String(50), nullable=False, unique=False)
@@ -98,7 +112,7 @@ class Empresa(db.Model):
     localizacao = db.Column(db.String(50), nullable=True, unique=False)
     telefone = db.Column(db.String(20), nullable=False, unique=False)
     email = db.Column(db.String(50), nullable=False, unique=False)
-    ativo = db.Column(db.Boolean, default=False)
+    ativo = db.Column(db.Boolean, default=True)
     data_cadastro = db.Column(db.DateTime(), nullable=True)
     empresa_gestora_id = db.Column(db.Integer(), nullable=False, default=1)
 

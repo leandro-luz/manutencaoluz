@@ -8,6 +8,7 @@
 </a>
 
 <input class="form-control" id="myInput" placeholder="Filtrar.." type="text"><br>
+<button onclick="exportar_lista('equipamentos.csv', 2)" type="button"> Exportar Lista</button>
 
 <table class="table">
     <thead>
@@ -66,6 +67,6 @@
 
 
 </body>
-
+<script src="/static/js/exportar_consulta.js" type="text/javascript"></script>
 <script src="/static/js/filtro_coluna.js" type="text/javascript"></script>
 {% endblock %}

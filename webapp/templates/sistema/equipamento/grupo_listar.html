@@ -8,6 +8,7 @@
 </a>
 
 <input class="form-control" id="myInput" placeholder="Filtrar.." type="text"><br>
+<button onclick="exportar_lista('grupos.csv', 1)" type="button"> Exportar Lista</button>
 
 <table class="table">
     <thead>
@@ -51,5 +52,6 @@
 <a href="{{ url_for('equipamento.subgrupo_editar', subgrupo_id=subgrupo_id, equipamento_id=equipamento_id) }}">Voltar</a>
 
 </body>
+<script src="/static/js/exportar_consulta.js" type="text/javascript"></script>
 <script src="/static/js/filtro_coluna.js" type="text/javascript"></script>
 {% endblock %}

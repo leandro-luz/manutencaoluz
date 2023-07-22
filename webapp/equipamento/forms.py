@@ -11,13 +11,20 @@ class GrupoForm(Form):
     ativo = BooleanField('Ativo', render_kw={"placeholder": "Informe se o grupo está ativo"})
     submit = SubmitField("Salvar")
 
+    file = FileField('Escolha um arquivo para o cadastro de grupos em Lote (4MB):', validators=[Optional()],
+                     render_kw={"placeholder": "Selecione o arquivo"})
+
     def validate(self, **kwargs):
         # # if our validators do not pass
-        # check_validate = super(EquipamentoForm, self).validate()
-        # if not check_validate:
-        #     print('False')
-        #     return False
-        return True
+        check_validate = super(GrupoForm, self).validate()
+        if check_validate:
+            if self.nome.data == '':
+                flash("Nome do grupo não foi informado", category="danger")
+                return False
+            else:
+                return True
+
+        return False
 
 
 class SubgrupoForm(Form):
@@ -27,12 +34,15 @@ class SubgrupoForm(Form):
     grupo = SelectField('Grupo de equipamentos', choices=[], coerce=int)
     submit = SubmitField("Salvar")
 
+    file = FileField('Escolha um arquivo para o cadastro de subgrupos em Lote (4MB):', validators=[Optional()],
+                     render_kw={"placeholder": "Selecione o arquivo"})
+
     def validate(self, **kwargs):
         check_validate = super(SubgrupoForm, self).validate()
 
         if check_validate:
             if self.grupo.data == 0:
-                flash("Grupo não informado", category="danger")
+                flash("Grupo não foi informado", category="danger")
                 return False
             else:
                 return True

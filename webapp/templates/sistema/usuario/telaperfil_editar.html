@@ -1,19 +1,30 @@
 {% extends "sistema_base.html" %}
 {% block body %}
 <body>
-    <form action="{{ url_for('usuario.telaperfil_editar', perfil_id=perfil_id) }}" method="POST">
-        {{form.csrf_token}}
+<form action="{{ url_for('usuario.telaperfil_editar', perfil_id=perfil_id) }}" method="POST">
+    {{form.csrf_token}}
 
-        <h2>Inclusão de Telas</h2>
+    <h2>Inclusão de Telas</h2>
 
-        {{form.perfil.label}}    {{form.perfil}}<br>
-        {{form.tela.label}}    {{form.tela}}<br>
+    {{form.perfil.label}} {{form.perfil}}<br>
+    {{form.tela.label}} {{form.tela}}<br>
 
-        <input type="submit" value="Inclusão"/>
+    <input type="submit" value="Inclusão"/>
 
-    </form>
+</form>
 
-    <a href="{{ url_for('usuario.telaperfil_listar', perfil_id=perfil_id) }}">Voltar</a>
+{% if perfil_id == 0 %}
+<form action="{{ url_for('usuario.cadastrar_lote_perfis') }}" enctype="multipart/form-data" method="POST">
+    {{ form.file.label }} {{ form.file }}
+    <input type="submit" value="Cadastrar_Lote"/>
+</form>
+<a href="{{ url_for('usuario.gerar_padrao_perfis') }}">Gerar Arquivo Base</a>
+<br>
+<br>
+{% endif %}
+
+
+<a href="{{ url_for('usuario.telaperfil_listar', perfil_id=perfil_id) }}">Voltar</a>
 
 </body>
 {% endblock %}

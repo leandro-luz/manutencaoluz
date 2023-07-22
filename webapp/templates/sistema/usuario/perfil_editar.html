@@ -1,33 +1,45 @@
 {% extends "sistema_base.html" %}
 {% block body %}
-    <body>
-        <form action="{{ url_for('usuario.perfil_editar', perfil_id=perfil.id) }}" method="POST">
-            {{form.csrf_token}}
+<body>
+<form action="{{ url_for('usuario.perfil_editar', perfil_id=perfil.id) }}" method="POST">
+    {{form.csrf_token}}
 
-            {% if perfil.id == 0 %}
-                <h2>Cadastro de Perfil</h2>
-            {% else %}
-                <h2>Perfil</h2>
-            {% endif %}
+    {% if perfil.id == 0 %}
+    <h2>Cadastro de Perfil</h2>
+    {% else %}
+    <h2>Perfil</h2>
+    {% endif %}
 
-            {{form.nome.label}}    {{form.nome(size=50)}}<br>
-            {{form.descricao.label}}    {{form.descricao(size=50)}}<br>
+    {{form.nome.label}} {{form.nome(size=50)}}<br>
+    {{form.descricao.label}} {{form.descricao(size=50)}}<br>
 
-            {% if perfil.id == 0 %}
-                <input type="submit" value="Cadastrar"/>
-            {% else %}
+    {% if perfil.id == 0 %}
+    <input type="submit" value="Cadastrar"/>
+    {% else %}
 
-                {{form.tela.label}}    {{form.tela}}
-                <a href="{{ url_for('usuario.telaperfil_listar', perfil_id=perfil.id) }}">
+    {{form.tela.label}} {{form.tela}}
+    <a href="{{ url_for('usuario.telaperfil_listar', perfil_id=perfil.id) }}">
                     <span data-tooltip="Atualizar">
                         <i class="bi-caret-down fs-6"></i>
                     </span>
-                </a> <br>
-                <input type="submit" value="Atualizar"/>
-            {% endif %}
-        </form>
+    </a> <br>
+    <input type="submit" value="Atualizar"/>
+    {% endif %}
+</form>
 
-    <a href="{{ url_for('usuario.perfil_listar') }}">Voltar</a>
 
-    </body>
+{% if perfil.id == 0 %}
+<form action="{{ url_for('usuario.cadastrar_lote_perfis') }}" enctype="multipart/form-data" method="POST">
+    {{ form.file.label }} {{ form.file }}
+    <input type="submit" value="Cadastrar_Lote"/>
+</form>
+<a href="{{ url_for('usuario.gerar_padrao_perfis') }}">Gerar Arquivo Base</a>
+<br>
+<br>
+{% endif %}
+
+
+<a href="{{ url_for('usuario.perfil_listar') }}">Voltar</a>
+
+</body>
 {% endblock %}

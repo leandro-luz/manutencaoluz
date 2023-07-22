@@ -2,17 +2,19 @@ import config
 from flask import (render_template, Blueprint,
                    redirect, url_for,
                    flash)
-from flask_login import current_user, login_required, login_user, logout_user
+from flask_login import current_user, login_required, login_user
 from webapp.empresa.models import Interessado, Tipoempresa, Empresa
 from webapp.empresa.forms import EmpresaForm, EmpresaSimplesForm, RegistroInteressadoForm
 from webapp.contrato.models import Contrato
 from webapp.usuario.models import Senha, Usuario, Perfil, Telaperfil
 from webapp.contrato.models import Telacontrato
-from webapp.equipamento.models import Grupo
 from webapp.usuario import has_view
 from webapp.utils.email import send_email
 from webapp.utils.tools import create_token, verify_token
 from webapp.utils.erros import flash_errors
+from webapp.utils.files import arquivo_padrao
+import pandas as pd
+import numpy as np
 
 empresa_blueprint = Blueprint(
     'empresa',
@@ -117,13 +119,6 @@ def empresa_editar(empresa_id):
 def new_admin(empresa: [Empresa], enviar_email):
     """    Função para cadastrar os (administradores, grupos) da empresa    """
 
-    # salvar um modelo de grupo vazio para os equipamentos da empresa
-    grupo = Grupo()
-    grupo.nome = 'None'
-    grupo.empresa_id = empresa.id
-    if not grupo.salvar():
-        flash("Erro ao cadastrar o grupo de ativos", category="danger")
-
     # lista dos administradores
     lista = [{'nome': 'admin', 'descricao': 'administrador',
               'email': empresa.email, 'enviar_email': True, 'senha_temporaria': True},
@@ -183,6 +178,125 @@ def new_admin(empresa: [Empresa], enviar_email):
         else:
             flash("Usuário administrador não cadastrado", category="danger")
             break
+
+
+@empresa_blueprint.route('/gerar_padrao_empresas/', methods=['GET', 'POST'])
+@login_required
+@has_view('Empresa')
+def gerar_padrao_empresas():
+    result, path = arquivo_padrao(nome_arquivo=Empresa.nome_doc, valores=[[x] for x in Empresa.titulos_doc])
+    if result:
+        flash(f'Foi gerado o arquivo padrão no caminho: {path}', category="success")
+    else:
+        flash("Não foi gerado o arquivo padrão", category="danger")
+    return redirect(url_for("empresa.empresa_listar"))
+
+
+@empresa_blueprint.route('/cadastrar_lote_empresas>', methods=['GET', 'POST'])
+@login_required
+@has_view('Equipamento')
+def cadastrar_lote_empresas():
+    form = EmpresaForm()
+
+    # filename = secure_filename(form.file.data.filename)
+    filestream = form.file.data
+    filestream.seek(0)
+    df = pd.DataFrame(pd.read_csv(filestream, sep=";", names=Empresa.titulos_doc, encoding='latin-1'))
+
+    # converter os valores Nan para Null
+    df = df.replace({np.NAN: None})
+
+    # lista dos titulos obrigatórios
+    titulos_obrigatorio = [x for x in Empresa.titulos_doc if x.count('*')]
+    # lista dos equipamentos existentes
+    existentes = Empresa.query.filter_by(empresa_gestora_id=current_user.empresa_id).all()
+    # tipo de empresa cliente
+    tipoempresa = Tipoempresa.query.filter_by(nome='Cliente').one_or_none()
+
+    rejeitados_texto = [['CNPJ', 'MOTIVO']]
+    rejeitados = []
+    aceitos_cod = []
+    aceitos = []
+    total = range(df.shape[0])
+    # percorre por todas as linhas
+    for linha in total:
+        # verifica se os campo obrigatórios foram preenchidos
+        for col_ob in titulos_obrigatorio:
+            # caso não seja
+            if not df.at[linha, col_ob]:
+                # salva na lista dos rejeitados devido ao não preenchimento obrigatório
+                rejeitados_texto.append(
+                    [df.at[linha, 'CNPJ*'], "rejeitado pelo não preenchimento de algum campo obrigatório"])
+                rejeitados.append(df.at[linha, 'CNPJ*'])
+
+        # verifica repetições no BD
+        for empresa in existentes:
+            if empresa.cnpj == df.at[linha, 'CNPJ*'].upper():
+                rejeitados.append(df.at[linha, 'CNPJ*'])
+                rejeitados_texto.append(
+                    [df.at[linha, 'CNPJ*'], "rejeitado devido CNPJ já existir no banco de dados"])
+            if empresa.razao_social == df.at[linha, 'Razão_Social*'].upper():
+                rejeitados.append(df.at[linha, 'CNPJ*'])
+                rejeitados_texto.append(
+                    [df.at[linha, 'CNPJ*'], "rejeitado devido RAZÃO SOCIAL já existir no banco de dados"])
+            if empresa.nome_fantasia == df.at[linha, 'Nome_Fantasia*'].upper():
+                rejeitados.append(df.at[linha, 'CNPJ*'])
+                rejeitados_texto.append(
+                    [df.at[linha, 'CNPJ*'], "rejeitado devido NOME FANTASIA já existir no banco de dados"])
+
+        # verificar existência do contrato
+        contrato = Contrato.query.filter_by(nome=df.at[linha, 'Contrato*'].upper()).one_or_none()
+        if not contrato:
+            rejeitados.append(df.at[linha, 'CNPJ*'])
+            rejeitados_texto.append(
+                [df.at[linha, 'CNPJ*'], df.at[linha, 'Contrato*'], "rejeitado devido ao Contrato não existir"])
+
+        # verifica repetições na lista atual
+        if df.at[linha, 'CNPJ*'] in aceitos_cod:
+            rejeitados.append(df.at[linha, 'CNPJ*'])
+            rejeitados_texto.append(
+                [df.at[linha, 'CNPJ*'], "rejeitado devido a estar repetido"])
+
+        # Verifica se não foi rejeitado
+        if df.at[linha, 'CNPJ*'] not in rejeitados:
+            # altera o valor do subgrupo de nome para id na tabela
+            df.at[linha, 'Contrato*'] = contrato.id
+            # cria um equipamento e popula ele
+            empresa = Empresa()
+            for k, v in empresa.titulos_doc.items():
+                # recupere o valor
+                valor = df.at[linha, k]
+                if str(valor).isnumeric() or valor is None:
+                    # Salva o atributo se o valor e numerico ou nulo
+                    setattr(empresa, v, valor)
+                else:
+                    # Salva o atributo quando texto
+                    setattr(empresa, v, valor.upper())
+            # setando as empresas como cliente
+            empresa.tipoempresa_id = tipoempresa.id
+            # insere nas listas dos aceitos
+            aceitos_cod.append(df.at[linha, 'CNPJ*'])
+            # insere o equipamento na lista
+            aceitos.append(empresa)
+
+    # salva a lista de equipamentos no banco de dados
+    if len(aceitos) > 0:
+        for empresa in aceitos:
+            # salvar a empresa no Banco de dados
+            if empresa.salvar():
+                # registra os usuários para as empresas
+                new_admin(empresa, False)
+    flash(f"Total de empresas cadastrados: {len(aceitos)}, rejeitados:{len(total) - len(aceitos)}", "success")
+
+    # se a lista de rejeitados existir
+    if len(rejeitados_texto) > 0:
+        # publica ao usuário a lista dos rejeitados
+        result, path = arquivo_padrao(nome_arquivo="Empresas_rejeitadas", valores=rejeitados_texto)
+        if result:
+            flash(f'Foi gerado o arquivo de empresas rejeitados no caminho: {path}', category="warning")
+        else:
+            flash("Não foi gerado o arquivo de empresas rejeitados", category="danger")
+    return redirect(url_for('empresa.empresa_listar'))
 
 
 @empresa_blueprint.route('/solicitar', methods=['GET', 'POST'])

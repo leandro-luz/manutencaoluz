@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm as Form
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, IntegerField
-from wtforms.validators import InputRequired, Length, EqualTo, Email, Regexp
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, IntegerField, FileField
+from wtforms.validators import InputRequired, Length, EqualTo, Email, Regexp, Optional
 from webapp.usuario.models import Usuario, Telaperfil
 from webapp.empresa.models import Empresa
 from flask import flash
@@ -8,7 +8,8 @@ from flask_login import current_user
 
 
 class LoginForm(Form):
-    nome = StringField('Usuário', validators=[InputRequired(), Length(max=255)], render_kw={"placeholder": "Digite o seu nome"})
+    nome = StringField('Usuário', validators=[InputRequired(), Length(max=255)],
+                       render_kw={"placeholder": "Digite o seu nome"})
     # email = StringField('Email', validators=[InputRequired(), Email()],
     #                     render_kw={"placeholder": "Digite o seu email"})
     senha = PasswordField('Senha', validators=[InputRequired()], render_kw={"placeholder": "Digite a sua senha"})
@@ -46,7 +47,8 @@ class LoginForm(Form):
                 if valor <= 3:
                     usuario.senha.alterar_contador_accesso_temporario()
                     usuario.senha.salvar()
-                    flash(f'Usuário está com a senha temporária, permitido mais {3-valor} acesso(s)', category="warning")
+                    flash(f'Usuário está com a senha temporária, permitido mais {3 - valor} acesso(s)',
+                          category="warning")
                 elif valor > 3:
                     flash(f'Usuário está com a senha temporária vencida! Deve trocar a senha', category="danger")
                     return False
@@ -57,16 +59,17 @@ class LoginForm(Form):
 
 class RegistroUsuarioForm(Form):
     nome = StringField('Usuário', [InputRequired(), Length(max=50),
-                                       Regexp('^[A-Za-z][A-Za-z0-9_.]*$', 0,
-                                              'Nome deve conter somente letras, '
-                                              'números, ponto ou sublinha')],
-                           render_kw={"placeholder": "Digite o seu nome"})
+                                   Regexp('^[A-Za-z][A-Za-z0-9_.]*$', 0,
+                                          'Nome deve conter somente letras, '
+                                          'números, ponto ou sublinha')],
+                       render_kw={"placeholder": "Digite o seu nome"})
     email = StringField('Email', [InputRequired(), Email()], render_kw={"placeholder": "Digite o seu email"})
     senha = PasswordField('Senha', [InputRequired(), Length(min=8)], render_kw={"placeholder": "Digite a sua senha"})
     empresa = SelectField('Empresa', choices=[], coerce=int)
     ativo = BooleanField('Ativo', render_kw={"placeholder": "Informe se a usuário está ativo"})
 
-    confirm = PasswordField('Confirme a Senha', [InputRequired(), EqualTo('senha')], render_kw={"placeholder": "Confirme a sua senha"})
+    confirm = PasswordField('Confirme a Senha', [InputRequired(), EqualTo('senha')],
+                            render_kw={"placeholder": "Confirme a sua senha"})
     submit = SubmitField('Registrar')
 
     def validate(self, **kwargs):
@@ -90,13 +93,16 @@ class RegistroUsuarioForm(Form):
 class EditarUsuarioForm(Form):
     id = IntegerField()
     nome = StringField('Usuário', [InputRequired(), Length(max=50),
-                                       Regexp('^[A-Za-z][A-Za-z0-9_.]*$', 0,
-                                              'Nome deve conter somente letras, '
-                                              'números, ponto ou sublinha')],
-                           render_kw={"placeholder": "Digite o seu nome"})
+                                   Regexp('^[A-Za-z][A-Za-z0-9_.]*$', 0,
+                                          'Nome deve conter somente letras, '
+                                          'números, ponto ou sublinha')],
+                       render_kw={"placeholder": "Digite o seu nome"})
     email = StringField('Email', [InputRequired(), Email()], render_kw={"placeholder": "Digite o seu email"})
     perfil = SelectField('Perfil', choices=[], coerce=int)
     ativo = BooleanField('Ativo', render_kw={"placeholder": "Informe se a usuário está ativo"})
+
+    file = FileField('Escolha um arquivo para o cadastro de usuarios em Lote (4MB):', validators=[Optional()],
+                     render_kw={"placeholder": "Selecione o arquivo"})
 
     submit = SubmitField('Registrar')
 
@@ -105,7 +111,6 @@ class EditarUsuarioForm(Form):
         check_validate = super(EditarUsuarioForm, self).validate()
 
         if check_validate:
-
             # Verificando se eh um novo usuário
             if self.id.data == 0:
                 # Criando uma instância do usuário com base no nome
@@ -143,10 +148,13 @@ class EditarUsuarioForm(Form):
 
 
 class AlterarSenhaForm(Form):
-    senha_antiga = PasswordField('Senha antiga', validators=[InputRequired()], render_kw={"placeholder": "Digite a senha antiga"})
+    senha_antiga = PasswordField('Senha antiga', validators=[InputRequired()],
+                                 render_kw={"placeholder": "Digite a senha antiga"})
     senha = PasswordField('Nova senha', validators=[
-        InputRequired(), EqualTo('senha2', message='As senhas devem ser iguais!')], render_kw={"placeholder": "Digite a nova senha"})
-    senha2 = PasswordField('Confirme a nova senha', validators=[InputRequired()], render_kw={"placeholder": "Confirme a nova senha"})
+        InputRequired(), EqualTo('senha2', message='As senhas devem ser iguais!')],
+                          render_kw={"placeholder": "Digite a nova senha"})
+    senha2 = PasswordField('Confirme a nova senha', validators=[InputRequired()],
+                           render_kw={"placeholder": "Confirme a nova senha"})
     submit = SubmitField('Atualizar')
 
     def validate(self, **kwargs):
@@ -163,7 +171,8 @@ class AlterarSenhaForm(Form):
 
 class SolicitarNovaSenhaForm(Form):
     email = StringField('Email', validators=[InputRequired(), Length(1, 64),
-                                             Email(message="Formato de email inválido")], render_kw={"placeholder": "Digite o seu email"})
+                                             Email(message="Formato de email inválido")],
+                        render_kw={"placeholder": "Digite o seu email"})
     submit = SubmitField('Reset Senha')
 
     def validate(self, **kwargs):
@@ -218,8 +227,12 @@ class PerfilForm(Form):
     nome = StringField('Perfil', validators=[InputRequired(), Length(max=50)],
                        render_kw={"placeholder": "Digite o nome do perfil"})
     descricao = StringField('Descrição', validators=[InputRequired(), Length(max=50)],
-                              render_kw={"placeholder": "Digite a descrição do perfil"})
+                            render_kw={"placeholder": "Digite a descrição do perfil"})
     tela = SelectField('Tela', choices=[], coerce=int, validate_choice=False)
+
+    file = FileField('Escolha um arquivo para o cadastro de perfis em Lote (4MB):', validators=[Optional()],
+                     render_kw={"placeholder": "Selecione o arquivo"})
+
     submit = SubmitField("Cadastrar")
 
     def validate(self, **kwargs):
