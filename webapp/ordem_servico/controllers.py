@@ -26,9 +26,7 @@ def ordem_listar():
         Equipamento.subgrupo_id == Subgrupo.id,
         Subgrupo.grupo_id == Grupo.id,
         Grupo.empresa_id == Empresa.id,
-        Empresa.id == current_user.empresa_id).order_by(
-        Equipamento.descricao_curta).order_by(
-        OrdemServico.codigo.desc())
+        Empresa.id == current_user.empresa_id).order_by(OrdemServico.codigo.desc())
     return render_template('ordem_servico_listar.html', ordens=ordens)
 
 
@@ -136,39 +134,28 @@ def tramitacao(ordem_id):
         tramitacao_.alterar_atributos(form_tramitacao, ordem_id)
         if tramitacao_.salvar():
             flash("Tramitação cadastrado", category="success")
-
             ordem_antiga = OrdemServico.query.filter_by(id=ordem_id).one_or_none()
 
-            # verifica se a Ordem está concluída
-            situacao = ordem_antiga.situacaoordem.nome
-            if situacao == "Concluída" or situacao == "Cancelada":
+            # verifica se a ordem está concluída ou cancelada
+            if ordem_antiga.situacaoordem.nome in ["Concluída", "Cancelada"]:
                 # Verifica se o plano está ativo
                 plano = PlanoManutencao.query.filter_by(id=ordem_antiga.planomanutencao_id).one_or_none()
                 if plano:
                     if plano.ativo:
+                        # Altera a data prevista
+                        plano.alterar_data_prevista(new=False)
                         # Verifica o tipo_data
-                        if plano.tipodata.nome == "Data_Móvel":
-                            tempo = plano.periodicidade.tempo
-                            unidade = plano.periodicidade.unidade.nome
-                            # Calcula a data prevista
-                            dta_prevista = ordem_antiga.data_futura(tempo, unidade)
-
-                            # insere as informações da ordem de serviço do novo plano
-                            form_os = OrdemServicoForm()
+                        if plano.tipodata.nome == "DATA_MÓVEL":
+                            # cria uma nova ordem
                             ordem_nova = OrdemServico()
-
-                            form_os.descricao.data = ordem_antiga.descricao
-                            form_os.tipo.data = ordem_antiga.tipoordem_id
-                            form_os.equipamento.data = ordem_antiga.equipamento_id
-                            ordem_nova.planomanutencao_id = ordem_antiga.id
-                            ordem_nova.alterar_atributos(form_os, True, dta_prevista)
-
+                            ordem_nova.alterar_atributos_by_ordem(ordem=ordem_antiga,
+                                                                  data_prevista=plano.data_inicio)
                             # salva a nova ordem de serviço
                             if ordem_nova.salvar():
                                 flash("Ordem de Serviço Cadastrado", category="success")
                             else:
                                 flash("Ordem de Serviço não Cadastrado", category="success")
-
+                    plano.salvar()
         else:
             flash("Tramitação não cadastrado", category="danger")
     else:

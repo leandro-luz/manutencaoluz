@@ -6,7 +6,6 @@ from webapp.empresa.models import Empresa
 from webapp.plano_manutencao.models import PlanoManutencao, TipoData, Periodicidade
 from webapp.equipamento.models import Equipamento, Grupo, Subgrupo
 from webapp.ordem_servico.models import OrdemServico
-from webapp.ordem_servico.forms import OrdemServicoForm
 from webapp.plano_manutencao.forms import PlanoForm
 from webapp.usuario import has_view
 from webapp.ordem_servico.models import TipoOrdem
@@ -100,8 +99,13 @@ def plano_editar(plano_id):
     form.tipoordem.choices = [(0, '')] + [(to.id, to.nome) for to in TipoOrdem.query.filter_by(plano=True)]
     form.tipodata.choices = [(tp.id, tp.nome) for tp in TipoData.query.all()]
     form.periodicidade.choices = [(0, '')] + [(p.id, p.nome) for p in Periodicidade.query.all()]
-    form.equipamento.choices = [(0, '')] + [(e.id, e.descricao_curta) for e in Equipamento.query.all()]
 
+    form.equipamento.choices = [(0, '')] + [(e.id, e.descricao_curta)
+                                            for e in Equipamento.query.filter(Equipamento.subgrupo_id == Subgrupo.id,
+                                                                              Subgrupo.grupo_id == Grupo.id,
+                                                                              Grupo.empresa_id == Empresa.id,
+                                                                              Empresa.id == current_user.empresa_id)
+                                            ]
     form.tipoordem.data = to_d
     form.tipodata.data = tp_d
     form.equipamento.data = e_d
@@ -109,23 +113,14 @@ def plano_editar(plano_id):
 
     # Validação
     if form.validate_on_submit():
-        plano.alterar_atributos(form)
+        plano.alterar_atributos(form, new)
         if plano.salvar():
-
             # case seja um novo plano, gera um ordem para este plano
             if new:
                 # recupera o plano salvo
                 plano = PlanoManutencao.query.filter_by(nome=form.nome.data).one_or_none()
                 ordem = OrdemServico()
-
-                # insere as informações da ordem de serviço do novo plano
-                form_os = OrdemServicoForm()
-                form_os.descricao.data = plano.nome
-                form_os.tipo.data = plano.tipoordem_id
-                form_os.equipamento.data = plano.equipamento_id
-                ordem.planomanutencao_id = plano.id
-                ordem.alterar_atributos(form_os, new, plano.data_inicio)
-
+                ordem.alterar_atributos_by_plano(plano)
                 # salva a nova ordem de serviço
                 if ordem.salvar():
                     flash("Ordem de Serviço Cadastrado", category="success")
@@ -256,7 +251,6 @@ def cadastrar_lote_planos_manutencao():
                 else:
                     # Salva o atributo quando texto
                     setattr(plano, v, valor.upper())
-
             # insere nas listas dos aceitos
             aceitos_cod.append(df.at[linha, 'Código*'])
             # insere o equipamento na lista

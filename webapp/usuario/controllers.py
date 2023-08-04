@@ -559,8 +559,6 @@ def cadastrar_lote_perfis():
     # converter os valores Nan para Null
     df = df.replace({np.NAN: None})
 
-    print(df)
-
     # lista dos titulos obrigatórios
     titulos_obrigatorio = [x for x in Perfil.titulos_doc if x.count('*')]
     # lista dos equipamentos existentes

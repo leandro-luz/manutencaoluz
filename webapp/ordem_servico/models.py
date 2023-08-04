@@ -1,4 +1,5 @@
 import datetime
+from dateutil.relativedelta import relativedelta
 import logging
 from webapp import db
 from sqlalchemy import func
@@ -35,6 +36,10 @@ class SituacaoOrdem(db.Model):
 
     def __repr__(self) -> str:
         return f'<Situação de Ordem: {self.id}-{self.nome}>'
+
+    @staticmethod
+    def retornar_id_situacao(nome):
+        return SituacaoOrdem.query.filter_by(nome=nome).one_or_none().id
 
 
 class FluxoOrdem(db.Model):
@@ -138,8 +143,7 @@ class OrdemServico(db.Model):
     tramitacaoordem = db.relationship("TramitacaoOrdem", back_populates="ordemservico")
 
     def __repr__(self) -> str:
-        return f'<Ordem de Serviço: {self.id}-{self.descricao}-' \
-               f'{self.equipamento.descricao_curta}-{self.situacaoordem.nome}>'
+        return f'<Ordem de Serviço: {self.id}-{self.descricao}>'
 
     def salvar(self) -> bool:
         """    Função para salvar no banco de dados o objeto"""
@@ -153,33 +157,59 @@ class OrdemServico(db.Model):
             return False
 
     def alterar_atributos(self, form, new, dta_prevista=datetime.datetime.now()):
+        """     Função para atribuir valores para ordem a partir de um formulário       """
         if new:
-            consulta = db.session.query(func.max(OrdemServico.codigo))
-            self.codigo = consulta.first()[0] + 1
+            self.codigo = OrdemServico.gerar_codigo_ordem()
             self.data_abertura = datetime.datetime.now()
             self.data_prevista = dta_prevista
             self.solicitante_id = current_user.id
-            # Inserindo o id da situação "Pendente" na OrdemServico
-            sit = SituacaoOrdem.query.filter_by(nome="Pendente").one_or_none()
-            self.situacaoordem_id = sit.id
+            self.situacaoordem_id = SituacaoOrdem.retornar_id_situacao("Pendente")
             self.tipoordem_id = form.tipo.data
             self.descricao = form.descricao.data.upper()
             self.equipamento_id = form.equipamento.data
 
-    @staticmethod
-    def data_futura(tempo, unidade):
-        """ Função que calcula e retorna uma data no futuro"""
-        # Fator basico
-        fator = 1
-        # Verifica qual a unidade de tempo
-        if unidade == "Mensal" or \
-                unidade == "Bimensal" or \
-                unidade == "Trimensal" or \
-                unidade == "Semestral":
-            fator = 30
-        if unidade == "Anual":
-            fator = 365
+    def alterar_atributos_by_plano(self, plano):
+        """     Função para atribuir valores para ordem a partir de um plano de manutenção  """
+        self.codigo = OrdemServico.gerar_codigo_ordem()
+        self.data_abertura = datetime.datetime.now()
+        self.solicitante_id = None
+        self.situacaoordem_id = SituacaoOrdem.retornar_id_situacao("Pendente")
+        self.tipoordem_id = plano.tipoordem_id
+        self.descricao = plano.nome
+        self.equipamento_id = plano.equipamento_id
+        self.planomanutencao_id = plano.id
+        self.data_prevista = plano.data_inicio
+        # self.data_prevista = self.data_futura(new, data=plano.data_inicio, tempo=plano.periodicidade.tempo,
+        # #                                       unidade=plano.periodicidade.unidade.nome)
 
-        # retorna a data futura
-        return datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) + \
-               datetime.timedelta(days=tempo * fator)
+    def alterar_atributos_by_ordem(self, ordem, data_prevista):
+        self.codigo = OrdemServico.gerar_codigo_ordem()
+        self.data_abertura = datetime.datetime.now()
+        self.data_prevista = data_prevista
+        # self.data_prevista = self.data_futura(new, data=datetime.datetime.now() - datetime.timedelta(days=1),
+        #                                       tempo=tempo, unidade=unidade)
+        self.solicitante_id = None
+        self.situacaoordem_id = SituacaoOrdem.retornar_id_situacao("Pendente")
+        self.tipoordem_id = ordem.tipoordem_id
+        self.descricao = ordem.descricao
+        self.equipamento_id = ordem.equipamento_id
+        self.planomanutencao_id = ordem.planomanutencao_id
+
+    @staticmethod
+    def gerar_codigo_ordem():
+        """Função para retornar o número para a proxima OS"""
+        return db.session.query(func.max(OrdemServico.codigo)).first()[0] + 1
+
+    # def data_futura(self, new, data, tempo, unidade):
+    #     """ Função que calcula e retorna uma data no futuro"""
+    #     if new:
+    #         return data
+    #     else:
+    #         # Verifica se a base do tempo é dia
+    #         if unidade in ["dia", "semana"]:
+    #             return data.replace(hour=0, minute=0, second=0, microsecond=0) + \
+    #                    datetime.timedelta(days=tempo)
+    #         # Verifica se a base do tempo é mensal
+    #         if unidade in ["mês", "ano"]:
+    #             return data.replace(hour=0, minute=0, second=0, microsecond=0) + \
+    #                    relativedelta(months=tempo)

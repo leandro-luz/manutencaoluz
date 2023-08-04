@@ -19,6 +19,7 @@
         <th scope="col">TIPO</th>
         <th scope="col">SITUAÇÃO</th>
         <th scope="col">DATA ABERTURA</th>
+        <th scope="col">DATA PREVISTA</th>
         <th scope="col">DATA FECHAMENTO</th>
         <th></th>
     </tr>
@@ -33,6 +34,7 @@
         <td>{{ ordem.tipoordem.sigla }}</td>
         <td>{{ ordem.situacaoordem.sigla }}</td>
         <td>{{ ordem.data_abertura }}</td>
+        <td>{{ ordem.data_prevista }}</td>
         <td>{{ ordem.data_fechamento }}</td>
         <td>
             <a href="{{ url_for('ordem_servico.ordem_editar', ordem_id=ordem.id) }}">

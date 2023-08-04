@@ -21,7 +21,7 @@ logging.basicConfig(format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
 logging.getLogger().setLevel(logging.DEBUG)
 log = logging.getLogger(__name__)
 
-print("Exluindo todas as tabelas")
+print("Excluindo todas as tabelas")
 db.drop_all()
 print("Criando todas as tabelas")
 db.create_all()
@@ -258,32 +258,38 @@ unidade_lista = [
 ]
 
 periodicidade_lista = [
+    {'nome': 'HORÁRIA', 'tempo': 1, 'unidade': 'hora'},
     {'nome': 'DIÁRIA', 'tempo': 1, 'unidade': 'dia'},
     {'nome': 'SEMANAL', 'tempo': 7, 'unidade': 'dia'},
     {'nome': 'MENSAL', 'tempo': 1, 'unidade': 'mês'},
     {'nome': 'BIMENSAL', 'tempo': 2, 'unidade': 'mês'},
     {'nome': 'TRIMENSAL', 'tempo': 3, 'unidade': 'mês'},
     {'nome': 'SEMESTRAL', 'tempo': 6, 'unidade': 'mês'},
-    {'nome': 'ANUAL', 'tempo': 1, 'unidade': 'ano'}]
+    {'nome': 'ANUAL', 'tempo': 12, 'unidade': 'ano'}]
 
 planosmanutencao_lista = [
     {'nome': 'Inspeção Diária Gerador', 'codigo': 'gera0001', 'ativo': True,
-     'empresa': 'empresa_1.ltda', 'data_inicio': '01/05/2023', 'tipo': 'PREV',
+     'empresa': 'empresa_1.ltda', 'data_inicio': str(datetime.datetime.now() + datetime.timedelta(30)),
+     'tipo_ordem': 'PREV',
      'tipodata': 'DATA_FIXA', 'periodicidade': 'DIÁRIA', 'equipamento': 'A.000.001'},
     {'nome': 'Inspeção Semanal Subestação 13.8KV', 'codigo': 'sube0001', 'ativo': True,
-     'empresa': 'empresa_1.ltda', 'data_inicio': '01/05/2023', 'tipo': 'PREV',
+     'empresa': 'empresa_1.ltda', 'data_inicio': str(datetime.datetime.now() + datetime.timedelta(30)),
+     'tipo_ordem': 'PREV',
      'tipodata': 'DATA_FIXA', 'periodicidade': 'SEMANAL', 'equipamento': 'A.000.002'},
     {'nome': 'Manutenção Preventiva Anual Subestação 13.8KV', 'codigo': 'sube0002', 'ativo': True,
-     'empresa': 'empresa_1.ltda', 'data_inicio': '01/05/2023', 'tipo': 'PREV',
+     'empresa': 'empresa_1.ltda', 'data_inicio': str(datetime.datetime.now() + datetime.timedelta(30)),
+     'tipo_ordem': 'PREV',
      'tipodata': 'DATA_FIXA', 'periodicidade': 'ANUAL', 'equipamento': 'A.000.002'},
     {'nome': 'Manutenção Preventiva Mensal Chiller', 'codigo': 'chil0001', 'ativo': True,
-     'empresa': 'empresa_1.ltda', 'data_inicio': '01/05/2023', 'tipo': 'PREV',
+     'empresa': 'empresa_1.ltda', 'data_inicio': str(datetime.datetime.now() + datetime.timedelta(30)),
+     'tipo_ordem': 'PREV',
      'tipodata': 'DATA_MÓVEL', 'periodicidade': 'MENSAL', 'equipamento': 'A.000.003'},
     {'nome': 'Inspeção Diária Carro 001', 'codigo': 'carr0001', 'ativo': True, 'empresa':
-        'empresa_1.ltda', 'data_inicio': '01/05/2023', 'tipo': 'PREV',
-     'tipodata': 'DATA_FIXA', 'periodicidade': 'DIÁRIA', 'equipamento': 'A.000.004'},
+        'empresa_1.ltda', 'data_inicio': str(datetime.datetime.now() + datetime.timedelta(30)), 'tipo_ordem': 'PREV',
+     'tipodata': 'DATA_FIXA', 'periodicidade': 'DIÁRIA', 'equipamento': 'A.000.004', 'tipo_situacao': 'PENDENTE'},
     {'nome': 'Manutenção Preventiva Semestral Carro', 'codigo': 'carr0002', 'ativo': True,
-     'empresa': 'empresa_1.ltda', 'data_inicio': '01/05/2023', 'tipo': 'PREV',
+     'empresa': 'empresa_1.ltda', 'data_inicio': str(datetime.datetime.now() + datetime.timedelta(30)),
+     'tipo_ordem': 'PREV',
      'tipodata': 'DATA_FIXA', 'periodicidade': 'SEMESTRAL', 'equipamento': 'A.000.004'},
 ]
 
@@ -874,7 +880,6 @@ def criar_planosmanutencao(lista: List[dict]) -> List[PlanoManutencao]:
     tipodatas = {t.nome: t.id for t in TipoData.query.all()}
     periodicidades = {p.nome: p.id for p in Periodicidade.query.all()}
     equipamentos = {e.cod: e.id for e in Equipamento.query.all()}
-    # empresas = {em.razao_social: em.id for em in Empresa.query.all()}
     tipos_ordem = {to.sigla: to.id for to in TipoOrdem.query.all()}
 
     novos_planosmanutencao = [
@@ -885,7 +890,7 @@ def criar_planosmanutencao(lista: List[dict]) -> List[PlanoManutencao]:
                         data_inicio=item['data_inicio'],
                         periodicidade_id=periodicidades[item['periodicidade']],
                         equipamento_id=equipamentos[item['equipamento']],
-                        tipoordem_id=tipos_ordem[item['tipo']])
+                        tipoordem_id=tipos_ordem[item['tipo_ordem']])
         for item in lista if item['codigo'] not in [pm.código for pm in PlanoManutencao.query.all()]]
 
     try:
