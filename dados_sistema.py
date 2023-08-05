@@ -250,7 +250,6 @@ tipoData_lista = [
     {'nome': 'DATA_MÓVEL'}]
 
 unidade_lista = [
-    {'nome': 'hora'},
     {'nome': 'dia'},
     {'nome': 'semana'},
     {'nome': 'mês'},
@@ -258,7 +257,6 @@ unidade_lista = [
 ]
 
 periodicidade_lista = [
-    {'nome': 'HORÁRIA', 'tempo': 1, 'unidade': 'hora'},
     {'nome': 'DIÁRIA', 'tempo': 1, 'unidade': 'dia'},
     {'nome': 'SEMANAL', 'tempo': 7, 'unidade': 'dia'},
     {'nome': 'MENSAL', 'tempo': 1, 'unidade': 'mês'},

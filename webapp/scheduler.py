@@ -1,15 +1,21 @@
 import os
 from datetime import datetime
+import sys
+
+path = "/home/manutencaoluz"
+if path not in sys.path:
+    sys.path.insert(0, path)
+
+from webapp import create_app
 from webapp.plano_manutencao.models import PlanoManutencao, TipoData
 from webapp.ordem_servico.models import OrdemServico
-from webapp import create_app
 
 env = os.environ.get('WEBAPP_ENV', 'prod')
 app = create_app('config.%sConfig' % env.capitalize())
 
 with app.app_context():
     # Gerando uma lista de planos ativos e que estão pendentes de geração de OS
-    planos = PlanoManutencao.query.filter(PlanoManutencao.ativo == True,
+    planos = PlanoManutencao.query.filter(PlanoManutencao.ativo is True,
                                           PlanoManutencao.tipodata_id == TipoData.id,
                                           TipoData.nome == "DATA_FIXA"
                                           ).all()
