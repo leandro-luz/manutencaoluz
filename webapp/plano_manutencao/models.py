@@ -1,7 +1,7 @@
 import logging
 import datetime
 from dateutil.relativedelta import relativedelta
-from webapp import db, sched
+from webapp import db
 from flask import flash
 from webapp.ordem_servico.models import OrdemServico
 
@@ -152,32 +152,32 @@ class PlanoManutencao(db.Model):
             db.session.rollback()
         return False
 
-    @staticmethod
-    def verificar_geracao_ordens_servicos():
-        with sched.app.app_context():
-            # Gerando uma lista de planos ativos e que estão pendentes de geração de OS
-            planos = PlanoManutencao.query.filter(PlanoManutencao.ativo == True,
-                                                  PlanoManutencao.tipodata_id == TipoData.id,
-                                                  TipoData.nome == "DATA_FIXA"
-                                                  ).all()
-            # se existir uma lista de planos
-            if planos:
-                # percorrer por toda a lista dos planos
-                for plano in planos:
-                    # Verifica se a data prevista está expirada
-                    if datetime.datetime.now() > plano.data_inicio:
-                        # Alterar a data prevista do plano
-                        plano.alterar_data_prevista(False)
-                        # gerar uma OS com status pendente para o plano
-                        ordem = OrdemServico()
-                        ordem.alterar_atributos_by_plano(plano)
-                        if ordem.salvar():
-                            # alterar o tipo de situação do plano para GERADO
-                            # plano.tiposituacaoplano_id = TipoSituacaoPlano.retornar_id_tipo_situacao("Gerado")
-                            plano.salvar()
-                        else:
-                            # gerar log de erros
-                            flash("Ordem de Serviço não cadastrada", category="danger")
+    # @staticmethod
+    # def verificar_geracao_ordens_servicos():
+    #     with sched.app.app_context():
+    #         # Gerando uma lista de planos ativos e que estão pendentes de geração de OS
+    #         planos = PlanoManutencao.query.filter(PlanoManutencao.ativo == True,
+    #                                               PlanoManutencao.tipodata_id == TipoData.id,
+    #                                               TipoData.nome == "DATA_FIXA"
+    #                                               ).all()
+    #         # se existir uma lista de planos
+    #         if planos:
+    #             # percorrer por toda a lista dos planos
+    #             for plano in planos:
+    #                 # Verifica se a data prevista está expirada
+    #                 if datetime.datetime.now() > plano.data_inicio:
+    #                     # Alterar a data prevista do plano
+    #                     plano.alterar_data_prevista(False)
+    #                     # gerar uma OS com status pendente para o plano
+    #                     ordem = OrdemServico()
+    #                     ordem.alterar_atributos_by_plano(plano)
+    #                     if ordem.salvar():
+    #                         # alterar o tipo de situação do plano para GERADO
+    #                         # plano.tiposituacaoplano_id = TipoSituacaoPlano.retornar_id_tipo_situacao("Gerado")
+    #                         plano.salvar()
+    #                     else:
+    #                         # gerar log de erros
+    #                         flash("Ordem de Serviço não cadastrada", category="danger")
 
     def alterar_data_prevista(self, new):
         self.data_inicio = self.data_futura(new,

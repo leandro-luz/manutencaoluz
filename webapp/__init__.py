@@ -3,12 +3,14 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_mail import Mail
 from flask_apscheduler import APScheduler
+# from apscheduler.schedulers.blocking import BlockingScheduler
 
 db = SQLAlchemy()
 migrate = Migrate()
 # debug_toolbar = DebugToolbarExtension()
 mail = Mail()
-sched = APScheduler()
+# sched = BlockingScheduler
+# sched = APScheduler()
 
 
 def create_app(object_name: str) -> Flask:
@@ -18,7 +20,7 @@ def create_app(object_name: str) -> Flask:
     db.init_app(app)
     migrate.init_app(app, db)
     mail.init_app(app)
-    sched.init_app(app)
+    # sched.init_app(app)
     # debug_toolbar.init_app(app)
 
     from webapp.usuario import criar_modulo as criar_modulo_usuario
@@ -39,9 +41,9 @@ def create_app(object_name: str) -> Flask:
     criar_modulo_equipamento(app)
     criar_modulo_fornecedor(app)
     criar_modulo_contrato(app)
-    criar_modulo_plano_manutencao(app, sched)
+    criar_modulo_plano_manutencao(app)
     criar_modulo_ordem_servico(app)
 
     # app.register_error_handler(404, page_not_found)
-    sched.start()
+    # sched.start()
     return app
