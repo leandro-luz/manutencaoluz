@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm as Form
-from wtforms import StringField, SelectField, SubmitField, BooleanField
-from wtforms.validators import InputRequired, Length
+from wtforms import StringField, SelectField, SubmitField, BooleanField, IntegerField
+from wtforms.validators import InputRequired, Length, NumberRange
 from flask import flash
 from webapp.contrato.models import Contrato, Telacontrato
 
@@ -42,7 +42,8 @@ class TelaContratoForm(Form):
         check_validate = super(TelaContratoForm, self).validate()  # válida inicialmente as informações
 
         if check_validate:
-            telacontrato = Telacontrato.query.filter_by(contrato_id=self.contrato.data, tela_id=self.tela.data).one_or_none()
+            telacontrato = Telacontrato.query.filter_by(contrato_id=self.contrato.data,
+                                                        tela_id=self.tela.data).one_or_none()
             if telacontrato:
                 flash("Tela já registrada para este contrato", category="danger")
                 return False
@@ -60,6 +61,9 @@ class TelaForm(Form):
                        render_kw={"placeholder": "Digite o nome do icone"})
     url = StringField('URL', validators=[InputRequired(), Length(max=50)],
                       render_kw={"placeholder": "Digite o endereço da url"})
+    posicao = IntegerField('Posição', validators=[InputRequired(), NumberRange(min=0)],
+                           render_kw={"placeholder": "Digite a posição"})
+
     submit = SubmitField("Cadastrar")
 
     def validate(self, **kwargs):

@@ -17,6 +17,43 @@
     <input type="submit" value="Cadastrar"/>
     {% else %}
     <input type="submit" value="Atualizar"/>
+
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">SUBGRUPO</th>
+            <th scope="col">ATIVO</th>
+        </tr>
+        </thead>
+
+        <tbody id="myTable">
+        {% for subgrupo in subgrupos %}
+        <tr>
+            <td>{{ subgrupo.nome }}</td>
+            {% if subgrupo.ativo == True %}
+            <td>
+                <a href="#">
+                <span data-tooltip="Ativa">
+                    <i class="bi-hand-thumbs-up fs-6"></i>
+                </span>
+                </a>
+            </td>
+            {% else %}
+            <td>
+                <a href="#">
+                <span data-tooltip="Inativa">
+                    <i class="bi-hand-thumbs-down fs-6"></i>
+                </span>
+                </a>
+            </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+
     {% endif %}
 
 </form>

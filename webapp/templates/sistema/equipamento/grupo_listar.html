@@ -15,6 +15,7 @@
     <tr>
         <th scope="col">NOME</th>
         <th scope="col">ATIVO</th>
+        <th scope="col">TOTAL DE GRUPO</th>
         <th scope="col"></th>
     </tr>
     </thead>
@@ -22,11 +23,11 @@
     <tbody id="myTable">
     {% for grupo in grupos %}
     <tr>
-        <td>{{ grupo.nome }}</td>
+        <td>{{ grupo['grupo'].nome }}</td>
 
-        {% if grupo.ativo == True %}
+        {% if grupo['grupo'].ativo == True %}
         <td>
-            <a href="{{ url_for('equipamento.grupo_ativar', grupo_id=grupo.id,
+            <a href="{{ url_for('equipamento.grupo_ativar', grupo_id=grupo['grupo'].id,
             subgrupo_id=subgrupo_id, equipamento_id=equipamento_id) }}">
                 <span data-tooltip="Desativar">
                    <i class="bi-hand-thumbs-up fs-6"></i>
@@ -35,7 +36,7 @@
         </td>
         {% else %}
         <td>
-            <a href="{{ url_for('equipamento.grupo_ativar', grupo_id=grupo.id,
+            <a href="{{ url_for('equipamento.grupo_ativar', grupo_id=grupo['grupo'].id,
             subgrupo_id=subgrupo_id, equipamento_id=equipamento_id) }}">
                 <span data-tooltip="Ativar">
                     <i class="bi-hand-thumbs-down fs-6"></i>
@@ -43,7 +44,15 @@
             </a>
         </td>
         {% endif %}
+        <td>{{ grupo['total'] }}</td>
 
+        <td>
+            <a href="{{ url_for('equipamento.grupo_editar', grupo_id=grupo['grupo'].id,subgrupo_id=subgrupo_id, equipamento_id=equipamento_id) }}">
+                <span data-tooltip="Informações">
+                    <i class="bi-caret-right fs-6"></i>
+                </span>
+            </a>
+        </td>
     </tr>
     {% endfor %}
     </tbody>

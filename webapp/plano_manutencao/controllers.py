@@ -3,7 +3,7 @@ import numpy as np
 from flask import (render_template, Blueprint, redirect, url_for, flash)
 from flask_login import current_user, login_required
 from webapp.empresa.models import Empresa
-from webapp.plano_manutencao.models import PlanoManutencao, TipoData, Periodicidade
+from webapp.plano_manutencao.models import PlanoManutencao, TipoData, Periodicidade, Atividade
 from webapp.equipamento.models import Equipamento, Grupo, Subgrupo
 from webapp.ordem_servico.models import OrdemServico
 from webapp.plano_manutencao.forms import PlanoForm
@@ -55,6 +55,7 @@ def plano_ativar(plano_id):
 @has_view('Plano de Manutenção')
 def plano_editar(plano_id):
     new = True
+    atividades = []
     if plano_id > 0:
         # Atualizar
         plano = PlanoManutencao.query.filter(
@@ -81,6 +82,8 @@ def plano_editar(plano_id):
                 tp_d = plano.tipodata_id
                 e_d = plano.equipamento_id
                 p_d = plano.periodicidade_id
+            # Lista de atividades vinculado ao plano de manutenção
+            atividades = Atividade.query.filter_by(planomanutencao_id=plano_id).all()
         else:
             flash("Plano de manutenção não localizado", category="danger")
             return redirect(url_for("plano_manutencao.plano_listar"))
@@ -137,7 +140,7 @@ def plano_editar(plano_id):
             flash("Plano de manutenção não cadastrado/atualizado", category="danger")
     else:
         flash_errors(form)
-    return render_template("plano_manutencao_editar.html", form=form, plano=plano)
+    return render_template("plano_manutencao_editar.html", form=form, plano=plano, atividades=atividades)
 
 
 @plano_manutencao_blueprint.route('/gerar_padrao_planos_manutencao/', methods=['GET', 'POST'])

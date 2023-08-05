@@ -24,6 +24,41 @@
                     </span>
     </a> <br>
     <input type="submit" value="Atualizar"/>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">USUÁRIO</th>
+            <th scope="col">ATIVO</th>
+        </tr>
+        </thead>
+
+        <tbody id="myTable">
+        {% for usuario in usuarios %}
+        <tr>
+            <td>{{ usuario.nome }}</td>
+            {% if usuario.ativo == True %}
+            <td>
+                <a href="#">
+                <span data-tooltip="Ativa">
+                    <i class="bi-hand-thumbs-up fs-6"></i>
+                </span>
+                </a>
+            </td>
+            {% else %}
+            <td>
+                <a href="#">
+                <span data-tooltip="Inativa">
+                    <i class="bi-hand-thumbs-down fs-6"></i>
+                </span>
+                </a>
+            </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
     {% endif %}
 </form>
 

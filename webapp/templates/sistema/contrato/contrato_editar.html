@@ -1,29 +1,62 @@
 {% extends "sistema_base.html" %}
 {% block body %}
 <body>
-    <form action="{{ url_for('contrato.contrato_editar', contrato_id=contrato.id) }}" method="POST">
-        {{form.csrf_token}}
+<form action="{{ url_for('contrato.contrato_editar', contrato_id=contrato.id) }}" method="POST">
+    {{form.csrf_token}}
 
-        {% if contrato.id == 0 %}
-            <h2>Cadastro de Contrato</h2>
-            {{form.nome.label}}                {{form.nome(size=50)}}<br>
-            <input type="submit" value="Cadastrar"/>
-        {% else %}
-            <h2>Contrato</h2>
+    {% if contrato.id == 0 %}
+    <h2>Cadastro de Contrato</h2>
+    {{form.nome.label}} {{form.nome(size=50)}}<br>
+    <input type="submit" value="Cadastrar"/>
+    {% else %}
+    <h2>Contrato</h2>
+    {{form.nome.label}} {{form.nome(size=50)}}<br>
+    <input type="submit" value="Atualizar"/><br>
 
-            {{form.nome.label}}                {{form.nome(size=50)}}<br>
-            <input type="submit" value="Atualizar"/><br>
-
-            {{form.tela.label}}
-            <a href="{{ url_for('contrato.telacontrato_listar', contrato_id=contrato.id) }}">
+    {{form.tela.label}}
+    <a href="{{ url_for('contrato.telacontrato_listar', contrato_id=contrato.id) }}">
                 <span data-tooltip="Atualizar">
                     <i class="bi-caret-down fs-6"></i>
                 </span>
-            </a> <br>
+    </a> <br>
 
-        {% endif %}
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">EMPRESA</th>
+            <th scope="col">ATIVA</th>
+        </tr>
+        </thead>
 
-    </form>
+        <tbody id="myTable">
+        {% for empresa in empresas %}
+        <tr>
+            <td>{{ empresa.nome_fantasia }}</td>
+            {% if empresa.ativo == True %}
+            <td>
+                <a href="#">
+                <span data-tooltip="Ativa">
+                    <i class="bi-hand-thumbs-up fs-6"></i>
+                </span>
+                </a>
+            </td>
+            {% else %}
+            <td>
+                <a href="#">
+                <span data-tooltip="Inativa">
+                    <i class="bi-hand-thumbs-down fs-6"></i>
+                </span>
+                </a>
+            </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    {% endif %}
+
+</form>
 
 <a href="{{ url_for('contrato.contrato_listar') }}">Voltar</a>
 

@@ -5,9 +5,6 @@
     {{form.csrf_token}}
     {% if plano.id == 0 %}
     <h2>Cadastro de Plano de Manutenção</h2>
-    {% else %}
-    <h2>Plano de Manutenção</h2>
-    {% endif %}
 
 
     {{form.nome.label}} {{form.nome(size=80)}}<br>
@@ -18,17 +15,42 @@
     {{form.periodicidade.label}} {{form.periodicidade}}<br>
     {{form.equipamento.label}} {{form.equipamento}}
     <a href="#">
-                <span data-tooltip="Atualizar">
-                    <i class="bi-caret-down fs-6"></i>
-                </span>
+        <span data-tooltip="Atualizar">
+            <i class="bi-caret-down fs-6"></i>
+        </span>
     </a> <br>
 
     {{form.ativo.label}} {{form.ativo(size=20)}}<br>
-
-    {% if plano.id == 0 %}
     <input type="submit" value="Cadastrar"/>
     {% else %}
-    <input type="submit" value="Atualizar"/>
+    <h2>Plano de Manutenção</h2>
+    Nome: {{ plano.nome }}<br>
+    Código: {{ plano.codigo }}<br>
+    Tipo de Ordem Serviço: {{ plano.tipoordem.nome }}<br>
+    Tipo de Data Inicial: {{ plano.tipodata.nome }}<br>
+    Data Inicial: {{ plano.data_inicio }}<br>
+    Periodicidade: {{ plano.periodicidade.nome }}<br>
+    Equipamento: {{ plano.equipamento.descricao_curta }}<br>
+    Ativo: {{ plano.ativo }}<br><br>
+
+    <h5>LISTA DE ATIVIDADES</h5>
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">ITEM</th>
+            <th scope="col">DESCRIÇÃO</th>
+        </tr>
+        </thead>
+        <tbody id="myTable">
+        {% for atividade in atividades %}
+        <tr>
+            <td>{{ atividade.posicao }}</td>
+            <td>{{ atividade.descricao }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
     {% endif %}
 
 </form>
@@ -36,7 +58,8 @@
 <br>
 
 {% if plano.id == 0 %}
-<form action="{{ url_for('plano_manutencao.cadastrar_lote_planos_manutencao') }}" enctype="multipart/form-data" method="POST">
+<form action="{{ url_for('plano_manutencao.cadastrar_lote_planos_manutencao') }}" enctype="multipart/form-data"
+      method="POST">
     {{ form.file.label }} {{ form.file }}
     <input type="submit" value="Cadastrar"/>
 </form>

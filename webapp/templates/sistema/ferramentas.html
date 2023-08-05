@@ -1,0 +1,17 @@
+{% extends "sistema_base.html" %}
+{% block body %}
+<body>
+
+    FERRAMENTAS
+
+    {% for item in itens %}
+    <ul>
+        <li>
+            item: {{ item }}
+        </li>
+    </ul>
+
+    {% endfor %}
+
+</body>
+{% endblock %}

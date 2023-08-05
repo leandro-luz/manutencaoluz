@@ -16,6 +16,7 @@
         <th scope="col">SUBGRUPO</th>
         <th scope="col">GRUPO</th>
         <th scope="col">ATIVO</th>
+        <th scope="col">TOTAL DE EQUIPAMENTOS</th>
         <th scope="col"></th>
     </tr>
     </thead>
@@ -23,11 +24,11 @@
     <tbody id="myTable">
     {% for subgrupo in subgrupos %}
     <tr>
-        <td>{{ subgrupo.nome }}</td>
-        <td>{{ subgrupo.grupo.nome }}</td>
-        {% if subgrupo.ativo == True %}
+        <td>{{ subgrupo['subgrupo'].nome }}</td>
+        <td>{{ subgrupo['subgrupo'].grupo.nome }}</td>
+        {% if subgrupo['subgrupo'].ativo == True %}
         <td>
-            <a href="{{ url_for('equipamento.subgrupo_ativar', subgrupo_id=subgrupo.id, equipamento_id=equipamento_id) }}">
+            <a href="{{ url_for('equipamento.subgrupo_ativar', subgrupo_id=subgrupo['subgrupo'].id, equipamento_id=equipamento_id) }}">
                 <span data-tooltip="Desativar">
                    <i class="bi-hand-thumbs-up fs-6"></i>
                 </span>
@@ -35,20 +36,23 @@
         </td>
         {% else %}
         <td>
-            <a href="{{ url_for('equipamento.subgrupo_ativar', subgrupo_id=subgrupo.id, equipamento_id=equipamento_id) }}">
+            <a href="{{ url_for('equipamento.subgrupo_ativar', subgrupo_id=subgrupo['subgrupo'].id, equipamento_id=equipamento_id) }}">
                 <span data-tooltip="Ativar">
                     <i class="bi-hand-thumbs-down fs-6"></i>
                 </span>
             </a>
         </td>
         {% endif %}
+        <td>{{ subgrupo['total'] }}</td>
+
         <td>
-            <a href="{{ url_for('equipamento.subgrupo_editar', subgrupo_id=subgrupo.id, equipamento_id=equipamento_id) }}">
-                    <span data-tooltip="Informações">
-                        <i class="bi-caret-right fs-6"></i>
-                    </span>
+            <a href="{{ url_for('equipamento.subgrupo_editar', subgrupo_id=subgrupo['subgrupo'].id, equipamento_id=equipamento_id) }}">
+                <span data-tooltip="Informações">
+                    <i class="bi-caret-right fs-6"></i>
+                </span>
             </a>
         </td>
+
     </tr>
     {% endfor %}
     </tbody>

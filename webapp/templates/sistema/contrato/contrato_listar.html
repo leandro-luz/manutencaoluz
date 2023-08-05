@@ -10,44 +10,47 @@
 <input class="form-control" id="myInput" placeholder="Filtrar.." type="text"><br>
 <button onclick="exportar_lista('contrato.csv', 2)" type="button"> Exportar Lista</button>
 
+
 <table class="table">
     <thead>
     <tr>
         <th scope="col">NOME</th>
         <th scope="col">ATIVO</th>
+        <th scope="col">TOTAL EMPRESAS</th>
         <th scope="col"></th>
     </tr>
-
     </thead>
 
     <tbody id="myTable">
     {% for contrato in contratos %}
     <tr>
-        <td>{{ contrato.nome }}</td>
+        <td>{{ contrato['contrato'].nome }}</td>
 
-        {% if contrato.ativo == True %}
+        {% if contrato['contrato'].ativo == True %}
         <td>
-            <a href="{{ url_for('contrato.contrato_ativar', contrato_id=contrato.id) }}">
-                    <span data-tooltip="Desativar">
-                        <i class="bi-hand-thumbs-up fs-6"></i>
-                    </span>
+            <a href="{{ url_for('contrato.contrato_ativar', contrato_id=contrato['contrato'].id) }}">
+                <span data-tooltip="Desativar">
+                    <i class="bi-hand-thumbs-up fs-6"></i>
+                </span>
             </a>
         </td>
         {% else %}
         <td>
-            <a href="{{ url_for('contrato.contrato_ativar', contrato_id=contrato.id) }}">
-                    <span data-tooltip="Ativar">
-                        <i class="bi-hand-thumbs-down fs-6"></i>
-                    </span>
+            <a href="{{ url_for('contrato.contrato_ativar', contrato_id=contrato['contrato'].id) }}">
+                <span data-tooltip="Ativar">
+                    <i class="bi-hand-thumbs-down fs-6"></i>
+                </span>
             </a>
         </td>
         {% endif %}
 
+        <td>{{ contrato['total'] }}</td>
+
         <td>
-            <a href="{{ url_for('contrato.contrato_editar', contrato_id=contrato.id) }}">
-                        <span data-tooltip="Informações">
-                            <i class="bi-caret-right fs-6"></i>
-                        </span>
+            <a href="{{ url_for('contrato.contrato_editar', contrato_id=contrato['contrato'].id) }}">
+                <span data-tooltip="Informações">
+                    <i class="bi-caret-right fs-6"></i>
+                </span>
             </a>
         </td>
     </tr>

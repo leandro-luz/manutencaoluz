@@ -30,7 +30,12 @@ empresa_blueprint = Blueprint(
 def empresa_listar() -> str:
     """    Retorna a lista de empresas vinculada a empresa do usuario     """
     empresas = Empresa.query.filter_by(empresa_gestora_id=current_user.empresa_id)  # retorna uma lista com base no _
-    # identificador da empresa do usuário
+
+    # lista_empresas = [(empresa.empresa_gestora_id, empresa.id) for empresa in empresas]
+    # empresas_nome = [(empresa.nome_fantasia) for empresa in empresas]
+    # print(lista_empresas, empresas_nome)
+    # gerar_grafo(lista_empresas, empresas_nome)
+    # grafo=''
     return render_template('empresa_listar.html', empresas=empresas)
 
 

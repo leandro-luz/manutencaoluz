@@ -1,16 +1,11 @@
 <div class="d-flex flex-sm-column ">
-
     <ul class="nav nav-pills flex-sm-column flex-row align-items-left">
         {% for tela in current_user.retornar_telas_by_regras() %}
-
         <li class="nav-item">
             <a class="nav-link" href=" {{ url_for(tela['url']) }} " title="">
                 <i class={{tela['icon']}}> {{tela['nome']}}</i>
             </a>
         </li>
-
         {% endfor %}
-
     </ul>
-
 </div>

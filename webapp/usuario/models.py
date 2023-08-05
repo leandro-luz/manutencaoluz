@@ -276,16 +276,18 @@ class Usuario(db.Model):
             self.data_assinatura = datetime.datetime.now()
 
     def ativar_desativar(self):
+        """Função para ativar e desativar"""
         if self.ativo:
             self.ativo = False
         else:
             self.ativo = True
 
     def retornar_telas_by_regras(self):
+        """Função retorna as telas permitidas ao usuário em ordem"""
         telas = []
-        for telaperfil in Telaperfil.query.filter_by(perfil_id=self.perfil_id, ativo=True).all():
-            tela = Tela.query.filter_by(id=telaperfil.tela_id).one()
-            telas.append(dict(nome=tela.nome, url=tela.url, icon=tela.icon))
+        lista_telas = Tela.query.filter(Tela.id == Telaperfil.tela_id,
+                                        Telaperfil.perfil_id == self.perfil_id).order_by(Tela.posicao.asc())
+        telas = [{'nome': tela.nome, 'url': tela.url, 'icon': tela.icon} for tela in lista_telas]
         return telas
 
 
@@ -302,7 +304,7 @@ class Telaperfil(db.Model):
     tela = db.relationship("Tela", back_populates="telaperfil")
 
     def __repr__(self) -> str:
-        return f'<Telaperfil: {self.id}-{self.id}>'
+        return f'<Telaperfil: {self.id}-{self.perfil_id}-{self.tela_id}>'
 
     def salvar(self) -> bool:
         """    Função para salvar no banco de dados o objeto    """

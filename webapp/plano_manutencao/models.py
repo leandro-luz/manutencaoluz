@@ -52,6 +52,20 @@ class Periodicidade(db.Model):
         return f'<Periodicidade: {self.id}-{self.nome}>'
 
 
+class Atividade(db.Model):
+    """    Classe de atividade da lista de atividades   """
+    __tablename__ = 'atividade'
+    id = db.Column(db.Integer(), primary_key=True)
+    posicao = db.Column(db.Integer(), nullable=False)
+    descricao = db.Column(db.String(100), nullable=False, index=True)
+
+    planomanutencao_id = db.Column(db.Integer(), db.ForeignKey("plano_manutencao.id"), nullable=False)
+    planomanutencao = db.relationship("PlanoManutencao", back_populates="atividade")
+
+    def __repr__(self):
+        return f'<Atividade: {self.id}-{self.posicao}-{self.descricao}>'
+
+
 class PlanoManutencao(db.Model):
     """    Classe de Plano de Manutenção   """
     nome_doc = 'padrão_plano_manutenção'
@@ -77,6 +91,7 @@ class PlanoManutencao(db.Model):
     periodicidade = db.relationship("Periodicidade", back_populates="planomanutencao")
     equipamento = db.relationship("Equipamento", back_populates="planomanutencao")
     tipoordem = db.relationship("TipoOrdem", back_populates="planomanutencao")
+    atividade = db.relationship("Atividade", back_populates="planomanutencao")
 
     def __repr__(self):
         return f'<Plano de Manutenção: {self.id}-{self.codigo}>'

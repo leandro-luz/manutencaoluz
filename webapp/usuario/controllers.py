@@ -460,15 +460,20 @@ def cadastrar_lote_usuarios():
 @login_required
 @has_view('RH')
 def perfil_listar():
-    perfis = Perfil.query.filter_by(empresa_id=current_user.empresa_id). \
-        filter(Perfil.nome.notlike("%adminluz%")).order_by(Perfil.nome).all()
-    return render_template('perfil_listar.html', perfis=perfis)
+    lista_perfis = [{'perfil': perfil, 'total': Usuario.query.filter(Usuario.empresa_id == Empresa.id,
+                                                                     Usuario.perfil_id == perfil.id,
+                                                                     Empresa.id == current_user.empresa_id).count()}
+                    for perfil in Perfil.query.filter_by(empresa_id=current_user.empresa_id). \
+                        filter(Perfil.nome.notlike("%adminluz%")).order_by(Perfil.nome).all()]
+
+    return render_template('perfil_listar.html', perfis=lista_perfis)
 
 
 @usuario_blueprint.route('/perfil_editar/<int:perfil_id>', methods=['GET', 'POST'])
 @login_required
 @has_view('RH')
 def perfil_editar(perfil_id):
+    usuarios = []
     if perfil_id > 0:
         # Atualizar
         perfil = Perfil.query.filter(
@@ -481,6 +486,10 @@ def perfil_editar(perfil_id):
         if perfil:
             form = PerfilForm(obj=perfil)
             new = False
+
+            # Usuários vinculados no perfil
+            usuarios = Usuario.query.filter_by(perfil_id=perfil.id).all()
+
         else:
             flash("Perfil não localizado", category="danger")
             return redirect(url_for("usuario.perfil_listar"))
@@ -510,7 +519,7 @@ def perfil_editar(perfil_id):
             flash("Perfil não cadastrado/atualizado", category="danger")
     else:
         flash_errors(form)
-    return render_template("perfil_editar.html", form=form, perfil=perfil)
+    return render_template("perfil_editar.html", form=form, perfil=perfil, usuarios=usuarios)
 
 
 @usuario_blueprint.route('/perfil_ativar/<int:perfil_id>', methods=['GET', 'POST'])

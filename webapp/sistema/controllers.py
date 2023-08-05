@@ -49,6 +49,20 @@ def manutenção():
     return render_template('manutenção.html', ordens=ordens)
 
 
+@sistema_blueprint.route('/ferramentas', methods=['GET', 'POST'])
+@login_required
+def ferramentas():
+    itens = ['a', 'b', 'c', 'd']
+    return render_template('ferramentas.html', itens=itens)
+
+
+@sistema_blueprint.route('/epi', methods=['GET', 'POST'])
+@login_required
+def epi():
+    itens = ['a', 'b', 'c', 'd']
+    return render_template('epi_epc.html', itens=itens)
+
+
 @sistema_blueprint.route('/orçamento', methods=['GET', 'POST'])
 @login_required
 def orçamento():

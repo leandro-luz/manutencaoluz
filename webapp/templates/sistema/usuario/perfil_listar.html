@@ -15,6 +15,7 @@
     <tr>
         <th scope="col">NOME</th>
         <th scope="col">ATIVO</th>
+        <th scope="col">TOTAL DE USUÁRIOS</th>
         <th scope="col"></th>
     </tr>
     </thead>
@@ -22,11 +23,11 @@
     <tbody id="myTable">
     {% for perfil in perfis %}
     <tr>
-        <td>{{ perfil.nome }}</td>
+        <td>{{ perfil['perfil'].nome }}</td>
 
-        {% if perfil.ativo == True %}
+        {% if perfil['perfil'].ativo == True %}
         <td>
-            <a href="{{ url_for('usuario.perfil_ativar', perfil_id=perfil.id) }}">
+            <a href="{{ url_for('usuario.perfil_ativar', perfil_id=perfil['perfil'].id) }}">
                     <span data-tooltip="Ativar">
                         <i class="bi-hand-thumbs-down fs-6"></i>
                     </span>
@@ -34,16 +35,17 @@
         </td>
         {% else %}
         <td>
-            <a href="{{ url_for('usuario.perfil_ativar', perfil_id=perfil.id) }}">
+            <a href="{{ url_for('usuario.perfil_ativar', perfil_id=perfil['perfil'].id) }}">
                     <span data-tooltip="Desativar">
                         <i class="bi-hand-thumbs-up fs-6"></i>
                     </span>
             </a>
         </td>
         {% endif %}
+        <td>{{ perfil['total'] }}</td>
 
         <td>
-            <a href="{{ url_for('usuario.perfil_editar', perfil_id=perfil.id) }}">
+            <a href="{{ url_for('usuario.perfil_editar', perfil_id=perfil['perfil'].id) }}">
                 <span data-tooltip="Informações">
                     <i class="bi-caret-right fs-6"></i>
                 </span>

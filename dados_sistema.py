@@ -10,7 +10,7 @@ from webapp.usuario.models import Perfil, Senha, Usuario, Telaperfil
 from webapp.empresa.models import Interessado, Tipoempresa, Empresa
 from webapp.equipamento.models import Equipamento, Grupo, Subgrupo
 from webapp.contrato.models import Contrato, Tela, Telacontrato
-from webapp.plano_manutencao.models import TipoData, Unidade, Periodicidade, PlanoManutencao
+from webapp.plano_manutencao.models import TipoData, Unidade, Periodicidade, PlanoManutencao, Atividade
 from webapp.ordem_servico.models import SituacaoOrdem, FluxoOrdem, OrdemServico, TramitacaoOrdem, TipoOrdem
 
 env = os.environ.get('WEBAPP_ENV', 'prod')
@@ -27,18 +27,22 @@ print("Criando todas as tabelas")
 db.create_all()
 
 telas_lista = [
-    {'nome': 'Interessado', 'icon': 'bi-card-list', 'url': 'empresa.interessado_listar'},
-    {'nome': 'Contrato', 'icon': 'bi-briefcase', 'url': 'contrato.contrato_listar'},
-    {'nome': 'Empresa', 'icon': 'bi-house-door', 'url': 'empresa.empresa_listar'},
-    {'nome': 'RH', 'icon': 'bi-people', 'url': 'usuario.usuario_listar'},
-    {'nome': 'Equipamento', 'icon': 'bi-robot', 'url': 'equipamento.equipamento_listar'},
-    {'nome': 'Plano de Manutenção', 'icon': 'bi-clipboard', 'url': 'plano_manutencao.plano_listar'},
-    {'nome': 'Ordem de Serviço', 'icon': 'bi-wrench-adjustable-circle', 'url': 'ordem_servico.ordem_listar'},
-    {'nome': 'Almoxarifado', 'icon': 'bi-box-seam', 'url': 'sistema.almoxarifado'},
-    {'nome': 'Programação', 'icon': 'bi-calendar3', 'url': 'sistema.programação'},
-    {'nome': 'Fornecedor', 'icon': 'bi-truck', 'url': 'supplier.supplier_list'},
-    {'nome': 'Orçamento', 'icon': 'bi-cash', 'url': 'sistema.orçamento'},
-    {'nome': 'Indicadores', 'icon': 'bi-graph-up', 'url': 'sistema.indicador'}
+    {'posicao': 1, 'nome': 'Interessado', 'icon': 'bi-card-list', 'url': 'empresa.interessado_listar'},
+    {'posicao': 2, 'nome': 'Contrato', 'icon': 'bi-briefcase', 'url': 'contrato.contrato_listar'},
+    {'posicao': 3, 'nome': 'Empresa', 'icon': 'bi-house-door', 'url': 'empresa.empresa_listar'},
+    {'posicao': 4, 'nome': 'RH', 'icon': 'bi-people', 'url': 'usuario.usuario_listar'},
+    {'posicao': 5, 'nome': 'Equipamento', 'icon': 'bi-robot', 'url': 'equipamento.equipamento_listar'},
+    {'posicao': 6, 'nome': 'Plano de Manutenção', 'icon': 'bi-clipboard', 'url': 'plano_manutencao.plano_listar'},
+    {'posicao': 7, 'nome': 'Ordem de Serviço', 'icon': 'bi-wrench-adjustable-circle',
+     'url': 'ordem_servico.ordem_listar'},
+    {'posicao': 8, 'nome': 'Almoxarifado', 'icon': 'bi-box-seam', 'url': 'sistema.almoxarifado'},
+    {'posicao': 9, 'nome': 'Ferramentas', 'icon': 'bi-tools', 'url': 'sistema.ferramentas'},
+    {'posicao': 10, 'nome': 'EPI_EPC', 'icon': 'bi-umbrella-fill', 'url': 'sistema.epi'},
+    {'posicao': 11, 'nome': 'Programação', 'icon': 'bi-calendar3', 'url': 'sistema.programação'},
+    {'posicao': 12, 'nome': 'Fornecedor', 'icon': 'bi-truck', 'url': 'supplier.supplier_list'},
+    {'posicao': 13, 'nome': 'Orçamento', 'icon': 'bi-cash', 'url': 'sistema.orçamento'},
+    {'posicao': 14, 'nome': 'Indicadores', 'icon': 'bi-graph-up', 'url': 'sistema.indicador'},
+
 ]
 
 contratos_lista = [
@@ -69,7 +73,9 @@ telascontrato_lista = [
     {'contrato': 'completo', 'tela': 'Almoxarifado'},
     {'contrato': 'completo', 'tela': 'Programação'},
     {'contrato': 'completo', 'tela': 'Orçamento'},
-    {'contrato': 'completo', 'tela': 'Indicadores'}
+    {'contrato': 'completo', 'tela': 'Indicadores'},
+    {'contrato': 'completo', 'tela': 'Ferramentas'},
+    {'contrato': 'completo', 'tela': 'EPI_EPC'},
 ]
 
 interessado_lista = [
@@ -145,6 +151,8 @@ telasperfil_lista = [
     {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Programação'},
     {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Orçamento'},
     {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Indicadores'},
+    {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Ferramentas'},
+    {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'EPI_EPC'},
 
     {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'Interessado'},
     {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'Contrato'},
@@ -158,6 +166,8 @@ telasperfil_lista = [
     {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'Programação'},
     {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'Orçamento'},
     {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'Indicadores'},
+    {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'Ferramentas'},
+    {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'EPI_EPC'},
 
     {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'admin', 'tela': 'Interessado'},
     {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'admin', 'tela': 'Contrato'},
@@ -171,6 +181,9 @@ telasperfil_lista = [
     {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'admin', 'tela': 'Programação'},
     {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'admin', 'tela': 'Orçamento'},
     {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'admin', 'tela': 'Indicadores'},
+    {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'admin', 'tela': 'Ferramentas'},
+    {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'admin', 'tela': 'EPI_EPC'},
+
     {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'adminluz', 'tela': 'Interessado'},
     {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'adminluz', 'tela': 'Contrato'},
     {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'adminluz', 'tela': 'Empresa'},
@@ -183,6 +196,9 @@ telasperfil_lista = [
     {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'adminluz', 'tela': 'Programação'},
     {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'adminluz', 'tela': 'Orçamento'},
     {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'adminluz', 'tela': 'Indicadores'},
+    {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'adminluz', 'tela': 'Ferramentas'},
+    {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'adminluz', 'tela': 'EPI_EPC'},
+
 ]
 
 senha_lista = [
@@ -298,6 +314,17 @@ tipo_ordem_lista = [
     {'nome': 'CORRETIVA', 'sigla': 'CORR', 'plano': False},
     {'nome': 'MELHORIA', 'sigla': 'MELH', 'plano': False},
 ]
+atividades_lista = [
+    {'posicao': 1, 'descricao': 'Alinhamento da direção', 'plano': 'gera0001'},
+    {'posicao': 2, 'descricao': 'Realizar o rodízio de pneus', 'plano': 'gera0001'},
+    {'posicao': 3, 'descricao': 'Limpeza do radiador', 'plano': 'gera0001'},
+    {'posicao': 4, 'descricao': 'Realizar a troca de óleo', 'plano': 'gera0001'},
+    {'posicao': 5, 'descricao': 'Trocar as palhetas', 'plano': 'gera0001'},
+    {'posicao': 6, 'descricao': 'Verificar as lâmpadas internas', 'plano': 'gera0001'},
+    {'posicao': 7, 'descricao': 'Trocar os filtro de ar', 'plano': 'gera0001'},
+    {'posicao': 8, 'descricao': 'Verificar as velas de ignição', 'plano': 'gera0001'},
+    {'posicao': 9, 'descricao': 'Realizar a limpeza do ar condicionado', 'plano': 'gera0001'},
+]
 
 situacao_ordem_lista = [
     {'nome': 'Aguardando Aprovação', 'sigla': 'AGAP'},
@@ -400,7 +427,8 @@ def criar_telas(lista: List[dict]) -> List[Tela]:
     # Criando uma lista de novas telas para serem adicionadas
     novas_telas = [Tela(nome=item['nome'],
                         icon=item['icon'],
-                        url=item['url'])
+                        url=item['url'],
+                        posicao=item['posicao'])
                    for item in lista if item['nome'] not in {t.nome for t in Tela.query.all()}]
 
     try:
@@ -906,6 +934,32 @@ def criar_planosmanutencao(lista: List[dict]) -> List[PlanoManutencao]:
         return []
 
 
+def criar_lista_atividades(lista: List[dict]) -> List[Atividade]:
+    # Buscando os objetos necessários
+
+    planos = {p.codigo: p.id for p in PlanoManutencao.query.all()}
+
+    novas_listas = [
+        Atividade(
+            posicao=item['posicao'],
+            descricao=item['descricao'],
+            planomanutencao_id=planos[item['plano']]) for item in lista]
+
+    try:
+        # Adicionando as novas periodicidades na sessão e realizando o commit
+        db.session.add_all(novas_listas)
+        db.session.commit()
+        log.info(f'{len(novas_listas)} Atividades inseridos com sucesso.')
+
+        # Retornando a lista de novas periodicidades adicionadas
+        return novas_listas
+    except Exception as e:
+        # Em caso de erro, realizando o rollback da transação e retornando uma lista vazia
+        log.error(f'Erro ao inserir atividades: {e}')
+        db.session.rollback()
+        return []
+
+
 def criar_tipo_ordem(lista: List[dict]) -> List[TipoOrdem]:
     """
    Cria novos tipos de ordem a partir de uma lista de dicionários.
@@ -1110,6 +1164,7 @@ criar_tipodata(tipoData_lista)
 criar_unidades(unidade_lista)
 criar_periodicidades(periodicidade_lista)
 criar_planosmanutencao(planosmanutencao_lista)
+criar_lista_atividades(atividades_lista)
 
 criar_situacao_ordem(situacao_ordem_lista)
 criar_fluxo_ordem(fluxo_ordem_lista)

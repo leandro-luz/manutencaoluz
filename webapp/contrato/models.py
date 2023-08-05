@@ -57,6 +57,7 @@ class Tela(db.Model):
     nome = db.Column(db.String(50), nullable=False, index=True)
     icon = db.Column(db.String(50), nullable=False)
     url = db.Column(db.String(50), nullable=False)
+    posicao = db.Column(db.Integer(), nullable=False)
     telacontrato = db.relationship("Telacontrato", back_populates="tela")
     telaperfil = db.relationship("Telaperfil", back_populates="tela")
 
@@ -68,6 +69,7 @@ class Tela(db.Model):
         self.nome = form.nome.data
         self.icon = form.icon.data
         self.url = form.url.data
+        self.posicao = form.posicao.data
 
     def salvar(self) -> bool:
         """    Função para salvar no banco de dados o objeto"""

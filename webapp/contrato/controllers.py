@@ -6,8 +6,6 @@ from webapp.empresa.models import Empresa
 from webapp.usuario.models import Perfil, Telaperfil
 from webapp.usuario import has_view
 from webapp.utils.erros import flash_errors
-from webapp import db
-
 
 contrato_blueprint = Blueprint(
     'contrato',
@@ -22,8 +20,10 @@ contrato_blueprint = Blueprint(
 @has_view('Contrato')
 def contrato_listar() -> str:
     """    Função que retorna uma lista de planos    """
-    contratos = Contrato.query.order_by(Contrato.nome.asc())  # lista de planos de assinatura em ordem crescente
-    return render_template('contrato_listar.html', contratos=contratos)
+    # Montagem do dicionario com os contratos e as quantidade de empresas vinculadas
+    lista_contratos = [{'contrato': contrato, 'total': Empresa.query.filter(Empresa.contrato_id == contrato.id).count()}
+                       for contrato in Contrato.query.order_by(Contrato.nome.asc())]
+    return render_template('contrato_listar.html', contratos=lista_contratos)
 
 
 @contrato_blueprint.route('/contrato_editar/<int:contrato_id>', methods=['GET', 'POST'])
@@ -31,6 +31,7 @@ def contrato_listar() -> str:
 @has_view('Contrato')
 def contrato_editar(contrato_id: int):
     """    Função que cadastra ou atualiza um contrato de assinatura    """
+    empresas =[]
 
     if contrato_id > 0:
         new = False
@@ -46,6 +47,10 @@ def contrato_editar(contrato_id: int):
             # consulta das telas para o contrato existente
             form.tela.choices = [(telasplano.id, telasplano.contrato.nome) for telasplano
                                  in Telacontrato.query.filter_by(contrato_id=contrato_id).all()]
+
+            # Lista de empresas vinculadas ao contrato
+            empresas = Empresa.query.filter_by(contrato_id=contrato.id).all()
+
         else:
             flash("Contrato não localizado", category="danger")
             return redirect(url_for("contrato.contrato_listar"))
@@ -75,7 +80,7 @@ def contrato_editar(contrato_id: int):
     else:
         flash_errors(form)
     # retorna caso não esteja validado por algum motivo
-    return render_template("contrato_editar.html", form=form, contrato=contrato)
+    return render_template("contrato_editar.html", form=form, contrato=contrato, empresas=empresas)
 
 
 @contrato_blueprint.route('/contrato_ativar/<int:contrato_id>', methods=['GET', 'POST'])
@@ -138,7 +143,7 @@ def telacontrato_editar(contrato_id: int):
                     for perfis in Perfil.listar_regras_by_empresa(companies.id)]
                    for companies in Empresa.listar_empresas_by_plano(telacontrato.contrato_id)]
 
-            # libera a tela e/ou inativa as telas para todo os perfis
+            # libera a tela e/ou inativa as telas para todos os perfis
             Telaperfil.alterar_perfil(telacontrato.ativo, ids)
 
             # --------- MENSAGENS
@@ -172,7 +177,7 @@ def telacontrato_ativar(telacontrato_id: int):
                     for perfis in Perfil.listar_regras_by_empresa(companies.id)]
                    for companies in Empresa.listar_empresas_by_plano(telacontrato.contrato_id)]
 
-            # libera a tela e/ou inativa as telas para todo os perfis
+            # libera a tela e/ou inativa as telas para todos os perfis
             Telaperfil.alterar_perfil(telacontrato.ativo, ids)
         else:
             flash("Tela do contrato não foi ativada/desativada", category="danger")

@@ -224,7 +224,12 @@ def grupo_listar(subgrupo_id, equipamento_id):
         Grupo.empresa_id == Empresa.id,
         Empresa.id == current_user.empresa_id).order_by(
         Grupo.nome)
-    return render_template('grupo_listar.html', grupos=grupos, subgrupo_id=subgrupo_id, equipamento_id=equipamento_id)
+
+    lista_grupos = [{'grupo': grupo, 'total': Subgrupo.query.filter(Subgrupo.grupo_id == grupo.id).count()}
+                    for grupo in grupos]
+
+    return render_template('grupo_listar.html', grupos=lista_grupos, subgrupo_id=subgrupo_id,
+                           equipamento_id=equipamento_id)
 
 
 @equipamento_blueprint.route('/grupo_editar/<int:grupo_id>/<int:subgrupo_id>/<int:equipamento_id>',
@@ -232,6 +237,7 @@ def grupo_listar(subgrupo_id, equipamento_id):
 @login_required
 @has_view('Equipamento')
 def grupo_editar(grupo_id, subgrupo_id, equipamento_id):
+    subgrupos=[]
     if grupo_id > 0:
         # Atualizar
         # localiza a empresa do grupo
@@ -244,6 +250,7 @@ def grupo_editar(grupo_id, subgrupo_id, equipamento_id):
         # verifica se o grupo existe e se pertence a empresa do usuario logado
         if grupo:
             form = GrupoForm(obj=grupo)
+            subgrupos = Subgrupo.query.filter_by(grupo_id=grupo.id).all()
         else:
             flash("Grupo não localizado", category="danger")
             return redirect(url_for("equipamento.grupo_listar", subgrupo_id=subgrupo_id, equipamento_id=equipamento_id))
@@ -269,7 +276,7 @@ def grupo_editar(grupo_id, subgrupo_id, equipamento_id):
     else:
         flash_errors(form)
     return render_template("grupo_editar.html", form=form, grupo=grupo, subgrupo_id=subgrupo_id,
-                           equipamento_id=equipamento_id)
+                           equipamento_id=equipamento_id, subgrupos=subgrupos)
 
 
 @equipamento_blueprint.route('/grupo_ativar/<int:grupo_id>/<int:subgrupo_id>/<int:equipamento_id>',
@@ -412,13 +419,19 @@ def subgrupo_listar(equipamento_id):
         Grupo.empresa_id == Empresa.id,
         Empresa.id == current_user.empresa_id).order_by(
         Subgrupo.nome)
-    return render_template('subgrupo_listar.html', subgrupos=subgrupos, equipamento_id=equipamento_id)
+
+    lista_subgrupos = [{'subgrupo': subgrupo,
+                        'total': Equipamento.query.filter(Equipamento.subgrupo_id == subgrupo.id).count()}
+                       for subgrupo in subgrupos]
+
+    return render_template('subgrupo_listar.html', subgrupos=lista_subgrupos, equipamento_id=equipamento_id)
 
 
 @equipamento_blueprint.route('/subgrupo_editar/<int:subgrupo_id>/<int:equipamento_id>', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
 def subgrupo_editar(subgrupo_id, equipamento_id):
+    equipamentos = []
     if subgrupo_id > 0:
         # Atualizar
         # localiza a empresa do equipamento
@@ -437,7 +450,7 @@ def subgrupo_editar(subgrupo_id, equipamento_id):
                 g_d = form.grupo.data
             else:
                 g_d = subgrupo.grupo_id
-
+            equipamentos = Equipamento.query.filter_by(subgrupo_id=subgrupo_id).all()
         else:
             flash("Subgrupo não localizado", category="danger")
             return redirect(url_for("equipamento.subgrupo_editar", equipamento_id=equipamento_id))
@@ -471,7 +484,7 @@ def subgrupo_editar(subgrupo_id, equipamento_id):
     else:
         flash_errors(form)
     return render_template("subgrupo_editar.html", form=form, subgrupo=subgrupo, subgrupo_id=subgrupo_id,
-                           equipamento_id=equipamento_id)
+                           equipamento_id=equipamento_id, equipamentos=equipamentos)
 
 
 @equipamento_blueprint.route('/gerar_padrao_subgrupos/<int:equipamento_id>', methods=['GET', 'POST'])
