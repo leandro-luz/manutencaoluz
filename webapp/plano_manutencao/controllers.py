@@ -1,12 +1,13 @@
 import pandas as pd
 import numpy as np
-from flask import (render_template, Blueprint, redirect, url_for, flash)
+from flask import (render_template, Blueprint, redirect, url_for, flash, request)
 from flask_login import current_user, login_required
 from webapp.empresa.models import Empresa
-from webapp.plano_manutencao.models import PlanoManutencao, TipoData, Periodicidade, Atividade
+from webapp.plano_manutencao.models import PlanoManutencao, TipoData, Periodicidade, Atividade, TipoBinario, \
+    TipoParametro, ListaAtividade
+from webapp.ordem_servico.models import OrdemServico, TipoSituacaoOrdem
 from webapp.equipamento.models import Equipamento, Grupo, Subgrupo
-from webapp.ordem_servico.models import OrdemServico
-from webapp.plano_manutencao.forms import PlanoForm
+from webapp.plano_manutencao.forms import PlanoForm, AtividadeForm, ListaAtividadeForm
 from webapp.usuario import has_view
 from webapp.ordem_servico.models import TipoOrdem
 from webapp.utils.files import arquivo_padrao
@@ -20,6 +21,204 @@ plano_manutencao_blueprint = Blueprint(
 )
 
 
+@plano_manutencao_blueprint.route('/listaatividade_preenchida/<int:ordem_id>',
+                                  methods=['GET', 'POST'])
+@login_required
+@has_view('Plano de Manutenção')
+def listaatividade_preenchida(ordem_id):
+    # Localiza a ordem de serviço e verifica se existe
+    ordem = OrdemServico.query.filter_by(id=ordem_id).one_or_none()
+    if ordem:
+        # Localiza e verifica se existem atividades vinculadas nesta ordem de serviço
+        atividades = Atividade.query.filter_by(listaatividade_id=ordem.listaatividade_id).all()
+        if atividades:
+            listaatividade = ListaAtividade.query.filter_by(id=ordem.listaatividade_id).one_or_none()
+            return render_template('lista_atividade_preenchida.html', atividades=atividades,
+                                   listaatividade=listaatividade, ordem_id=ordem_id)
+        else:
+            flash("Atividades não cadastradas nesta ordem de serviço!", category="danger")
+            return redirect(url_for("ordem_servico.ordem_editar", ordem_id=ordem_id))
+    else:
+        flash("Ordem de Serviço não cadastrada!", category="danger")
+        return redirect(url_for("ordem_servico.ordem_editar", ordem_id=ordem_id))
+
+
+@plano_manutencao_blueprint.route(
+    '/atividade_editar/<int:plano_id>/<int:listaatividade_id>/<int:atividade_id>/<tipo>', methods=['GET', 'POST'])
+@login_required
+@has_view('Plano de Manutenção')
+def atividade_editar(plano_id, listaatividade_id, atividade_id, tipo):
+    lista_new = False
+    listaatividade = ListaAtividade()
+    atividade = Atividade()
+    form_atividade = AtividadeForm()
+    totalOS = 0
+
+    if atividade_id > 0:
+        # Verifica se a atividade existe no BD
+        atividade = Atividade.query.filter_by(id=atividade_id).one_or_none()
+        if atividade:
+            if tipo == "excluir":
+                if atividade.excluir():
+                    # if totalOS == 0:
+                    #     flash("Atividade excluída com sucesso!", category="warning")
+                    #     return redirect(url_for("plano_manutencao.plano_editar", plano_id=plano_id))
+                    # else:
+
+                    lista_new = True
+                else:
+                    flash("Erro ao excluir a atividades", category="danger")
+            else:
+                if tipo == "descer":
+                    atividade.posicao += 1
+                if tipo == "subir":
+                    if atividade.posicao > 1:
+                        atividade.posicao -= 1
+                if atividade.salvar():
+                    flash("Atividade alterada com sucesso!", category="warning")
+                else:
+                    flash("Erro ao alterar a atividades", category="danger")
+
+                return redirect(url_for("plano_manutencao.plano_editar", plano_id=plano_id))
+
+    if listaatividade_id > 0:
+        # busca a lista de atividades
+        listaatividade = ListaAtividade.query.filter_by(id=listaatividade_id).one_or_none()
+        # Verifica se a lista de atividades existe
+        if listaatividade:
+
+            # se não houver ordens de serviços vinculadas a lista
+            totalOS = ListaAtividade.query.filter(
+                ListaAtividade.nome == listaatividade.nome,
+                OrdemServico.listaatividade_id == ListaAtividade.id
+            ).count()
+
+            if totalOS == 0:
+                # vincula a lista de atividade na atividade,
+                form_atividade.listaatividade_id.data = listaatividade_id
+            else:
+                lista_new = True
+        else:
+            flash("Lista de Atividades não encontrada", category="danger")
+            return redirect(url_for("plano_manutencao.plano_editar", plano_id=plano_id))
+
+    # Cria uma nova listaatividade
+    if listaatividade_id == 0 or lista_new:
+        listaatividade_id_nova = 0
+        if totalOS > 0:
+            # Gera as copias das atividades caso exista para a nova lista
+            listaatividade_id_nova = ListaAtividade.copiar_lista(listaatividade_id, True)
+            listaatividade = ListaAtividade.query.filter_by(id=listaatividade_id_nova).one_or_none()
+
+        # se não houver
+        if listaatividade_id_nova == 0 and listaatividade_id == 0:
+            listaatividade = ListaAtividade()
+            listaatividade.alterar_atributos()
+            if listaatividade.salvar():
+                form_atividade.listaatividade_id.data = listaatividade.id
+            else:
+                flash("Erro ao cadastrar nova lista de atividades", category="danger")
+                return redirect(url_for("plano_manutencao.plano_editar", plano_id=plano_id))
+        else:
+            listaatividade = ListaAtividade.query.filter_by(id=listaatividade.id).one_or_none()
+            form_atividade.listaatividade_id.data = listaatividade.id
+
+        if tipo == "excluir":
+            # Verifica se o plano existe
+            plano = PlanoManutencao.query.filter_by(id=plano_id).one_or_none()
+            if plano:
+                # Alterar a referencia da lista no plano
+                if listaatividade_id_nova > 0:
+                    plano.alterar_lista(listaatividade.id)
+
+                # Calcula a quantidade de atividades na lista
+                totalATV = Atividade.query.filter_by(listaatividade_id=listaatividade.id).count()
+                # se não houver atividades o plano ficará inativo
+                if totalATV == 0:
+                    plano.ativar_desativar()
+                    plano.salvar()
+                    flash("Plano de Manutenção Inativado por falta de atividades!", category="warning")
+
+            flash("Atividade excluída com sucesso!", category="warning")
+            return redirect(url_for("plano_manutencao.plano_editar", plano_id=plano_id))
+
+    # validar as informações da atividade
+    if form_atividade.validate_on_submit():
+        atividade.alterar_atributos(form_atividade)
+        # salvar a atividade
+        if atividade.salvar():
+            # vincular a lista da atividade no plano de manutenção
+            plano = PlanoManutencao.query.filter_by(id=plano_id).one_or_none()
+            if plano:
+                # alterar a listaatividade do plano
+                plano.alterar_lista(listaatividade.id)
+            flash("Atividade cadastrada no plano de manutenção", category="success")
+        else:
+            # Se ocorrer um erro ao salvar a atividade, exclui
+            # if lista_new:
+            #     listaatividade.excluir()
+            flash("Atividade não cadastrada", category="danger")
+    else:
+        flash_errors(form_atividade)
+    return redirect(url_for("plano_manutencao.plano_editar", plano_id=plano_id))
+
+
+@plano_manutencao_blueprint.route(
+    '/listaatividade_editar/<int:ordem_id>/<int:listaatividade_id>/<tramitacao_sigla>/',
+    methods=['GET', 'POST'])
+@login_required
+@has_view('Plano de Manutenção')
+def listaatividade_editar(ordem_id, listaatividade_id, tramitacao_sigla):
+    form_listaatividade = ListaAtividadeForm()
+
+    listaatividade = ListaAtividade.query.filter_by(id=listaatividade_id).one_or_none()
+    if listaatividade:
+        tipo_situacao = TipoSituacaoOrdem.query.filter_by(sigla=tramitacao_sigla).one_or_none()
+        if tipo_situacao:
+            # instanciar o formulário
+            form_atividade = AtividadeForm()
+
+            # coletar as atividades da lista
+            atividades = Atividade.query.filter(
+                OrdemServico.id == ordem_id,
+                ListaAtividade.id == OrdemServico.listaatividade_id,
+                Atividade.listaatividade_id == ListaAtividade.id
+            ).all()
+
+            # coletar os valores preenchidos
+            string_valores = request.form['valores']
+            list_valores = string_valores.split(";")
+
+            for x in range(len(atividades)):
+                # coletar o tipo de valor
+                tipo_valor = list_valores[x].split(":")
+                # inserir o valor no local correto do objeto
+                match tipo_valor[0]:
+                    case 'valorbinario_id':
+                        atividades[x].valorbinario_id = tipo_valor[1]
+                    case 'valorinteiro':
+                        atividades[x].valorinteiro = tipo_valor[1]
+                    case 'valordecimal':
+                        atividades[x].valordecimal = tipo_valor[1]
+                    case 'valortexto':
+                        atividades[x].valortexto = tipo_valor[1]
+                # salvar a atividade
+                if not atividades[x].salvar():
+                    flash("Valores da atividade não registrado", category="danger")
+
+            # Salvar as informações do campo observação
+            listaatividade.alterar_observacao(form_listaatividade.observacao.data)
+
+            # gera a nova tramitação
+            return redirect(url_for("ordem_servico.tramitacao", ordem_id=ordem_id, tipo_situacao_id=tipo_situacao.id))
+        else:
+            flash("Tipo de Tramitação não cadastrada", category="danger")
+    else:
+        flash("Lista de Atividades não não cadastrada", category="danger")
+
+    return redirect(url_for("ordem_servico.ordem_listar"))
+
+
 @plano_manutencao_blueprint.route('/plano_listar', methods=['GET', 'POST'])
 @login_required
 @has_view('Plano de Manutenção')
@@ -31,8 +230,6 @@ def plano_listar():
         Grupo.id == Subgrupo.grupo_id,
         Subgrupo.id == Equipamento.subgrupo_id,
         Equipamento.id == PlanoManutencao.equipamento_id).all()
-
-    # planos = PlanoManutencao.query.filter_by(empresa_id=current_user.empresa_id).all()
     return render_template('plano_manutencao_listar.html', planos=planos)
 
 
@@ -41,10 +238,48 @@ def plano_listar():
 @has_view('Plano de Manutenção')
 def plano_ativar(plano_id):
     plano = PlanoManutencao.query.filter_by(id=plano_id).one_or_none()
+    # Verifica se o plano está cadastrado
     if plano:
-        plano.ativar_desativar()
-        if not plano.salvar():
-            flash("Plano de Manutenção não ativado/desativado", category="danger")
+        # Verifica se o plano está ativado
+        if plano.ativo:
+            # Desativar o plano
+            plano.ativar_desativar()
+            if plano.salvar():
+                flash("Plano de Manutenção Desativado", category="success")
+            else:
+                flash("Plano de Manutenção não ativado/desativado", category="danger")
+        else:
+            # Verifica se o plano tem lista de atividade cadastrada
+            if plano.listaatividade_id:
+                # Verifica se a listaatividades tem atividades cadastradas
+                if Atividade.query.filter_by(listaatividade_id=plano.listaatividade_id).count() > 0:
+                    # Verifica se existe ordem de serviço do tipo "DATA_MOVEL" já criada para este plano
+                    ordens = OrdemServico.query.filter(
+                        OrdemServico.planomanutencao_id == plano.id,
+                        PlanoManutencao.id == OrdemServico.planomanutencao_id,
+                        TipoData.id == PlanoManutencao.tipodata_id,
+                        TipoData.nome == "DATA_MÓVEL"
+                    ).all()
+
+                    # Caso não haja criar a primeira ordem do plano
+                    if not ordens:
+                        ordem = OrdemServico()
+                        ordem.alterar_atributos_by_plano(plano)
+                        # salva a nova ordem de serviço
+                        if ordem.salvar():
+                            flash("Ordem de Serviço Cadastrado", category="success")
+                        else:
+                            flash("Ordem de Serviço não Cadastrado", category="danger")
+                    # Ativa o plano
+                    plano.ativar_desativar()
+                    if plano.salvar():
+                        flash("Plano de Manutenção Ativado", category="success")
+                    else:
+                        flash("Plano de Manutenção não ativado/desativado", category="danger")
+                else:
+                    flash("Lista de Atividades sem nenhuma atividade cadastrada", category="danger")
+            else:
+                flash("Lista de Atividades ainda não cadastrada para este plano", category="danger")
     else:
         flash("Plano de Manutenção não localizado", category="danger")
     return redirect(url_for('plano_manutencao.plano_listar'))
@@ -56,6 +291,8 @@ def plano_ativar(plano_id):
 def plano_editar(plano_id):
     new = True
     atividades = []
+    listaatividade_id = 0
+
     if plano_id > 0:
         # Atualizar
         plano = PlanoManutencao.query.filter(
@@ -71,6 +308,10 @@ def plano_editar(plano_id):
         if plano:
             form = PlanoForm(obj=plano)
             new = False
+            # verifica se o plano tem lista de atividades
+            if plano.listaatividade_id:
+                listaatividade_id = plano.listaatividade_id
+
             # Atualizar ou Ler dados
             if form.tipodata.data:
                 to_d = form.tipoordem.data
@@ -83,7 +324,13 @@ def plano_editar(plano_id):
                 e_d = plano.equipamento_id
                 p_d = plano.periodicidade_id
             # Lista de atividades vinculado ao plano de manutenção
-            atividades = Atividade.query.filter_by(planomanutencao_id=plano_id).all()
+            atividades = Atividade.query.filter_by(listaatividade_id=listaatividade_id) \
+                .order_by(Atividade.posicao.asc()).all()
+
+            form_atividade = AtividadeForm()
+            form_atividade.valorbinario_id.choices = [(0, '')] + [(tb.id, tb.nome) for tb in TipoBinario.query.all()]
+            form_atividade.tipoparametro_id.choices = [(0, '')] + [(tp.id, tp.nome) for tp in TipoParametro.query.all()]
+
         else:
             flash("Plano de manutenção não localizado", category="danger")
             return redirect(url_for("plano_manutencao.plano_listar"))
@@ -91,6 +338,7 @@ def plano_editar(plano_id):
         # Cadastrar
         plano = PlanoManutencao()
         plano.id = 0
+
         form = PlanoForm()
 
         tp_d = form.tipodata.data
@@ -98,6 +346,7 @@ def plano_editar(plano_id):
         p_d = form.periodicidade.data
         to_d = form.tipoordem.data
 
+        form_atividade = AtividadeForm()
     # Listas
     form.tipoordem.choices = [(0, '')] + [(to.id, to.nome) for to in TipoOrdem.query.filter_by(plano=True)]
     form.tipodata.choices = [(tp.id, tp.nome) for tp in TipoData.query.all()]
@@ -116,31 +365,23 @@ def plano_editar(plano_id):
 
     # Validação
     if form.validate_on_submit():
-        plano.alterar_atributos(form, new)
+        plano.alterar_atributos(form)
         if plano.salvar():
-            # case seja um novo plano, gera um ordem para este plano
-            if new:
-                # recupera o plano salvo
-                plano = PlanoManutencao.query.filter_by(nome=form.nome.data).one_or_none()
-                ordem = OrdemServico()
-                ordem.alterar_atributos_by_plano(plano)
-                # salva a nova ordem de serviço
-                if ordem.salvar():
-                    flash("Ordem de Serviço Cadastrado", category="success")
-                else:
-                    flash("Ordem de Serviço não Cadastrado", category="success")
-
             # Mensagens
             if plano_id > 0:
                 flash("Plano de manutenção atualizado", category="success")
             else:
-                flash("Plano de manutenção cadastrado", category="success")
+                flash("Plano de manutenção cadastrado, mas deve incluir uma lista de atividades para ser ativado",
+                      category="success")
             return redirect(url_for("plano_manutencao.plano_listar"))
         else:
             flash("Plano de manutenção não cadastrado/atualizado", category="danger")
     else:
         flash_errors(form)
-    return render_template("plano_manutencao_editar.html", form=form, plano=plano, atividades=atividades)
+
+    return render_template("plano_manutencao_editar.html", form=form, plano=plano, plano_id=plano.id,
+                           listaatividade_id=listaatividade_id, atividades=atividades,
+                           form_atividade=form_atividade)
 
 
 @plano_manutencao_blueprint.route('/gerar_padrao_planos_manutencao/', methods=['GET', 'POST'])

@@ -1,0 +1,46 @@
+<!-- Add New Modal -->
+<!-- Modal -->
+<div aria-hidden="true" aria-labelledby="modalLabel" class="modal fade"
+     id="modal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLabel">Lista de Atividades</h5>
+                <button aria-label="Close" class="btn-close"
+                        data-bs-dismiss="modal" type="button">
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('plano_manutencao.atividade_editar', plano_id=plano_id,
+                listaatividade_id=listaatividade_id, atividade_id=0, tipo='incluir') }}" method="POST">
+                    {{form_atividade.csrf_token}}
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th scope="col">ITEM</th>
+                            <th scope="col">DESCRIÇÃO</th>
+                            <th scope="col">TIPO</th>
+                        </tr>
+                        </thead>
+                        <tbody id="myTable">
+                        <tr>
+                            <td> {{ form_atividade.posicao }}</td>
+                            <td> {{ form_atividade.descricao }}</td>
+                            <td> {{ form_atividade.tipoparametro_id }}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <input type="submit" value="Salvar"/>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+{% if form_atividade.errors %}
+
+<script>$('#modal').modal('show');</script>
+
+{% endif %}

@@ -145,24 +145,35 @@ from datetime import datetime
 # print(f'diferenca: {(amanha - agora).seconds}')
 
 
-from igraph import *
-import matplotlib.pyplot as plt
+# from igraph import *
+# import matplotlib.pyplot as plt
+#
+# g = Graph(
+#     [(0, 0), (0, 1), (0, 2), (2, 3), (3, 4), (4, 2), (2, 5), (5, 0), (6, 3), (5, 6)]
+# )
+# g.vs["name"] = ["Alice", "Bob", "Claire", "Dennis", "Esther", "Frank", "George"]
+#
+# # g.add_vertices(4)
+# # g.add_edges([(1,2),(2,3),(0,3)])
+# # plot(g, vertex_label=["A", "B", "C", "D"], vertex_color="white")
+# layout = g.layout("kk")
+# fig, ax = plt.subplots()
+# plot(g, layout=layout, target=ax)
+# g.vs["label"] = g.vs["name"]
+# # color_dict = {"m": "blue", "f": "pink"}
+# # g.vs["color"] = [color_dict[gender] for gender in g.vs["gender"]]
+# # plot(g, layout=layout, bbox=(300, 300), margin=20)
+# plot(g, layout=layout, bbox=(300, 300), margin=20, target=ax)
+#
+# plt.show()
+#
+#
+#
+# data_ajustada = datetime.now().strftime("%Y%m%d%H%M%S")
+#
+# print(data_ajustada)
 
-g = Graph(
-    [(0, 0), (0, 1), (0, 2), (2, 3), (3, 4), (4, 2), (2, 5), (5, 0), (6, 3), (5, 6)]
-)
-g.vs["name"] = ["Alice", "Bob", "Claire", "Dennis", "Esther", "Frank", "George"]
 
-# g.add_vertices(4)
-# g.add_edges([(1,2),(2,3),(0,3)])
-# plot(g, vertex_label=["A", "B", "C", "D"], vertex_color="white")
-layout = g.layout("kk")
-fig, ax = plt.subplots()
-plot(g, layout=layout, target=ax)
-g.vs["label"] = g.vs["name"]
-# color_dict = {"m": "blue", "f": "pink"}
-# g.vs["color"] = [color_dict[gender] for gender in g.vs["gender"]]
-# plot(g, layout=layout, bbox=(300, 300), margin=20)
-plot(g, layout=layout, bbox=(300, 300), margin=20, target=ax)
+string = "valorbinario_id: 1;valorinteiro: 12;valordecimal: 32.65;valortexto: %C3%87LKJASDF;valorbinario_id: 2;valorinteiro: -12"
 
-plt.show()
+

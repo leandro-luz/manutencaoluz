@@ -15,10 +15,11 @@ app = create_app('config.%sConfig' % env.capitalize())
 
 with app.app_context():
     # Gerando uma lista de planos ativos e que estão pendentes de geração de OS
-    planos = PlanoManutencao.query.filter(PlanoManutencao.ativo is True,
+    planos = PlanoManutencao.query.filter(PlanoManutencao.ativo == True,
                                           PlanoManutencao.tipodata_id == TipoData.id,
                                           TipoData.nome == "DATA_FIXA"
                                           ).all()
+
     # se existir uma lista de planos
     if planos:
         # percorrer por toda a lista dos planos

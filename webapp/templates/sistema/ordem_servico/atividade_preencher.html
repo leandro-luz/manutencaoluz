@@ -1,0 +1,74 @@
+<!-- Add New Modal -->
+<!-- Modal -->
+<div aria-hidden="true" aria-labelledby="modalLabel" class="modal"
+     id="modal_atividade_preencher" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLabel">Lista de Atividades</h5>
+                <button aria-label="Close" class="btn-close"
+                        data-bs-dismiss="modal" type="button">
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <form action="{{ url_for('plano_manutencao.listaatividade_editar',ordem_id=ordem.id,
+               listaatividade_id=listaatividade_id, tramitacao_sigla='CONC') }}"
+                      id="form_atividade" method="POST" onsubmit="return coletar_valores_atividade();">
+
+                    {{form_atividade.csrf_token}}
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th scope="col">ITEM</th>
+                            <th scope="col">DESCRIÇÃO</th>
+                            <th scope="col">VALOR</th>
+                        </tr>
+                        </thead>
+                        <tbody id="myTable">
+
+                        {% for atividade in atividades %}
+                        <tr>
+                            <td> {{atividade.posicao}}</td>
+                            <td> {{atividade.descricao}}</td>
+                            {% if atividade.tipoparametro.nome == 'BINÁRIO' %}
+                            <td> {{form_atividade.valorbinario_id}}</td>
+                            {% elif atividade.tipoparametro.nome == 'INTEIRO' %}
+                            <td> {{form_atividade.valorinteiro}}</td>
+                            {% elif atividade.tipoparametro.nome == 'DECIMAL' %}
+                            <td> {{form_atividade.valordecimal}}</td>
+                            {% elif atividade.tipoparametro.nome == 'TEXTO' %}
+                            <td> {{form_atividade.valortexto}}</td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+
+                        </tbody>
+                    </table>
+
+                    <h6>OBSERVAÇÕES:</h6>
+                    {{form_listaatividade.observacao}}
+                    <br><br>
+
+                    <input id="valores" name="valores" type="hidden" value="">
+                    <button class="btn btn-info" type="submit">Concluída</button>
+                </form>
+                <br>
+                {% for nova_t in novas_tramitacoes %}
+                {% if not nova_t.nome == 'Concluída' %}
+                <a href="{{ url_for('ordem_servico.tramitacao', ordem_id=ordem.id, tipo_situacao_id=nova_t.id) }}">
+                    <button class="btn btn-info" onclick="coletar_valores_atividade()"> {{ nova_t.nome }}</button>
+                </a>
+                {% endif %}
+                {% endfor %}
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% if form_atividade.errors %}
+
+
+{% endif %}

@@ -10,8 +10,9 @@ from webapp.usuario.models import Perfil, Senha, Usuario, Telaperfil
 from webapp.empresa.models import Interessado, Tipoempresa, Empresa
 from webapp.equipamento.models import Equipamento, Grupo, Subgrupo
 from webapp.contrato.models import Contrato, Tela, Telacontrato
-from webapp.plano_manutencao.models import TipoData, Unidade, Periodicidade, PlanoManutencao, Atividade
-from webapp.ordem_servico.models import SituacaoOrdem, FluxoOrdem, OrdemServico, TramitacaoOrdem, TipoOrdem
+from webapp.plano_manutencao.models import TipoData, Unidade, Periodicidade, PlanoManutencao, Atividade, \
+    TipoParametro, ListaAtividade, TipoBinario
+from webapp.ordem_servico.models import TipoSituacaoOrdem, FluxoOrdem, OrdemServico, TramitacaoOrdem, TipoOrdem
 
 env = os.environ.get('WEBAPP_ENV', 'prod')
 app = create_app('config.%sConfig' % env.capitalize())
@@ -52,30 +53,29 @@ contratos_lista = [
 ]
 
 telascontrato_lista = [
-    {'contrato': 'basico', 'tela': 'RH'},
-    {'contrato': 'basico', 'tela': 'Equipamento'},
-    {'contrato': 'basico', 'tela': 'Fornecedor'},
-    {'contrato': 'intermediário', 'tela': 'Contrato'},
-    {'contrato': 'intermediário', 'tela': 'Empresa'},
-    {'contrato': 'intermediário', 'tela': 'RH'},
-    {'contrato': 'intermediário', 'tela': 'Equipamento'},
-    {'contrato': 'intermediário', 'tela': 'Fornecedor'},
-    {'contrato': 'intermediário', 'tela': 'Almoxarifado'},
-    {'contrato': 'intermediário', 'tela': 'Programação'},
-    {'contrato': 'completo', 'tela': 'Interessado'},
-    {'contrato': 'completo', 'tela': 'Contrato'},
-    {'contrato': 'completo', 'tela': 'Empresa'},
-    {'contrato': 'completo', 'tela': 'RH'},
-    {'contrato': 'completo', 'tela': 'Equipamento'},
-    {'contrato': 'completo', 'tela': 'Plano de Manutenção'},
-    {'contrato': 'completo', 'tela': 'Ordem de Serviço'},
-    {'contrato': 'completo', 'tela': 'Fornecedor'},
-    {'contrato': 'completo', 'tela': 'Almoxarifado'},
-    {'contrato': 'completo', 'tela': 'Programação'},
-    {'contrato': 'completo', 'tela': 'Orçamento'},
-    {'contrato': 'completo', 'tela': 'Indicadores'},
-    {'contrato': 'completo', 'tela': 'Ferramentas'},
-    {'contrato': 'completo', 'tela': 'EPI_EPC'},
+    {'contrato': 'BÁSICO', 'tela': 'RH'},
+    {'contrato': 'BÁSICO', 'tela': 'Equipamento'},
+    {'contrato': 'BÁSICO', 'tela': 'Fornecedor'},
+    {'contrato': 'INTERMEDIÁRIO', 'tela': 'Contrato'},
+    {'contrato': 'INTERMEDIÁRIO', 'tela': 'Empresa'},
+    {'contrato': 'INTERMEDIÁRIO', 'tela': 'RH'},
+    {'contrato': 'INTERMEDIÁRIO', 'tela': 'Equipamento'},
+    {'contrato': 'INTERMEDIÁRIO', 'tela': 'Plano de Manutenção'},
+    {'contrato': 'INTERMEDIÁRIO', 'tela': 'Ordem de Serviço'},
+    {'contrato': 'COMPLETO', 'tela': 'Interessado'},
+    {'contrato': 'COMPLETO', 'tela': 'Contrato'},
+    {'contrato': 'COMPLETO', 'tela': 'Empresa'},
+    {'contrato': 'COMPLETO', 'tela': 'RH'},
+    {'contrato': 'COMPLETO', 'tela': 'Equipamento'},
+    {'contrato': 'COMPLETO', 'tela': 'Plano de Manutenção'},
+    {'contrato': 'COMPLETO', 'tela': 'Ordem de Serviço'},
+    {'contrato': 'COMPLETO', 'tela': 'Fornecedor'},
+    {'contrato': 'COMPLETO', 'tela': 'Almoxarifado'},
+    {'contrato': 'COMPLETO', 'tela': 'Programação'},
+    {'contrato': 'COMPLETO', 'tela': 'Orçamento'},
+    {'contrato': 'COMPLETO', 'tela': 'Indicadores'},
+    {'contrato': 'COMPLETO', 'tela': 'Ferramentas'},
+    {'contrato': 'COMPLETO', 'tela': 'EPI_EPC'},
 ]
 
 interessado_lista = [
@@ -86,32 +86,44 @@ interessado_lista = [
 ]
 
 tipo_empresa_lista = [
-    {'nome': 'Cliente'}, {'nome': 'Fornecedor'}, {'nome': 'Parceiro'}]
+    {'nome': 'Cliente'},
+    {'nome': 'Fornecedor'},
+    {'nome': 'Parceiro'}
+]
 
 empresa_lista = [
-    {'razao_social': 'empresa_1.ltda',
-     'nome_fantasia': 'empresa_1',
+    {'razao_social': 'manluz.ltda',
+     'nome_fantasia': 'MANLUZ',
      'cnpj': '39.262.527/0001-20',
      'cep': '65.058-864',
-     'logradouro': 'Rua Aderson Lago', 'bairro': 'Vila Janaína',
-     'municipio': 'São Luís', 'uf': 'MA',
-     'numero': '0', 'complemento': 'qd05 lt05',
-     'email': 'empresa_1@teste.com.br', 'telefone': '(45)9 9876-5432',
-     'business': 'serviços', 'subbusiness': 'informática',
+     'logradouro': 'Rua NÃO SEI', 'bairro': 'AQUI DO LADO',
+     'municipio': 'ESTE AQUI', 'uf': 'XX',
+     'numero': '99', 'complemento': 'qd09 lt18',
+     'email': 'guguleo2019@gmail.com', 'telefone': '(45)9 9876-5432',
      'data_cadastro': str(datetime.datetime.now() - datetime.timedelta(360)), 'contrato': 'COMPLETO',
-     'empresa_gestora': 'empresa_1', 'tipo': 'Cliente'},
+     'empresa_gestora': 'MANLUZ', 'tipo': 'Cliente'},
 
-    {'razao_social': 'empresa_2.ltda',
-     'nome_fantasia': 'empresa_2',
+    {'razao_social': 'empresa_teste.ltda',
+     'nome_fantasia': 'EMPRESA_TESTE',
+     'cnpj': '40.262.527/0001-20',
+     'cep': '65.058-864',
+     'logradouro': 'Rua NÃO SEI', 'bairro': 'AQUI DO LADO',
+     'municipio': 'ESTE AQUI', 'uf': 'XX',
+     'numero': '99', 'complemento': 'qd09 lt18',
+     'email': 'empresa_teste@gmail.com', 'telefone': '(45)9 9876-5432',
+     'data_cadastro': str(datetime.datetime.now() - datetime.timedelta(360)), 'contrato': 'COMPLETO',
+     'empresa_gestora': 'MANLUZ', 'tipo': 'Cliente'},
+
+    {'razao_social': 'empresa_beta.ltda',
+     'nome_fantasia': 'EMPRESA_BETA',
      'cnpj': '39.262.527/0001-30',
      'cep': '65.058-865',
      'logradouro': 'Rua Aderson Lago', 'bairro': 'Vila Janaína',
      'municipio': 'São Luís', 'uf': 'MA',
      'numero': '0', 'complemento': 'qd05 lt05',
-     'email': 'empresa_1@teste.com.br', 'telefone': '(45)9 9876-5432',
-     'business': 'serviços', 'subbusiness': 'informática',
-     'data_cadastro': str(datetime.datetime.now() - datetime.timedelta(360)), 'contrato': 'COMPLETO',
-     'empresa_gestora': 'empresa_1', 'tipo': 'Cliente'},
+     'email': 'empresa_beta@teste.com.br', 'telefone': '(45)9 9876-5432',
+     'data_cadastro': str(datetime.datetime.now() - datetime.timedelta(360)), 'contrato': 'INTERMEDIÁRIO',
+     'empresa_gestora': 'MANLUZ', 'tipo': 'Cliente'},
 
     {'razao_social': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA',
      'nome_fantasia': 'COMERCIAL SEMEENTE CASA E CONSTRUCAO',
@@ -121,92 +133,124 @@ empresa_lista = [
      'municipio': 'APARECIDA DE GOIÂNIA', 'uf': 'GO',
      'numero': '0', 'complemento': '',
      'email': 'contato.luzengenharia@gmail.com', 'telefone': '(62)9 8423-6833',
-     'business': 'serviços', 'subbusiness': 'informática',
-     'data_cadastro': str(datetime.datetime.now() + datetime.timedelta(30)), 'contrato': 'COMPLETO',
-     'empresa_gestora': 'empresa_1', 'tipo': 'Cliente'},
+     'data_cadastro': str(datetime.datetime.now() + datetime.timedelta(30)), 'contrato': 'INTERMEDIÁRIO',
+     'empresa_gestora': 'MANLUZ', 'tipo': 'Cliente'},
 ]
 
 perfis_lista = [
-    {'empresa': 'empresa_1.ltda', 'nome': 'default', 'descricao': 'padrão'},
-    {'empresa': 'empresa_1.ltda', 'nome': 'admin', 'descricao': 'administrador'},
-    {'empresa': 'empresa_1.ltda', 'nome': 'adminluz', 'descricao': 'administrador do sistema'},
-    {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'nome': 'admin', 'descricao': 'administrador'},
-    {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'nome': 'adminluz',
-     'descricao': 'administrador do sistema'},
+    {'empresa': 'manluz.ltda', 'nome': 'default', 'descricao': 'padrão', 'ativo': True},
+    {'empresa': 'manluz.ltda', 'nome': 'admin', 'descricao': 'administrador', 'ativo': True},
+    {'empresa': 'manluz.ltda', 'nome': 'adminluz', 'descricao': 'administrador do sistema', 'ativo': True},
+    {'empresa': 'empresa_teste.ltda', 'nome': 'default', 'descricao': 'padrão', 'ativo': True},
+    {'empresa': 'empresa_teste.ltda', 'nome': 'admin', 'descricao': 'administrador', 'ativo': True},
+    {'empresa': 'empresa_teste.ltda', 'nome': 'adminluz', 'descricao': 'administrador do sistema', 'ativo': True},
+    {'empresa': 'empresa_beta.ltda', 'nome': 'default', 'descricao': 'padrão', 'ativo': True},
+    {'empresa': 'empresa_beta.ltda', 'nome': 'admin', 'descricao': 'administrador', 'ativo': True},
+    {'empresa': 'empresa_beta.ltda', 'nome': 'adminluz', 'descricao': 'administrador do sistema', 'ativo': True},
+    {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'nome': 'admin', 'descricao': 'administrador', 'ativo': True},
+    {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'nome': 'adminluz', 'descricao': 'administrador do sistema',
+     'ativo': True},
 ]
 
 telasperfil_lista = [
-    {'empresa': 'empresa_1.ltda', 'role': 'default', 'tela': 'Contrato'},
-    {'empresa': 'empresa_1.ltda', 'role': 'default', 'tela': 'Empresa'},
-    {'empresa': 'empresa_1.ltda', 'role': 'default', 'tela': 'RH'},
-    {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Interessado'},
-    {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Contrato'},
-    {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Empresa'},
-    {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'RH'},
-    {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Equipamento'},
-    {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Plano de Manutenção'},
-    {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Ordem de Serviço'},
-    {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Fornecedor'},
-    {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Almoxarifado'},
-    {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Programação'},
-    {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Orçamento'},
-    {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Indicadores'},
-    {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'Ferramentas'},
-    {'empresa': 'empresa_1.ltda', 'role': 'admin', 'tela': 'EPI_EPC'},
+    {'empresa': 'manluz.ltda', 'role': 'default', 'tela': 'Contrato'},
+    {'empresa': 'manluz.ltda', 'role': 'default', 'tela': 'Empresa'},
+    {'empresa': 'manluz.ltda', 'role': 'default', 'tela': 'RH'},
+    {'empresa': 'manluz.ltda', 'role': 'admin', 'tela': 'Interessado'},
+    {'empresa': 'manluz.ltda', 'role': 'admin', 'tela': 'Contrato'},
+    {'empresa': 'manluz.ltda', 'role': 'admin', 'tela': 'Empresa'},
+    {'empresa': 'manluz.ltda', 'role': 'admin', 'tela': 'RH'},
+    {'empresa': 'manluz.ltda', 'role': 'admin', 'tela': 'Equipamento'},
+    {'empresa': 'manluz.ltda', 'role': 'admin', 'tela': 'Plano de Manutenção'},
+    {'empresa': 'manluz.ltda', 'role': 'admin', 'tela': 'Ordem de Serviço'},
+    {'empresa': 'manluz.ltda', 'role': 'admin', 'tela': 'Fornecedor'},
+    {'empresa': 'manluz.ltda', 'role': 'admin', 'tela': 'Almoxarifado'},
+    {'empresa': 'manluz.ltda', 'role': 'admin', 'tela': 'Programação'},
+    {'empresa': 'manluz.ltda', 'role': 'admin', 'tela': 'Orçamento'},
+    {'empresa': 'manluz.ltda', 'role': 'admin', 'tela': 'Indicadores'},
+    {'empresa': 'manluz.ltda', 'role': 'admin', 'tela': 'Ferramentas'},
+    {'empresa': 'manluz.ltda', 'role': 'admin', 'tela': 'EPI_EPC'},
+    {'empresa': 'manluz.ltda', 'role': 'adminluz', 'tela': 'Interessado'},
+    {'empresa': 'manluz.ltda', 'role': 'adminluz', 'tela': 'Contrato'},
+    {'empresa': 'manluz.ltda', 'role': 'adminluz', 'tela': 'Empresa'},
+    {'empresa': 'manluz.ltda', 'role': 'adminluz', 'tela': 'RH'},
+    {'empresa': 'manluz.ltda', 'role': 'adminluz', 'tela': 'Equipamento'},
+    {'empresa': 'manluz.ltda', 'role': 'adminluz', 'tela': 'Plano de Manutenção'},
+    {'empresa': 'manluz.ltda', 'role': 'adminluz', 'tela': 'Ordem de Serviço'},
+    {'empresa': 'manluz.ltda', 'role': 'adminluz', 'tela': 'Fornecedor'},
+    {'empresa': 'manluz.ltda', 'role': 'adminluz', 'tela': 'Almoxarifado'},
+    {'empresa': 'manluz.ltda', 'role': 'adminluz', 'tela': 'Programação'},
+    {'empresa': 'manluz.ltda', 'role': 'adminluz', 'tela': 'Orçamento'},
+    {'empresa': 'manluz.ltda', 'role': 'adminluz', 'tela': 'Indicadores'},
+    {'empresa': 'manluz.ltda', 'role': 'adminluz', 'tela': 'Ferramentas'},
+    {'empresa': 'manluz.ltda', 'role': 'adminluz', 'tela': 'EPI_EPC'},
 
-    {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'Interessado'},
-    {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'Contrato'},
-    {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'Empresa'},
-    {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'RH'},
-    {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'Equipamento'},
-    {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'Plano de Manutenção'},
-    {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'Ordem de Serviço'},
-    {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'Fornecedor'},
-    {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'Almoxarifado'},
-    {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'Programação'},
-    {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'Orçamento'},
-    {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'Indicadores'},
-    {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'Ferramentas'},
-    {'empresa': 'empresa_1.ltda', 'role': 'adminluz', 'tela': 'EPI_EPC'},
+    {'empresa': 'empresa_teste.ltda', 'role': 'default', 'tela': 'Contrato'},
+    {'empresa': 'empresa_teste.ltda', 'role': 'default', 'tela': 'Empresa'},
+    {'empresa': 'empresa_teste.ltda', 'role': 'default', 'tela': 'RH'},
+    {'empresa': 'empresa_teste.ltda', 'role': 'admin', 'tela': 'Interessado'},
+    {'empresa': 'empresa_teste.ltda', 'role': 'admin', 'tela': 'Contrato'},
+    {'empresa': 'empresa_teste.ltda', 'role': 'admin', 'tela': 'Empresa'},
+    {'empresa': 'empresa_teste.ltda', 'role': 'admin', 'tela': 'RH'},
+    {'empresa': 'empresa_teste.ltda', 'role': 'admin', 'tela': 'Equipamento'},
+    {'empresa': 'empresa_teste.ltda', 'role': 'admin', 'tela': 'Plano de Manutenção'},
+    {'empresa': 'empresa_teste.ltda', 'role': 'admin', 'tela': 'Ordem de Serviço'},
+    {'empresa': 'empresa_teste.ltda', 'role': 'admin', 'tela': 'Fornecedor'},
+    {'empresa': 'empresa_teste.ltda', 'role': 'admin', 'tela': 'Almoxarifado'},
+    {'empresa': 'empresa_teste.ltda', 'role': 'admin', 'tela': 'Programação'},
+    {'empresa': 'empresa_teste.ltda', 'role': 'admin', 'tela': 'Orçamento'},
+    {'empresa': 'empresa_teste.ltda', 'role': 'admin', 'tela': 'Indicadores'},
+    {'empresa': 'empresa_teste.ltda', 'role': 'admin', 'tela': 'Ferramentas'},
+    {'empresa': 'empresa_teste.ltda', 'role': 'admin', 'tela': 'EPI_EPC'},
+    {'empresa': 'empresa_teste.ltda', 'role': 'adminluz', 'tela': 'Interessado'},
+    {'empresa': 'empresa_teste.ltda', 'role': 'adminluz', 'tela': 'Contrato'},
+    {'empresa': 'empresa_teste.ltda', 'role': 'adminluz', 'tela': 'Empresa'},
+    {'empresa': 'empresa_teste.ltda', 'role': 'adminluz', 'tela': 'RH'},
+    {'empresa': 'empresa_teste.ltda', 'role': 'adminluz', 'tela': 'Equipamento'},
+    {'empresa': 'empresa_teste.ltda', 'role': 'adminluz', 'tela': 'Plano de Manutenção'},
+    {'empresa': 'empresa_teste.ltda', 'role': 'adminluz', 'tela': 'Ordem de Serviço'},
+    {'empresa': 'empresa_teste.ltda', 'role': 'adminluz', 'tela': 'Fornecedor'},
+    {'empresa': 'empresa_teste.ltda', 'role': 'adminluz', 'tela': 'Almoxarifado'},
+    {'empresa': 'empresa_teste.ltda', 'role': 'adminluz', 'tela': 'Programação'},
+    {'empresa': 'empresa_teste.ltda', 'role': 'adminluz', 'tela': 'Orçamento'},
+    {'empresa': 'empresa_teste.ltda', 'role': 'adminluz', 'tela': 'Indicadores'},
+    {'empresa': 'empresa_teste.ltda', 'role': 'adminluz', 'tela': 'Ferramentas'},
+    {'empresa': 'empresa_teste.ltda', 'role': 'adminluz', 'tela': 'EPI_EPC'},
 
-    {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'admin', 'tela': 'Interessado'},
+    {'empresa': 'empresa_beta.ltda', 'role': 'admin', 'tela': 'Contrato'},
+    {'empresa': 'empresa_beta.ltda', 'role': 'admin', 'tela': 'Empresa'},
+    {'empresa': 'empresa_beta.ltda', 'role': 'admin', 'tela': 'RH'},
+    {'empresa': 'empresa_beta.ltda', 'role': 'admin', 'tela': 'Equipamento'},
+    {'empresa': 'empresa_beta.ltda', 'role': 'admin', 'tela': 'Plano de Manutenção'},
+    {'empresa': 'empresa_beta.ltda', 'role': 'admin', 'tela': 'Ordem de Serviço'},
+    {'empresa': 'empresa_beta.ltda', 'role': 'adminluz', 'tela': 'Contrato'},
+    {'empresa': 'empresa_beta.ltda', 'role': 'adminluz', 'tela': 'Empresa'},
+    {'empresa': 'empresa_beta.ltda', 'role': 'adminluz', 'tela': 'RH'},
+    {'empresa': 'empresa_beta.ltda', 'role': 'adminluz', 'tela': 'Equipamento'},
+    {'empresa': 'empresa_beta.ltda', 'role': 'adminluz', 'tela': 'Plano de Manutenção'},
+    {'empresa': 'empresa_beta.ltda', 'role': 'adminluz', 'tela': 'Ordem de Serviço'},
+
     {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'admin', 'tela': 'Contrato'},
     {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'admin', 'tela': 'Empresa'},
     {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'admin', 'tela': 'RH'},
     {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'admin', 'tela': 'Equipamento'},
     {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'admin', 'tela': 'Plano de Manutenção'},
     {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'admin', 'tela': 'Ordem de Serviço'},
-    {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'admin', 'tela': 'Fornecedor'},
-    {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'admin', 'tela': 'Almoxarifado'},
-    {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'admin', 'tela': 'Programação'},
-    {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'admin', 'tela': 'Orçamento'},
-    {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'admin', 'tela': 'Indicadores'},
-    {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'admin', 'tela': 'Ferramentas'},
-    {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'admin', 'tela': 'EPI_EPC'},
-
-    {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'adminluz', 'tela': 'Interessado'},
     {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'adminluz', 'tela': 'Contrato'},
     {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'adminluz', 'tela': 'Empresa'},
     {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'adminluz', 'tela': 'RH'},
     {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'adminluz', 'tela': 'Equipamento'},
     {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'adminluz', 'tela': 'Plano de Manutenção'},
     {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'adminluz', 'tela': 'Ordem de Serviço'},
-    {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'adminluz', 'tela': 'Fornecedor'},
-    {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'adminluz', 'tela': 'Almoxarifado'},
-    {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'adminluz', 'tela': 'Programação'},
-    {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'adminluz', 'tela': 'Orçamento'},
-    {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'adminluz', 'tela': 'Indicadores'},
-    {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'adminluz', 'tela': 'Ferramentas'},
-    {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'adminluz', 'tela': 'EPI_EPC'},
 
 ]
 
 senha_lista = [
     {'senha': 'aaa11111', 'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
      'senha_expira': False, 'senha_temporaria': False},
-    {'senha': 'aaa22222', 'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
+    {'senha': 'teste123', 'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
      'senha_expira': False, 'senha_temporaria': False},
-    {'senha': 'aaa33333', 'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
+    {'senha': 'beta123', 'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
      'senha_expira': False, 'senha_temporaria': False},
     {'senha': 'aaa44444', 'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
      'senha_expira': False, 'senha_temporaria': False},
@@ -219,14 +263,20 @@ senha_lista = [
 ]
 
 usuario_lista = [
-    {'nome': 'admin', 'email': 'admin@admin.com', 'senha': 'aaa11111', 'perfil': 'admin',
-     'data_assinatura': '1980/05/10 12:45:10', 'empresa': 'empresa_1.ltda'},
-    {'nome': 'leandro', 'email': 'engleoluz@hotmail.com',
-     'senha': 'aaa22222', 'perfil': 'default', 'data_assinatura': '1980/05/10 12:45:10',
-     'empresa': 'empresa_1.ltda'},
-    {'nome': 'danylo', 'email': 'danylo@gmail.com',
-     'senha': 'aaa33333', 'perfil': 'admin', 'data_assinatura': '1980/05/10 12:45:10',
-     'empresa': 'empresa_1.ltda'},
+    {'nome': 'admin', 'email': 'admin@admin.com',
+     'senha': 'aaa11111', 'perfil': 'admin',
+     'data_assinatura': '1980/05/10 12:45:10',
+     'empresa': 'manluz.ltda'},
+    {'nome': 'leandro', 'email': 'admin@admin.com',
+     'senha': 'aaa11111', 'perfil': 'admin',
+     'data_assinatura': '1980/05/10 12:45:10',
+     'empresa': 'manluz.ltda'},
+    {'nome': 'teste', 'email': 'adminteste@hotmail.com',
+     'senha': 'teste123', 'perfil': 'admin', 'data_assinatura': '1980/05/10 12:45:10',
+     'empresa': 'empresa_teste.ltda'},
+    {'nome': 'beta', 'email': 'adminbeta@gmail.com',
+     'senha': 'beta123', 'perfil': 'admin', 'data_assinatura': '1980/05/10 12:45:10',
+     'empresa': 'empresa_beta.ltda'},
     {'nome': 'adminluz_semeente', 'email': 'guguleo2019@gmail.com',
      'senha': 'aaa11111', 'perfil': 'admin', 'data_assinatura': '1980/05/10 12:45:10',
      'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA'},
@@ -236,10 +286,10 @@ usuario_lista = [
 ]
 
 grupo_lista = [
-    {'nome': 'ELÉTRICO', 'empresa': 'empresa_1.ltda'},
-    {'nome': 'HIDRÁULICO', 'empresa': 'empresa_1.ltda'},
-    {'nome': 'ESQUADRIA', 'empresa': 'empresa_1.ltda'},
-    {'nome': 'MECÂNICO', 'empresa': 'empresa_2.ltda'},
+    {'nome': 'ELÉTRICO', 'empresa': 'manluz.ltda'},
+    {'nome': 'HIDRÁULICO', 'empresa': 'manluz.ltda'},
+    {'nome': 'ESQUADRIA', 'empresa': 'manluz.ltda'},
+    {'nome': 'MECÂNICO', 'empresa': 'manluz.ltda'},
 ]
 
 subgrupo_lista = [
@@ -283,28 +333,29 @@ periodicidade_lista = [
 
 planosmanutencao_lista = [
     {'nome': 'Inspeção Diária Gerador', 'codigo': 'gera0001', 'ativo': True,
-     'empresa': 'empresa_1.ltda', 'data_inicio': str(datetime.datetime.now() + datetime.timedelta(30)),
-     'tipo_ordem': 'PREV',
+     'empresa': 'manluz.ltda', 'data_inicio': str(datetime.datetime.now() + datetime.timedelta(30)),
+     'tipo_ordem': 'PREV', 'lista': '20230808192300', 'tecnicos': 1, 'tempo': 10,
      'tipodata': 'DATA_FIXA', 'periodicidade': 'DIÁRIA', 'equipamento': 'A.000.001'},
     {'nome': 'Inspeção Semanal Subestação 13.8KV', 'codigo': 'sube0001', 'ativo': True,
-     'empresa': 'empresa_1.ltda', 'data_inicio': str(datetime.datetime.now() + datetime.timedelta(30)),
-     'tipo_ordem': 'PREV',
+     'empresa': 'manluz.ltda', 'data_inicio': str(datetime.datetime.now() + datetime.timedelta(30)),
+     'tipo_ordem': 'PREV', 'lista': None, 'tecnicos': 2, 'tempo': 20,
      'tipodata': 'DATA_FIXA', 'periodicidade': 'SEMANAL', 'equipamento': 'A.000.002'},
     {'nome': 'Manutenção Preventiva Anual Subestação 13.8KV', 'codigo': 'sube0002', 'ativo': True,
-     'empresa': 'empresa_1.ltda', 'data_inicio': str(datetime.datetime.now() + datetime.timedelta(30)),
-     'tipo_ordem': 'PREV',
+     'empresa': 'manluz.ltda', 'data_inicio': str(datetime.datetime.now() + datetime.timedelta(30)),
+     'tipo_ordem': 'PREV', 'lista': None, 'tecnicos': 3, 'tempo': 30,
      'tipodata': 'DATA_FIXA', 'periodicidade': 'ANUAL', 'equipamento': 'A.000.002'},
     {'nome': 'Manutenção Preventiva Mensal Chiller', 'codigo': 'chil0001', 'ativo': True,
-     'empresa': 'empresa_1.ltda', 'data_inicio': str(datetime.datetime.now() + datetime.timedelta(30)),
-     'tipo_ordem': 'PREV',
+     'empresa': 'manluz.ltda', 'data_inicio': str(datetime.datetime.now() + datetime.timedelta(30)),
+     'tipo_ordem': 'PREV', 'lista': None, 'tecnicos': 4, 'tempo': 40,
      'tipodata': 'DATA_MÓVEL', 'periodicidade': 'MENSAL', 'equipamento': 'A.000.003'},
     {'nome': 'Inspeção Diária Carro 001', 'codigo': 'carr0001', 'ativo': True, 'empresa':
-        'empresa_1.ltda', 'data_inicio': str(datetime.datetime.now() + datetime.timedelta(30)), 'tipo_ordem': 'PREV',
-     'tipodata': 'DATA_FIXA', 'periodicidade': 'DIÁRIA', 'equipamento': 'A.000.004', 'tipo_situacao': 'PENDENTE'},
+        'manluz.ltda', 'data_inicio': str(datetime.datetime.now() + datetime.timedelta(30)), 'tipo_ordem': 'PREV',
+     'tipodata': 'DATA_FIXA', 'lista': None, 'tecnicos': 5, 'tempo': 50,
+     'periodicidade': 'DIÁRIA', 'equipamento': 'A.000.004', 'tipo_situacao': 'PENDENTE'},
     {'nome': 'Manutenção Preventiva Semestral Carro', 'codigo': 'carr0002', 'ativo': True,
-     'empresa': 'empresa_1.ltda', 'data_inicio': str(datetime.datetime.now() + datetime.timedelta(30)),
-     'tipo_ordem': 'PREV',
-     'tipodata': 'DATA_FIXA', 'periodicidade': 'SEMESTRAL', 'equipamento': 'A.000.004'},
+     'empresa': 'manluz.ltda', 'data_inicio': str(datetime.datetime.now() + datetime.timedelta(30)),
+     'tipo_ordem': 'PREV', 'tipodata': 'DATA_FIXA', 'lista': None, 'tecnicos': 6, 'tempo': 60,
+     'periodicidade': 'SEMESTRAL', 'equipamento': 'A.000.004'},
 ]
 
 tipo_ordem_lista = [
@@ -314,19 +365,49 @@ tipo_ordem_lista = [
     {'nome': 'CORRETIVA', 'sigla': 'CORR', 'plano': False},
     {'nome': 'MELHORIA', 'sigla': 'MELH', 'plano': False},
 ]
-atividades_lista = [
-    {'posicao': 1, 'descricao': 'Alinhamento da direção', 'plano': 'gera0001'},
-    {'posicao': 2, 'descricao': 'Realizar o rodízio de pneus', 'plano': 'gera0001'},
-    {'posicao': 3, 'descricao': 'Limpeza do radiador', 'plano': 'gera0001'},
-    {'posicao': 4, 'descricao': 'Realizar a troca de óleo', 'plano': 'gera0001'},
-    {'posicao': 5, 'descricao': 'Trocar as palhetas', 'plano': 'gera0001'},
-    {'posicao': 6, 'descricao': 'Verificar as lâmpadas internas', 'plano': 'gera0001'},
-    {'posicao': 7, 'descricao': 'Trocar os filtro de ar', 'plano': 'gera0001'},
-    {'posicao': 8, 'descricao': 'Verificar as velas de ignição', 'plano': 'gera0001'},
-    {'posicao': 9, 'descricao': 'Realizar a limpeza do ar condicionado', 'plano': 'gera0001'},
+
+tipo_parametros_lista = [
+    {'nome': 'BINÁRIO'},
+    {'nome': 'INTEIRO'},
+    {'nome': 'DECIMAL'},
+    {'nome': 'TEXTO'},
 ]
 
-situacao_ordem_lista = [
+tipo_binario_lista = [
+    {'nome': 'SIM'},
+    {'nome': 'NÃO'}
+]
+
+lista_atividade_lista = [
+    {'data': str(datetime.datetime.now()), 'nome': '20230808192300'}
+]
+
+atividades_lista = [
+    {'lista': '20230808192300', 'posicao': 1, 'descricao': 'Alinhamento da direção', 'plano': 'gera0001',
+     'tipo': 'BINÁRIO',
+     'valorbinario_id': 'SIM', 'valorinteiro': None, 'valordecimal': None, 'valortexto': None},
+    {'lista': '20230808192300', 'posicao': 2, 'descricao': 'Realizar o rodízio de pneus', 'plano': 'gera0001',
+     'tipo': 'BINÁRIO', 'valorbinario_id': 'SIM', 'valorinteiro': None, 'valordecimal': None, 'valortexto': None},
+    {'lista': '20230808192300', 'posicao': 3, 'descricao': 'Limpeza do radiador', 'plano': 'gera0001',
+     'tipo': 'INTEIRO',
+     'valorinteiro': 220, 'valorbinario_id': None, 'valordecimal': None, 'valortexto': None},
+    {'lista': '20230808192300', 'posicao': 4, 'descricao': 'Realizar a troca de óleo', 'plano': 'gera0001',
+     'tipo': 'INTEIRO', 'valorinteiro': 10, 'valorbinario_id': None, 'valordecimal': None, 'valortexto': None},
+    {'lista': '20230808192300', 'posicao': 5, 'descricao': 'Trocar as palhetas', 'plano': 'gera0001', 'tipo': 'DECIMAL',
+     'valordecimal': 10.5, 'valorinteiro': None, 'valorbinario_id': None, 'valortexto': None},
+    {'lista': '20230808192300', 'posicao': 6, 'descricao': 'Verificar as lâmpadas internas', 'plano': 'gera0001',
+     'tipo': 'DECIMAL', 'valordecimal': -1.45, 'valorinteiro': None, 'valorbinario_id': None, 'valortexto': None},
+    {'lista': '20230808192300', 'posicao': 7, 'descricao': 'Trocar os filtro de ar', 'plano': 'gera0001',
+     'tipo': 'DECIMAL',
+     'valordecimal': -45, 'valorinteiro': None, 'valorbinario_id': None, 'valortexto': None},
+    {'lista': '20230808192300', 'posicao': 8, 'descricao': 'Verificar as velas de ignição', 'plano': 'gera0001',
+     'tipo': 'TEXTO', 'valortexto': 'Testando o campo', 'valorinteiro': None, 'valordecimal': None,
+     'valorbinario_id': None},
+    {'lista': '20230808192300', 'posicao': 9, 'descricao': 'Realizar a limpeza do ar condicionado', 'plano': 'gera0001',
+     'tipo': 'TEXTO', 'valortexto': 'outro valor', 'valorinteiro': None, 'valordecimal': None, 'valorbinario_id': None},
+]
+
+tipo_situacao_ordem_lista = [
     {'nome': 'Aguardando Aprovação', 'sigla': 'AGAP'},
     {'nome': 'Pendente', 'sigla': 'PEND'},
     {'nome': 'Em execução', 'sigla': 'EXEC'},
@@ -340,12 +421,12 @@ situacao_ordem_lista = [
 
 fluxo_ordem_lista = [
     {'de': 'AGAP', 'para': 'PEND'},
-    {'de': 'AGAP', 'para': 'CANC'},
     {'de': 'PEND', 'para': 'EXEC'},
     {'de': 'EXEC', 'para': 'CONC'},
     {'de': 'EXEC', 'para': 'AGSE'},
     {'de': 'EXEC', 'para': 'AGMT'},
     {'de': 'EXEC', 'para': 'PARA'},
+    {'de': 'EXEC', 'para': 'CANC'},
     {'de': 'CANC', 'para': 'FISC'},
     {'de': 'CONC', 'para': 'FISC'},
     {'de': 'AGSE', 'para': 'EXEC'},
@@ -371,7 +452,7 @@ ordem_servico_lista = [
 ]
 
 tramitacao_lista = [
-    {'ordem_servico': 1, 'usuario': 'danylo', 'situacaoordem': 'AGAP',
+    {'ordem_servico': 1, 'usuario': 'leandro', 'situacaoordem': 'AGAP',
      'data': '2023/01/02 08:00:00', 'observacao': 'Abertura de Ordem de Serviço'},
     {'ordem_servico': 1, 'usuario': 'leandro', 'situacaoordem': 'PEND',
      'data': '2023/01/03 08:00:00', 'observacao': 'Aprovada a execução da Ordem de Serviço'},
@@ -380,7 +461,7 @@ tramitacao_lista = [
      'observacao': 'Foi realizada a troca da lâmpada queimada, está operacional'},
     {'ordem_servico': 1, 'usuario': 'leandro', 'situacaoordem': 'CONC',
      'data': '2023/01/04 10:00:00', 'observacao': 'Concluída a Ordem de Serviço'},
-    {'ordem_servico': 1, 'usuario': 'danylo', 'situacaoordem': 'FISC',
+    {'ordem_servico': 1, 'usuario': 'leandro', 'situacaoordem': 'FISC',
      'data': '2023/01/05 08:00:00', 'observacao': 'Fiscalizada a Ordem de Serviço'},
 
 ]
@@ -591,6 +672,7 @@ def criar_perfis(lista: List[dict]) -> List[Perfil]:
     # Criando a lista de novas perfis a serem adicionadas
     novos_perfis = [Perfil(nome=item['nome'],
                            descricao=item['descricao'],
+                           ativo=item['ativo'],
                            empresa_id=empresas[item['empresa']])
                     for item in lista if item['nome'] not in [pe.nome
                                                               for pe in Perfil.query.all()]]
@@ -622,10 +704,10 @@ def criar_telasperfil(lista: List[dict]) -> List[Telaperfil]:
     telasperfis = []
 
     for item in lista:
-        empresa = Empresa.query.filter_by(razao_social=item['empresa']).one()
-        perfil = Perfil.query.filter_by(nome=item['role'], empresa_id=empresa.id).one()
-        tela = Tela.query.filter_by(nome=item['tela']).one()
-        telaperfil = Telaperfil.query.filter_by(tela_id=tela.id, perfil_id=perfil.id).first()
+        empresa = Empresa.query.filter_by(razao_social=item['empresa']).one_or_none()
+        perfil = Perfil.query.filter_by(nome=item['role'], empresa_id=empresa.id).one_or_none()
+        tela = Tela.query.filter_by(nome=item['tela']).one_or_none()
+        telaperfil = Telaperfil.query.filter_by(tela_id=tela.id, perfil_id=perfil.id).one_or_none()
 
         if not telaperfil:
             telasperfis.append(Telaperfil(perfil_id=perfil.id, tela_id=tela.id, ativo=True))
@@ -681,19 +763,23 @@ def criar_usuarios(lista: List[dict]) -> List[Usuario]:
        """
 
     empresas = {e.razao_social: e.id for e in Empresa.query.all()}
-    perfis = {p.nome: p.id for p in Perfil.query.all()}
     senhas = {s.senha: s.id for s in Senha.query.all()}
+    usuarios = {u.nome: u.id for u in Usuario.query.all()}
 
-    # Criando uma lista de novos tipodatas para serem adicionados
-    novos_usuarios = [Usuario(nome=item['nome'],
+    novos_usuarios = []
+    for item in lista:
+        if item['nome'] not in usuarios:
+            perfis = {p.nome: p.id for p in Perfil.query.filter_by(empresa_id=empresas[item['empresa']])}
+
+            usuario = Usuario(nome=item['nome'],
                               email=item['email'],
                               data_assinatura=item['data_assinatura'],
                               ativo=True,
                               senha_id=senhas[item['senha']],
                               perfil_id=perfis[item['perfil']],
-                              empresa_id=empresas[item['empresa']]
-                              )
-                      for item in lista if item['nome'] not in [us.nome for us in Usuario.query.all()]]
+                              empresa_id=empresas[item['empresa']])
+
+            novos_usuarios.append(usuario)
 
     try:
         # Adicionando os novos contratos na sessão e realizando o commit
@@ -708,7 +794,7 @@ def criar_usuarios(lista: List[dict]) -> List[Usuario]:
         log.error(f'Erro ao inserir usuario: {e}')
         # Realizando o rollback da transação e retornando uma lista vazia
         db.session.rollback()
-        return []
+    return []
 
 
 def criar_grupo(lista: List[dict]) -> List[Grupo]:
@@ -907,6 +993,7 @@ def criar_planosmanutencao(lista: List[dict]) -> List[PlanoManutencao]:
     periodicidades = {p.nome: p.id for p in Periodicidade.query.all()}
     equipamentos = {e.cod: e.id for e in Equipamento.query.all()}
     tipos_ordem = {to.sigla: to.id for to in TipoOrdem.query.all()}
+    listas_atividades = {la.nome: la.id for la in ListaAtividade.query.all()}
 
     novos_planosmanutencao = [
         PlanoManutencao(nome=item['nome'],
@@ -914,9 +1001,13 @@ def criar_planosmanutencao(lista: List[dict]) -> List[PlanoManutencao]:
                         ativo=item['ativo'],
                         tipodata_id=tipodatas[item['tipodata']],
                         data_inicio=item['data_inicio'],
+                        total_tecnico=item['tecnicos'],
+                        tempo_estimado=item['tempo'],
                         periodicidade_id=periodicidades[item['periodicidade']],
                         equipamento_id=equipamentos[item['equipamento']],
-                        tipoordem_id=tipos_ordem[item['tipo_ordem']])
+                        tipoordem_id=tipos_ordem[item['tipo_ordem']],
+                        listaatividade_id=listas_atividades[item['lista']]
+                        if item['lista'] else None)
         for item in lista if item['codigo'] not in [pm.código for pm in PlanoManutencao.query.all()]]
 
     try:
@@ -934,16 +1025,115 @@ def criar_planosmanutencao(lista: List[dict]) -> List[PlanoManutencao]:
         return []
 
 
-def criar_lista_atividades(lista: List[dict]) -> List[Atividade]:
+def criar_tipos_parametros(lista: List[dict]) -> List[TipoParametro]:
+    """
+       Cria novos tipos de parametros a partir de uma lista de dicionários.
+       Args:
+           lista (List[dict]): Lista de dicionários contendo informações dos novos tipos de parametros.
+       Returns:
+           List[Unidade]: Lista de novos tipos de parametros criados e adicionados na base de dados.
+       """
+
+    # Criando uma lista de novas unidades para serem adicionados
+    novos_tipos = [TipoParametro(nome=item['nome'])
+                   for item in lista if item['nome'] not in [t.nome for t in TipoParametro.query.all()]]
+    try:
+        # Adicionando os novos tipos de atividade na sessão e realizando o commit
+        db.session.add_all(novos_tipos)
+        db.session.commit()
+        # Registrando o evento no sistema de logs
+        log.info(f'{len(novos_tipos)} tipos de parametros inseridos com sucesso.')
+
+        # Retornando a lista de novos tipos de atividades adicionados
+        return novos_tipos
+    except SQLAlchemyError as e:
+        # Em caso de erro, realizando o rollback da transação e retornando uma lista vazia
+        log.error(f'Erro ao tipo de parametros: {e}')
+
+        # Realizando o rollback da transação e retornando uma lista vazia
+        db.session.rollback()
+        return []
+
+
+def criar_lista_atividades(lista: List[dict]) -> List[ListaAtividade]:
+    """
+       Cria novas listas de atividades a partir de uma lista de dicionários.
+       Args:
+           lista (List[dict]): Lista de dicionários contendo informações das novas listas de atividades
+       Returns:
+           List[Unidade]: Lista de novas listas de atividadescriados e adicionados na base de dados.
+       """
+
+    # Criando uma lista de novas unidades para serem adicionados
+    novas_listas = [ListaAtividade(nome=item['nome'],
+                                   data=item['data'])
+                    for item in lista if item['nome'] not in [la.nome for la in ListaAtividade.query.all()]]
+    try:
+        # Adicionando as novas listas de atividades na sessão e realizando o commit
+        db.session.add_all(novas_listas)
+        db.session.commit()
+        # Registrando o evento no sistema de logs
+        log.info(f'{len(novas_listas)} Nova listas de atividades inseridas com sucesso.')
+
+        # Retornando a lista de novas listas de atividades adicionados
+        return novas_listas
+    except SQLAlchemyError as e:
+        # Em caso de erro, realizando o rollback da transação e retornando uma lista vazia
+        log.error(f'Erro ao inserir Nova lista de atividade: {e}')
+
+        # Realizando o rollback da transação e retornando uma lista vazia
+        db.session.rollback()
+        return []
+
+
+def criar_tipo_binarios(lista: List[dict]) -> List[TipoBinario]:
+    """
+       Cria novas listas de atividades a partir de uma lista de dicionários.
+       Args:
+           lista (List[dict]): Lista de dicionários contendo informações das novas listas de atividades
+       Returns:
+           List[Unidade]: Lista de novas listas de atividadescriados e adicionados na base de dados.
+       """
+
+    # Criando uma lista de novas unidades para serem adicionados
+    novos_binarios = [TipoBinario(nome=item['nome'])
+                      for item in lista if item['nome'] not in [tb.nome for tb in TipoBinario.query.all()]]
+    try:
+        # Adicionando as novas listas de atividades na sessão e realizando o commit
+        db.session.add_all(novos_binarios)
+        db.session.commit()
+        # Registrando o evento no sistema de logs
+        log.info(f'{len(novos_binarios)} Novos Tipos Binários inseridas com sucesso.')
+
+        # Retornando a lista de novas listas de atividades adicionados
+        return novos_binarios
+    except SQLAlchemyError as e:
+        # Em caso de erro, realizando o rollback da transação e retornando uma lista vazia
+        log.error(f'Erro ao inserir Novo Tipo Binário: {e}')
+
+        # Realizando o rollback da transação e retornando uma lista vazia
+        db.session.rollback()
+        return []
+
+
+def criar_atividades(lista: List[dict]) -> List[Atividade]:
     # Buscando os objetos necessários
 
-    planos = {p.codigo: p.id for p in PlanoManutencao.query.all()}
+    tipos = {tp.nome: tp.id for tp in TipoParametro.query.all()}
+    listas = {la.nome: la.id for la in ListaAtividade.query.all()}
+    tipobinarios = {tb.nome: tb.id for tb in TipoBinario.query.all()}
 
     novas_listas = [
         Atividade(
             posicao=item['posicao'],
             descricao=item['descricao'],
-            planomanutencao_id=planos[item['plano']]) for item in lista]
+            valorbinario_id=tipobinarios[item['valorbinario_id']]
+            if item['valorbinario_id'] else None,
+            valorinteiro=item['valorinteiro'],
+            valordecimal=item['valordecimal'],
+            valortexto=item['valortexto'],
+            tipoparametro_id=tipos[item['tipo']],
+            listaatividade_id=listas[item['lista']]) for item in lista]
 
     try:
         # Adicionando as novas periodicidades na sessão e realizando o commit
@@ -988,7 +1178,7 @@ def criar_tipo_ordem(lista: List[dict]) -> List[TipoOrdem]:
         return []
 
 
-def criar_situacao_ordem(lista: List[dict]) -> List[SituacaoOrdem]:
+def criar_tipo_situacao_ordem(lista: List[dict]) -> List[TipoSituacaoOrdem]:
     """
        Cria novas situações de ordens de serviços a partir de uma lista de dicionários.
        Args:
@@ -997,10 +1187,10 @@ def criar_situacao_ordem(lista: List[dict]) -> List[SituacaoOrdem]:
            List[Contrato]: Lista de novas situações criados e adicionados na base de dados.
        """
     # Criando um conjunto de situações de ordens existentes na base de dados
-    situacoes_ordem_existentes = set(so.nome for so in SituacaoOrdem.query.all())
+    situacoes_ordem_existentes = set(so.nome for so in TipoSituacaoOrdem.query.all())
     # Criando uma lista de novas situações de ordens para serem adicionados
-    novas_situacoes_ordem = [SituacaoOrdem(nome=item['nome'],
-                                           sigla=item['sigla'])
+    novas_situacoes_ordem = [TipoSituacaoOrdem(nome=item['nome'],
+                                               sigla=item['sigla'])
                              for item in lista if item['nome'] not in situacoes_ordem_existentes]
 
     try:
@@ -1008,13 +1198,13 @@ def criar_situacao_ordem(lista: List[dict]) -> List[SituacaoOrdem]:
         db.session.add_all(novas_situacoes_ordem)
         db.session.commit()
         # Registrando o evento no sistema de logs
-        log.info(f'{len(novas_situacoes_ordem)} situações ordens inseridas com sucesso.')
+        log.info(f'{len(novas_situacoes_ordem)} Tipos de situações das ordens inseridas com sucesso.')
 
         # Retornando a lista de novas situações de ordens adicionados
         return novas_situacoes_ordem
     except SQLAlchemyError as e:
         # Em caso de erro, realizando o rollback da transação e retornando uma lista vazia
-        log.error(f'Erro ao inserir situação_ordem: {e}')
+        log.error(f'Erro ao inserir Tipo de situações das ordens: {e}')
 
         # Realizando o rollback da transação e retornando uma lista vazia
         db.session.rollback()
@@ -1031,7 +1221,7 @@ def criar_ordem_servico(lista: List[dict]) -> List[OrdemServico]:
        """
     # Lista de equipamentos do banco de dados
     equipamentos = {e.cod: e.id for e in Equipamento.query.all()}
-    situacoes_ordem = {so.sigla: so.id for so in SituacaoOrdem.query.all()}
+    situacoes_ordem = {so.sigla: so.id for so in TipoSituacaoOrdem.query.all()}
     planosmanutencao = {pm.codigo: pm.id for pm in PlanoManutencao.query.all()}
     solicitantes = {u.nome: u.id for u in Usuario.query.all()}
     tipos_ordem = {t.sigla: t.id for t in TipoOrdem.query.all()}
@@ -1041,7 +1231,7 @@ def criar_ordem_servico(lista: List[dict]) -> List[OrdemServico]:
                                           descricao=item['descricao'],
                                           data_abertura=item['data_abertura'],
                                           equipamento_id=equipamentos[item['equipamento']],
-                                          situacaoordem_id=situacoes_ordem[item['situacaoordem']],
+                                          tiposituacaoordem_id=situacoes_ordem[item['situacaoordem']],
                                           solicitante_id=solicitantes[item['solicitante']],
                                           tipoordem_id=tipos_ordem[item['tipo']],
                                           planomanutencao_id=planosmanutencao[item['planomanutencao']]
@@ -1077,13 +1267,13 @@ def criar_tramitacao(lista: List[dict]) -> List[TramitacaoOrdem]:
 
     # Listas dos objetos necessários
     usuarios = {u.nome: u.id for u in Usuario.query.all()}
-    situacoes_ordem = {so.sigla: so.id for so in SituacaoOrdem.query.all()}
+    situacoes_ordem = {so.sigla: so.id for so in TipoSituacaoOrdem.query.all()}
 
     # Criando uma lista de novas ordens para serem adicionados
     novas_tramitacoes = [TramitacaoOrdem(
         ordemservico_id=item['ordem_servico'],
         usuario_id=usuarios[item['usuario']],
-        situacaoordem_id=situacoes_ordem[item['situacaoordem']],
+        tiposituacaoordem_id=situacoes_ordem[item['situacaoordem']],
         data=item['data'],
         observacao=item['observacao'])
         for item in lista]
@@ -1115,7 +1305,7 @@ def criar_fluxo_ordem(lista: List[dict]) -> List[FluxoOrdem]:
            List[Contrato]: Lista de novas situações criados e adicionados na base de dados.
        """
     # Criando um conjunto de situações de ordens existentes na base de dados
-    situacoes_ordem = {so.sigla: so.id for so in SituacaoOrdem.query.all()}
+    situacoes_ordem = {so.sigla: so.id for so in TipoSituacaoOrdem.query.all()}
 
     # Criando uma lista de novas situações de ordens para serem adicionados
     novos_fluxos = [FluxoOrdem(de=situacoes_ordem[item['de']], para=situacoes_ordem[item['para']])
@@ -1163,10 +1353,14 @@ criar_tipo_ordem(tipo_ordem_lista)
 criar_tipodata(tipoData_lista)
 criar_unidades(unidade_lista)
 criar_periodicidades(periodicidade_lista)
-criar_planosmanutencao(planosmanutencao_lista)
-criar_lista_atividades(atividades_lista)
 
-criar_situacao_ordem(situacao_ordem_lista)
+criar_tipos_parametros(tipo_parametros_lista)
+criar_lista_atividades(lista_atividade_lista)
+criar_tipo_binarios(tipo_binario_lista)
+criar_atividades(atividades_lista)
+criar_planosmanutencao(planosmanutencao_lista)
+
+criar_tipo_situacao_ordem(tipo_situacao_ordem_lista)
 criar_fluxo_ordem(fluxo_ordem_lista)
 criar_ordem_servico(ordem_servico_lista)
 criar_tramitacao(tramitacao_lista)

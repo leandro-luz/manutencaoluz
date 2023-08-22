@@ -10,6 +10,8 @@
     {{form.nome.label}} {{form.nome(size=80)}}<br>
     {{form.codigo.label}} {{form.codigo(size=80)}}<br>
     {{form.tipoordem.label}} {{form.tipoordem}}<br>
+    {{form.total_tecnico.label}} {{form.total_tecnico}}<br>
+    {{form.tempo_estimado.label}} {{form.tempo_estimado}}<br>
     {{form.tipodata.label}} {{form.tipodata}}<br>
     {{form.data_inicio.label}} {{form.data_inicio}}<br>
     {{form.periodicidade.label}} {{form.periodicidade}}<br>
@@ -20,40 +22,87 @@
         </span>
     </a> <br>
 
-    {{form.ativo.label}} {{form.ativo(size=20)}}<br>
     <input type="submit" value="Cadastrar"/>
-    {% else %}
-    <h2>Plano de Manutenção</h2>
-    Nome: {{ plano.nome }}<br>
-    Código: {{ plano.codigo }}<br>
-    Tipo de Ordem Serviço: {{ plano.tipoordem.nome }}<br>
-    Tipo de Data Inicial: {{ plano.tipodata.nome }}<br>
-    Data Inicial: {{ plano.data_inicio }}<br>
-    Periodicidade: {{ plano.periodicidade.nome }}<br>
-    Equipamento: {{ plano.equipamento.descricao_curta }}<br>
-    Ativo: {{ plano.ativo }}<br><br>
-
-    <h5>LISTA DE ATIVIDADES</h5>
-    <table class="table">
-        <thead>
-        <tr>
-            <th scope="col">ITEM</th>
-            <th scope="col">DESCRIÇÃO</th>
-        </tr>
-        </thead>
-        <tbody id="myTable">
-        {% for atividade in atividades %}
-        <tr>
-            <td>{{ atividade.posicao }}</td>
-            <td>{{ atividade.descricao }}</td>
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-
     {% endif %}
-
 </form>
+
+
+{% if plano.id > 0 %}
+
+<h2>Plano de Manutenção</h2>
+Nome: {{ plano.nome }}<br>
+Código: {{ plano.codigo }}<br>
+Tipo de Ordem Serviço: {{ plano.tipoordem.nome }}<br>
+Total de Técnicos: {{ plano.total_tecnico }}<br>
+Tempo estimado (horas): {{ plano.tempo_estimado }}<br>
+Tipo de Data Inicial: {{ plano.tipodata.nome }}<br>
+Data Inicial: {{ plano.data_inicio }}<br>
+Periodicidade: {{ plano.periodicidade.nome }}<br>
+Equipamento: {{ plano.equipamento.descricao_curta }}<br>
+Ativo: {{ plano.ativo }}<br><br>
+
+
+<h5>LISTA DE ATIVIDADES</h5>
+
+
+{% if plano.listaatividade.id %}
+Referência: #{{plano.listaatividade.id}} <br>
+Atualizado em: {{plano.listaatividade.data}} <br>
+{% endif %}
+
+<table class="table">
+    <thead>
+    <tr>
+        <th scope="col">ITEM</th>
+        <th scope="col">DESCRIÇÃO</th>
+        <th scope="col">TIPO</th>
+        <th>
+            <span data-bs-target="#modal" data-bs-toggle="modal" data-tooltip="Incluir">
+                <i class="bi-clipboard-plus fs-6"></i>
+            </span>
+            {% include "atividade_incluir.html" %}
+        </th>
+        <th></th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody id="myTable">
+    {% for atividade in atividades %}
+    <tr>
+        <td>{{ atividade.posicao }}</td>
+        <td>{{ atividade.descricao }}</td>
+        <td>{{ atividade.tipoparametro.nome }}</td>
+        <td>
+            <a href="{{ url_for('plano_manutencao.atividade_editar',plano_id=plano.id,
+                listaatividade_id=listaatividade_id, atividade_id=atividade.id, tipo='excluir') }}">
+                <span data-tooltip="Excluir">
+                    <i class="bi-clipboard-minus fs-6"></i>
+                </span>
+            </a>
+        </td>
+
+        <td>
+            <a href="{{ url_for('plano_manutencao.atividade_editar',plano_id=plano.id,
+                listaatividade_id=listaatividade_id, atividade_id=atividade.id, tipo='subir') }}">
+            <span data-tooltip="Subir Posição">
+                <i class="bi-caret-up fs-6"></i>
+            </span>
+            </a>
+        </td>
+
+        <td>
+            <a href="{{ url_for('plano_manutencao.atividade_editar',plano_id=plano.id,
+                listaatividade_id=listaatividade_id, atividade_id=atividade.id, tipo='descer') }}">
+            <span data-tooltip="Descer Posição">
+                <i class="bi-caret-down fs-6"></i>
+            </span>
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}
 
 <br>
 
