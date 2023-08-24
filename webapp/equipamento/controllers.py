@@ -1,10 +1,10 @@
 import numpy as np
 import pandas as pd
-from flask import (render_template, Blueprint, redirect, url_for, flash)
+from flask import render_template, Blueprint, redirect, url_for, flash, jsonify
 from flask_login import current_user, login_required
 from webapp.empresa.models import Empresa
-from .models import Equipamento, Grupo, Subgrupo
-from .forms import EquipamentoForm, GrupoForm, SubgrupoForm
+from .models import Equipamento, Grupo, Subgrupo, Pavimento, Setor, Local, Localizacao
+from .forms import EquipamentoForm, GrupoForm, SubgrupoForm, PavimentoForm, LocalizacaoForm, LocalForm, SetorForm
 from webapp.usuario import has_view
 from webapp.utils.files import arquivo_padrao
 from webapp.utils.erros import flash_errors
@@ -52,8 +52,10 @@ def equipamento_editar(equipamento_id):
             # Atualizar ou Ler dados
             if form.subgrupo.data:
                 sg_d = form.subgrupo.data
+                lo_d = form.localizacao.data
             else:
                 sg_d = equipamento.subgrupo_id
+                lo_d = equipamento.localizacao_id
         else:
             flash("Equipamento não localizado", category="danger")
             return redirect(url_for("equipamento.equipamento_listar"))
@@ -63,6 +65,7 @@ def equipamento_editar(equipamento_id):
         equipamento.id = 0
         form = EquipamentoForm()
         sg_d = form.subgrupo.data
+        lo_d = form.localizacao.data
 
     # Listas
     subgrupos = Subgrupo.query.filter(
@@ -70,8 +73,19 @@ def equipamento_editar(equipamento_id):
         Grupo.empresa_id == Empresa.id,
         Empresa.id == current_user.empresa_id).order_by(
         Subgrupo.nome)
+
+    localizacoes = Localizacao.query.filter(
+        Localizacao.local_id == Local.id,
+        Local.id == Localizacao.local_id,
+        Setor.id == Local.setor_id,
+        Setor.empresa_id == current_user.empresa_id,
+    ).order_by(Localizacao.nome)
+
     form.subgrupo.choices = [(0, '')] + [(sg.id, sg.nome) for sg in subgrupos]
+    form.localizacao.choices = [(0, '')] + [(lo.id, lo.nome) for lo in localizacoes]
+
     form.subgrupo.data = sg_d
+    form.localizacao.data = lo_d
 
     # Validação
     if form.validate_on_submit():
@@ -237,7 +251,7 @@ def grupo_listar(subgrupo_id, equipamento_id):
 @login_required
 @has_view('Equipamento')
 def grupo_editar(grupo_id, subgrupo_id, equipamento_id):
-    subgrupos=[]
+    subgrupos = []
     if grupo_id > 0:
         # Atualizar
         # localiza a empresa do grupo
@@ -583,3 +597,295 @@ def cadastrar_lote_subgrupos(equipamento_id):
             flash("Não foi gerado o arquivo de subgrupos rejeitados", category="danger")
 
     return redirect(url_for('equipamento.subgrupo_listar', equipamento_id=equipamento_id))
+
+
+@equipamento_blueprint.route('/localizacao_listar/<int:equipamento_id>', methods=['GET', 'POST'])
+@login_required
+@has_view('Equipamento')
+def localizacao_listar(equipamento_id):
+    """Retorna a lista das localizações"""
+    localizacoes = Localizacao.query.filter(
+        Localizacao.local_id == Local.id,
+        Local.id == Localizacao.local_id,
+        Setor.id == Local.setor_id,
+        Setor.empresa_id == current_user.empresa_id,
+    ).order_by(Localizacao.nome)
+
+    return render_template('localizacao_listar.html', localizacoes=localizacoes, equipamento_id=equipamento_id)
+
+
+@equipamento_blueprint.route('/localizacao_editar/<int:localizacao_id>/<int:equipamento_id>', methods=['GET', 'POST'])
+@login_required
+@has_view('Equipamento')
+def localizacao_editar(localizacao_id, equipamento_id):
+    if localizacao_id > 0:
+        # Atualizar
+        # localiza a localização
+        localizacao = Localizacao.query.filter_by(id=localizacao_id).one_or_none()
+        # verifica se a localização existe
+        if localizacao:
+            form = LocalizacaoForm(obj=localizacao)
+            # Atualizar ou Ler dados
+            if form.local.data:
+                st_d = form.setor.data
+                lo_d = form.local.data
+                pv_d = form.pavimento.data
+            else:
+                st_d = localizacao.local.setor_id
+                lo_d = localizacao.local_id
+                pv_d = localizacao.pavimento_id
+        else:
+            flash("Localização não localizada", category="danger")
+            return redirect(url_for("equipamento.localizacao_listar", localizacao_id=localizacao_id,
+                                    equipamento_id=equipamento_id))
+    else:
+        # Cadastrar
+        localizacao = Localizacao()
+        localizacao.id = 0
+        form = LocalizacaoForm()
+        st_d = form.setor.data
+        lo_d = form.local.data
+        pv_d = form.pavimento.data
+
+        if form.local.data:
+            setor = Setor.query.filter(
+                Setor.id == st_d,
+                Setor.empresa_id == current_user.empresa_id
+            ).one_or_none()
+
+            local = Local.query.filter(
+                Local.id == lo_d,
+                Setor.id == Local.setor_id,
+                Setor.empresa_id == current_user.empresa_id
+            ).one_or_none()
+
+            pavimento = Pavimento.query.filter(
+                Pavimento.id == pv_d,
+                Pavimento.empresa_id == current_user.empresa_id
+            ).one_or_none()
+
+            nome = setor.sigla + "_" + local.sigla + "_" + pavimento.sigla
+            form.nome.data = nome
+
+        # Listas
+        setores = Setor.query.all()
+        locais = Local.query.all()
+        pavimentos = Pavimento.query.all()
+
+        form.setor.choices = [(0, '')] + [(st.id, st.nome) for st in setores]
+        form.local.choices = [(0, '')] + [(lo.id, lo.nome) for lo in locais]
+        form.pavimento.choices = [(0, '')] + [(pv.id, pv.nome) for pv in pavimentos]
+
+        form.setor.data = st_d
+        form.local.data = lo_d
+        form.pavimento.data = pv_d
+
+    # Validação
+    if form.validate_on_submit():
+        localizacao.alterar_atributos(form)
+        if localizacao.salvar():
+            # Mensagens
+            if localizacao_id > 0:
+                flash("Localização atualizada", category="success")
+            else:
+                flash("Localização cadastrada", category="success")
+
+            return redirect(url_for("equipamento.localizacao_listar", equipamento_id=equipamento_id))
+        else:
+            flash("Localização não cadastrada/atualizada", category="danger")
+    else:
+        flash_errors(form)
+    return render_template("localizacao_editar.html", form=form, localizacao=localizacao, equipamento_id=equipamento_id)
+
+
+@equipamento_blueprint.route('/pavimento_listar/<int:localizacao_id>/<int:equipamento_id>', methods=['GET', 'POST'])
+@login_required
+@has_view('Equipamento')
+def pavimento_listar(localizacao_id, equipamento_id):
+    """Retorna a lista de pavimentos"""
+    pavimentos = Pavimento.query.filter_by(empresa_id=current_user.empresa_id).order_by(Pavimento.nome)
+
+    return render_template('pavimento_listar.html', pavimentos=pavimentos, localizacao_id=localizacao_id,
+                           equipamento_id=equipamento_id)
+
+
+@equipamento_blueprint.route('/pavimento_editar/<int:pavimento_id>/<int:localizacao_id>/<int:equipamento_id>',
+                             methods=['GET', 'POST'])
+@login_required
+@has_view('Equipamento')
+def pavimento_editar(pavimento_id, localizacao_id, equipamento_id):
+    if pavimento_id > 0:
+        # Atualizar
+        # localiza o pavimento
+        pavimento = Pavimento.query.filter_by(id=pavimento_id).one_or_none()
+        # verifica se o pavimento existe
+        if pavimento:
+            form = GrupoForm(obj=pavimento)
+        else:
+            flash("Pavimento não localizado", category="danger")
+            return redirect(url_for("equipamento.equipamento_editar"))
+
+    else:
+        # Cadastrar
+        pavimento = Pavimento()
+        form = PavimentoForm()
+
+    # Validação
+    if form.validate_on_submit():
+        pavimento.alterar_atributos(form)
+        if pavimento.salvar():
+            # Mensagens
+            if pavimento_id > 0:
+                flash("Pavimento atualizado", category="success")
+            else:
+                flash("Pavimento cadastrado", category="success")
+
+            return redirect(
+                url_for("equipamento.pavimento_listar", localizacao_id=localizacao_id, equipamento_id=equipamento_id))
+        else:
+            flash("Pavimento não cadastrado/atualizado", category="danger")
+    else:
+        flash_errors(form)
+    return render_template("pavimento_editar.html", form=form, pavimento=pavimento, localizacao_id=localizacao_id,
+                           equipamento_id=equipamento_id)
+
+
+@equipamento_blueprint.route('/local_listar/<int:localizacao_id>/<int:equipamento_id>', methods=['GET', 'POST'])
+@login_required
+@has_view('Equipamento')
+def local_listar(localizacao_id, equipamento_id):
+    """Retorna a lista de locais"""
+    locais = Local.query.filter(
+        Setor.id == Local.setor_id,
+        Setor.empresa_id == current_user.empresa_id).order_by(Local.nome)
+
+    return render_template('local_listar.html', locais=locais, localizacao_id=localizacao_id,
+                           equipamento_id=equipamento_id)
+
+
+@equipamento_blueprint.route('/local_editar/<int:local_id>/<int:localizacao_id>/<int:equipamento_id>',
+                             methods=['GET', 'POST'])
+@login_required
+@has_view('Equipamento')
+def local_editar(local_id, localizacao_id, equipamento_id):
+    if local_id > 0:
+        # Atualizar
+        # localiza o local
+        local = Local.query.filter_by(id=local_id).one_or_none()
+        # verifica se o local existe
+        if local:
+            form = LocalForm(obj=local)
+
+            if form.setor.data:
+                st_d = form.setor.data
+            else:
+                st_d = local.setor_id
+
+        else:
+            flash("Local não localizado", category="danger")
+            return redirect(url_for("equipamento.local_listar", localizacao_id=localizacao_id,
+                                    equipamento_id=equipamento_id))
+    else:
+        # Cadastrar
+        local = Local()
+        form = LocalForm()
+        st_d = form.setor.data
+
+        # Listas
+        setores = Setor.query.all()
+        form.setor.choices = [(0, '')] + [(st.id, st.nome) for st in setores]
+        form.setor.data = st_d
+
+        # Validação
+    if form.validate_on_submit():
+        local.alterar_atributos(form)
+
+        if local.salvar():
+            # Mensagens
+            if local_id > 0:
+                flash("Local atualizado", category="success")
+            else:
+                flash("Local cadastrado", category="success")
+
+            return redirect(
+                url_for("equipamento.local_listar", localizacao_id=localizacao_id, equipamento_id=equipamento_id))
+
+        else:
+            flash("Local não cadastrado/atualizado", category="danger")
+    else:
+        flash_errors(form)
+
+    return render_template('local_editar.html', form=form, local=local, localizacao_id=localizacao_id,
+                           equipamento_id=equipamento_id)
+
+
+@equipamento_blueprint.route('/setor_listar/<int:localizacao_id>/<int:equipamento_id>', methods=['GET', 'POST'])
+@login_required
+@has_view('Equipamento')
+def setor_listar(localizacao_id, equipamento_id):
+    """Retorna a lista dos setores"""
+    setores = Setor.query.filter_by(empresa_id=current_user.empresa_id).order_by(Setor.nome)
+
+    return render_template('setor_listar.html', setores=setores, localizacao_id=localizacao_id,
+                           equipamento_id=equipamento_id)
+
+
+@equipamento_blueprint.route('/setor_editar/<int:setor_id>/<int:localizacao_id>/<int:equipamento_id>',
+                             methods=['GET', 'POST'])
+@login_required
+@has_view('Equipamento')
+def setor_editar(setor_id, localizacao_id, equipamento_id):
+    if setor_id > 0:
+        # Atualizar
+        # localiza o setor
+        setor = Setor.query.filter_by(id=setor_id).one_or_none()
+        # verifica se o setor existe
+        if setor:
+            form = SetorForm(obj=setor)
+        else:
+            flash("Setor não localizado", category="danger")
+            return redirect(url_for("equipamento.setor_listar", localizacao_id=localizacao_id,
+                                    equipamento_id=equipamento_id))
+    else:
+        # Cadastrar
+        setor = Setor()
+        form = SetorForm()
+
+        # Validação
+    if form.validate_on_submit():
+        setor.alterar_atributos(form)
+
+        if setor.salvar():
+            # Mensagens
+            if setor_id > 0:
+                flash("Setor atualizado", category="success")
+            else:
+                flash("Setor cadastrado", category="success")
+
+            return redirect(
+                url_for("equipamento.setor_listar", localizacao_id=localizacao_id, equipamento_id=equipamento_id))
+
+        else:
+            flash("Setor não cadastrado/atualizado", category="danger")
+    else:
+        flash_errors(form)
+
+    return render_template('setor_editar.html', form=form, setor=setor, localizacao_id=localizacao_id,
+                           equipamento_id=equipamento_id)
+
+
+@equipamento_blueprint.route('/local_setor_lista/<int:setor_id>', methods=['GET', 'POST'])
+@login_required
+def local_setor_lista(setor_id: int):
+    """    Função que retorna lista de locais"""
+    locais = Local.query.filter_by(setor_id=setor_id).all()
+
+    # com base no identificador
+    locaisarray = []
+    localvazio = {'id': 0, 'nome': ''}
+    locaisarray.append(localvazio)
+
+    for local in locais:
+        localobj = {'id': local.id, 'nome': local.nome}
+        locaisarray.append(localobj)
+    return jsonify({'locais_lista': locaisarray})

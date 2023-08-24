@@ -6,7 +6,7 @@ from flask_login import current_user, login_required, login_user
 from webapp.empresa.models import Interessado, Tipoempresa, Empresa
 from webapp.empresa.forms import EmpresaForm, EmpresaSimplesForm, RegistroInteressadoForm
 from webapp.contrato.models import Contrato
-from webapp.usuario.models import Senha, Usuario, Perfil, Telaperfil
+from webapp.usuario.models import Senha, Usuario, PerfilAcesso, TelaPerfilAcesso
 from webapp.contrato.models import Telacontrato
 from webapp.usuario import has_view
 from webapp.utils.email import send_email
@@ -65,8 +65,8 @@ def empresa_editar(empresa_id):
         # --------- LER
         # localiza a empresa
         empresa = Empresa.query.filter(
-            current_user.empresa_id == Empresa.id,
-            Empresa.id == empresa_id
+            Empresa.id == empresa_id,
+            Empresa.empresa_gestora_id == current_user.empresa_id
         ).one_or_none()
 
         # se empresa existir
@@ -134,8 +134,8 @@ def new_admin(empresa: [Empresa], enviar_email):
     # laço de repetição
     for valor in lista:
         # cadastro da regra
-        perfil = Perfil(nome=valor['nome'], descricao=valor['descricao'], empresa_id=empresa.id)
-        if not perfil.salvar():
+        perfilacesso = PerfilAcesso(nome=valor['nome'], descricao=valor['descricao'], empresa_id=empresa.id)
+        if not perfilacesso.salvar(new=True):
             flash("Erro ao salvar o perfil", category="danger")
             break
 
@@ -143,8 +143,9 @@ def new_admin(empresa: [Empresa], enviar_email):
         telascontrato = Telacontrato.query.filter_by(contrato_id=empresa.contrato_id).all()
         for telacontrato in telascontrato:
             # cadastro de viewroles para o administrador
-            telaperfil = Telaperfil(perfil_id=perfil.id, tela_id=telacontrato.tela_id, ativo=telacontrato.ativo)
-            if not telaperfil.salvar():
+            telaperfilacesso = TelaPerfilAcesso(perfilacesso_id=perfilacesso.id, tela_id=telacontrato.tela_id,
+                                                ativo=telacontrato.ativo)
+            if not telaperfilacesso.salvar():
                 flash("Erro ao salvar a tela no perfil", category="danger")
                 break
 
@@ -166,9 +167,9 @@ def new_admin(empresa: [Empresa], enviar_email):
         # instância um novo objeto usuário
         usuario = Usuario()
         # cria os usuários administradores do sistema para a nova empresa
-        usuario.usuario_administrador(nome=valor['nome'] + "_" + empresa.nome_fantasia,
+        usuario.usuario_administrador(nome=valor['nome'] + "_" + empresa.nome_fantasia + "_" + str(empresa.id),
                                       email=valor['email'], empresa_id=empresa.id,
-                                      perfil_id=perfil.id, senha_id=senha.id)
+                                      perfilacesso_id=perfilacesso.id, senha_id=senha.id)
 
         if usuario.salvar():
             # Se está permitido o envio do email pelo usuario e ignora o email para adminstracao
@@ -423,8 +424,10 @@ def empresa_registrar(token):
 def empresa_acessar(empresa_id):
     """Função para acesso rápido a empresa subsidiária"""
     if empresa_id != current_user.empresa_id:
-        usuario = Usuario.query.filter_by(empresa_id=empresa_id). \
-            filter(Usuario.nome.like("%admin%"), Usuario.nome.notlike("%luz%")).one_or_none()
+        usuario = Usuario.query.filter(
+            Usuario.empresa_id == empresa_id,
+            Usuario.nome.like("%admin%"),
+            Usuario.nome.notlike("%luz%")).one_or_none()
         # caso o usuário exista
         if usuario:
             login_user(usuario)

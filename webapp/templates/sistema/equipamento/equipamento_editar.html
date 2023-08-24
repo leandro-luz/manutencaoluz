@@ -16,6 +16,13 @@
                 </span>
     </a> <br>
 
+    {{form.localizacao.label}} {{form.localizacao}}
+    <a href="{{ url_for('equipamento.localizacao_listar', equipamento_id=equipamento.id) }}">
+                <span data-tooltip="Atualizar">
+                    <i class="bi-caret-down fs-6"></i>
+                </span>
+    </a> <br>
+
 
     {{form.cod.label}} {{form.cod(size=20)}}<br>
     {{form.descricao_curta.label}} {{form.descricao_curta(size=80)}}<br>
@@ -37,7 +44,6 @@
     {{form.depreciacao.label}} {{form.depreciacao}}<br>
     {{form.tag.label}} {{form.tag(size=80)}}<br>
     {{form.patrimonio.label}} {{form.patrimonio(size=80)}}<br>
-    {{form.localizacao.label}} {{form.localizacao(size=80)}}<br>
     {{form.latitude.label}} {{form.latitude(size=80)}}<br>
     {{form.longitude.label}} {{form.longitude(size=80)}}<br>
     {{form.centro_custo.label}} {{form.centro_custo(size=80)}}<br>

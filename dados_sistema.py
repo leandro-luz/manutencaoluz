@@ -6,9 +6,9 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from webapp import create_app
 from webapp import db
-from webapp.usuario.models import Perfil, Senha, Usuario, Telaperfil
+from webapp.usuario.models import PerfilAcesso, Senha, Usuario, TelaPerfilAcesso
 from webapp.empresa.models import Interessado, Tipoempresa, Empresa
-from webapp.equipamento.models import Equipamento, Grupo, Subgrupo
+from webapp.equipamento.models import Equipamento, Grupo, Subgrupo, Pavimento, Setor, Local, Localizacao
 from webapp.contrato.models import Contrato, Tela, Telacontrato
 from webapp.plano_manutencao.models import TipoData, Unidade, Periodicidade, PlanoManutencao, Atividade, \
     TipoParametro, ListaAtividade, TipoBinario
@@ -31,7 +31,7 @@ telas_lista = [
     {'posicao': 1, 'nome': 'Interessado', 'icon': 'bi-card-list', 'url': 'empresa.interessado_listar'},
     {'posicao': 2, 'nome': 'Contrato', 'icon': 'bi-briefcase', 'url': 'contrato.contrato_listar'},
     {'posicao': 3, 'nome': 'Empresa', 'icon': 'bi-house-door', 'url': 'empresa.empresa_listar'},
-    {'posicao': 4, 'nome': 'RH', 'icon': 'bi-people', 'url': 'usuario.usuario_listar'},
+    {'posicao': 4, 'nome': 'Usuário', 'icon': 'bi-people', 'url': 'usuario.usuario_listar'},
     {'posicao': 5, 'nome': 'Equipamento', 'icon': 'bi-robot', 'url': 'equipamento.equipamento_listar'},
     {'posicao': 6, 'nome': 'Plano de Manutenção', 'icon': 'bi-clipboard', 'url': 'plano_manutencao.plano_listar'},
     {'posicao': 7, 'nome': 'Ordem de Serviço', 'icon': 'bi-wrench-adjustable-circle',
@@ -53,19 +53,18 @@ contratos_lista = [
 ]
 
 telascontrato_lista = [
-    {'contrato': 'BÁSICO', 'tela': 'RH'},
+    {'contrato': 'BÁSICO', 'tela': 'Usuário'},
     {'contrato': 'BÁSICO', 'tela': 'Equipamento'},
     {'contrato': 'BÁSICO', 'tela': 'Fornecedor'},
-    {'contrato': 'INTERMEDIÁRIO', 'tela': 'Contrato'},
     {'contrato': 'INTERMEDIÁRIO', 'tela': 'Empresa'},
-    {'contrato': 'INTERMEDIÁRIO', 'tela': 'RH'},
+    {'contrato': 'INTERMEDIÁRIO', 'tela': 'Usuário'},
     {'contrato': 'INTERMEDIÁRIO', 'tela': 'Equipamento'},
     {'contrato': 'INTERMEDIÁRIO', 'tela': 'Plano de Manutenção'},
     {'contrato': 'INTERMEDIÁRIO', 'tela': 'Ordem de Serviço'},
     {'contrato': 'COMPLETO', 'tela': 'Interessado'},
     {'contrato': 'COMPLETO', 'tela': 'Contrato'},
     {'contrato': 'COMPLETO', 'tela': 'Empresa'},
-    {'contrato': 'COMPLETO', 'tela': 'RH'},
+    {'contrato': 'COMPLETO', 'tela': 'Usuário'},
     {'contrato': 'COMPLETO', 'tela': 'Equipamento'},
     {'contrato': 'COMPLETO', 'tela': 'Plano de Manutenção'},
     {'contrato': 'COMPLETO', 'tela': 'Ordem de Serviço'},
@@ -155,11 +154,11 @@ perfis_lista = [
 telasperfil_lista = [
     {'empresa': 'manluz.ltda', 'role': 'default', 'tela': 'Contrato'},
     {'empresa': 'manluz.ltda', 'role': 'default', 'tela': 'Empresa'},
-    {'empresa': 'manluz.ltda', 'role': 'default', 'tela': 'RH'},
+    {'empresa': 'manluz.ltda', 'role': 'default', 'tela': 'Usuário'},
     {'empresa': 'manluz.ltda', 'role': 'admin', 'tela': 'Interessado'},
     {'empresa': 'manluz.ltda', 'role': 'admin', 'tela': 'Contrato'},
     {'empresa': 'manluz.ltda', 'role': 'admin', 'tela': 'Empresa'},
-    {'empresa': 'manluz.ltda', 'role': 'admin', 'tela': 'RH'},
+    {'empresa': 'manluz.ltda', 'role': 'admin', 'tela': 'Usuário'},
     {'empresa': 'manluz.ltda', 'role': 'admin', 'tela': 'Equipamento'},
     {'empresa': 'manluz.ltda', 'role': 'admin', 'tela': 'Plano de Manutenção'},
     {'empresa': 'manluz.ltda', 'role': 'admin', 'tela': 'Ordem de Serviço'},
@@ -173,7 +172,7 @@ telasperfil_lista = [
     {'empresa': 'manluz.ltda', 'role': 'adminluz', 'tela': 'Interessado'},
     {'empresa': 'manluz.ltda', 'role': 'adminluz', 'tela': 'Contrato'},
     {'empresa': 'manluz.ltda', 'role': 'adminluz', 'tela': 'Empresa'},
-    {'empresa': 'manluz.ltda', 'role': 'adminluz', 'tela': 'RH'},
+    {'empresa': 'manluz.ltda', 'role': 'adminluz', 'tela': 'Usuário'},
     {'empresa': 'manluz.ltda', 'role': 'adminluz', 'tela': 'Equipamento'},
     {'empresa': 'manluz.ltda', 'role': 'adminluz', 'tela': 'Plano de Manutenção'},
     {'empresa': 'manluz.ltda', 'role': 'adminluz', 'tela': 'Ordem de Serviço'},
@@ -187,11 +186,11 @@ telasperfil_lista = [
 
     {'empresa': 'empresa_teste.ltda', 'role': 'default', 'tela': 'Contrato'},
     {'empresa': 'empresa_teste.ltda', 'role': 'default', 'tela': 'Empresa'},
-    {'empresa': 'empresa_teste.ltda', 'role': 'default', 'tela': 'RH'},
+    {'empresa': 'empresa_teste.ltda', 'role': 'default', 'tela': 'Usuário'},
     {'empresa': 'empresa_teste.ltda', 'role': 'admin', 'tela': 'Interessado'},
     {'empresa': 'empresa_teste.ltda', 'role': 'admin', 'tela': 'Contrato'},
     {'empresa': 'empresa_teste.ltda', 'role': 'admin', 'tela': 'Empresa'},
-    {'empresa': 'empresa_teste.ltda', 'role': 'admin', 'tela': 'RH'},
+    {'empresa': 'empresa_teste.ltda', 'role': 'admin', 'tela': 'Usuário'},
     {'empresa': 'empresa_teste.ltda', 'role': 'admin', 'tela': 'Equipamento'},
     {'empresa': 'empresa_teste.ltda', 'role': 'admin', 'tela': 'Plano de Manutenção'},
     {'empresa': 'empresa_teste.ltda', 'role': 'admin', 'tela': 'Ordem de Serviço'},
@@ -205,7 +204,7 @@ telasperfil_lista = [
     {'empresa': 'empresa_teste.ltda', 'role': 'adminluz', 'tela': 'Interessado'},
     {'empresa': 'empresa_teste.ltda', 'role': 'adminluz', 'tela': 'Contrato'},
     {'empresa': 'empresa_teste.ltda', 'role': 'adminluz', 'tela': 'Empresa'},
-    {'empresa': 'empresa_teste.ltda', 'role': 'adminluz', 'tela': 'RH'},
+    {'empresa': 'empresa_teste.ltda', 'role': 'adminluz', 'tela': 'Usuário'},
     {'empresa': 'empresa_teste.ltda', 'role': 'adminluz', 'tela': 'Equipamento'},
     {'empresa': 'empresa_teste.ltda', 'role': 'adminluz', 'tela': 'Plano de Manutenção'},
     {'empresa': 'empresa_teste.ltda', 'role': 'adminluz', 'tela': 'Ordem de Serviço'},
@@ -219,26 +218,24 @@ telasperfil_lista = [
 
     {'empresa': 'empresa_beta.ltda', 'role': 'admin', 'tela': 'Contrato'},
     {'empresa': 'empresa_beta.ltda', 'role': 'admin', 'tela': 'Empresa'},
-    {'empresa': 'empresa_beta.ltda', 'role': 'admin', 'tela': 'RH'},
+    {'empresa': 'empresa_beta.ltda', 'role': 'admin', 'tela': 'Usuário'},
     {'empresa': 'empresa_beta.ltda', 'role': 'admin', 'tela': 'Equipamento'},
     {'empresa': 'empresa_beta.ltda', 'role': 'admin', 'tela': 'Plano de Manutenção'},
     {'empresa': 'empresa_beta.ltda', 'role': 'admin', 'tela': 'Ordem de Serviço'},
     {'empresa': 'empresa_beta.ltda', 'role': 'adminluz', 'tela': 'Contrato'},
     {'empresa': 'empresa_beta.ltda', 'role': 'adminluz', 'tela': 'Empresa'},
-    {'empresa': 'empresa_beta.ltda', 'role': 'adminluz', 'tela': 'RH'},
+    {'empresa': 'empresa_beta.ltda', 'role': 'adminluz', 'tela': 'Usuário'},
     {'empresa': 'empresa_beta.ltda', 'role': 'adminluz', 'tela': 'Equipamento'},
     {'empresa': 'empresa_beta.ltda', 'role': 'adminluz', 'tela': 'Plano de Manutenção'},
     {'empresa': 'empresa_beta.ltda', 'role': 'adminluz', 'tela': 'Ordem de Serviço'},
 
-    {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'admin', 'tela': 'Contrato'},
     {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'admin', 'tela': 'Empresa'},
-    {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'admin', 'tela': 'RH'},
+    {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'admin', 'tela': 'Usuário'},
     {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'admin', 'tela': 'Equipamento'},
     {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'admin', 'tela': 'Plano de Manutenção'},
     {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'admin', 'tela': 'Ordem de Serviço'},
-    {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'adminluz', 'tela': 'Contrato'},
     {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'adminluz', 'tela': 'Empresa'},
-    {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'adminluz', 'tela': 'RH'},
+    {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'adminluz', 'tela': 'Usuário'},
     {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'adminluz', 'tela': 'Equipamento'},
     {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'adminluz', 'tela': 'Plano de Manutenção'},
     {'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'role': 'adminluz', 'tela': 'Ordem de Serviço'},
@@ -271,18 +268,29 @@ usuario_lista = [
      'senha': 'aaa11111', 'perfil': 'admin',
      'data_assinatura': '1980/05/10 12:45:10',
      'empresa': 'manluz.ltda'},
-    {'nome': 'teste', 'email': 'adminteste@hotmail.com',
-     'senha': 'teste123', 'perfil': 'admin', 'data_assinatura': '1980/05/10 12:45:10',
+
+    {'nome': 'adminluz_teste', 'email': 'adminteste@hotmail.com',
+     'senha': 'aaa11111', 'perfil': 'adminluz', 'data_assinatura': '1980/05/10 12:45:10',
      'empresa': 'empresa_teste.ltda'},
-    {'nome': 'beta', 'email': 'adminbeta@gmail.com',
-     'senha': 'beta123', 'perfil': 'admin', 'data_assinatura': '1980/05/10 12:45:10',
+    {'nome': 'admin_teste', 'email': 'gerenciadorteste@hotmail.com',
+     'senha': '12345678', 'perfil': 'admin',
+     'data_assinatura': '2023/06/05 18:00:00',
+     'empresa': 'empresa_teste.ltda'},
+
+    {'nome': 'adminluz_beta', 'email': 'adminbeta@gmail.com',
+     'senha': 'aaa11111', 'perfil': 'adminluz', 'data_assinatura': '1980/05/10 12:45:10',
      'empresa': 'empresa_beta.ltda'},
+    {'nome': 'admin_beta', 'email': 'gerenciadorbeta@gmail.com',
+     'senha': '12345678', 'perfil': 'admin', 'data_assinatura': '2023/06/05 18:00:00',
+     'empresa': 'empresa_beta.ltda'},
+
     {'nome': 'adminluz_semeente', 'email': 'guguleo2019@gmail.com',
-     'senha': 'aaa11111', 'perfil': 'admin', 'data_assinatura': '1980/05/10 12:45:10',
+     'senha': 'aaa11111', 'perfil': 'adminluz', 'data_assinatura': '1980/05/10 12:45:10',
      'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA'},
     {'nome': 'admin_Semeente', 'email': 'contato.luzengenharia@gmail.com',
      'senha': '12345678', 'perfil': 'admin', 'data_assinatura': '2023/06/05 18:00:00',
      'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA'},
+
 ]
 
 grupo_lista = [
@@ -302,6 +310,51 @@ subgrupo_lista = [
     {'nome': 'SUBESTAÇÃO', 'grupo': 'ELÉTRICO'},
     {'nome': 'REFRIGERAÇÃO', 'grupo': 'MECÂNICO'},
     {'nome': 'FROTA', 'grupo': 'MECÂNICO'},
+]
+
+pavimento_lista = [
+    {'nome': 'SUBSOLO 01', 'sigla': 'SUB01', 'empresa': 'manluz.ltda'},
+    {'nome': 'SUBSOLO 02', 'sigla': 'SUB02', 'empresa': 'manluz.ltda'},
+    {'nome': 'TÉRREO', 'sigla': 'TERRE', 'empresa': 'manluz.ltda'},
+    {'nome': 'MEZANINO', 'sigla': 'MEZAN', 'empresa': 'manluz.ltda'},
+    {'nome': '1º ANDAR', 'sigla': 'PAV01', 'empresa': 'manluz.ltda'},
+    {'nome': '2º ANDAR', 'sigla': 'PAV02', 'empresa': 'manluz.ltda'},
+    {'nome': '3º ANDAR', 'sigla': 'PAV03', 'empresa': 'manluz.ltda'},
+    {'nome': '4º ANDAR', 'sigla': 'PAV04', 'empresa': 'manluz.ltda'},
+    {'nome': 'TERRAÇO', 'sigla': 'TERRA', 'empresa': 'manluz.ltda'},
+]
+
+setor_lista = [
+    {'nome': 'DIRETORIA', 'sigla': 'DIRET', 'empresa': 'manluz.ltda'},
+    {'nome': 'PORTARIA', 'sigla': 'PORTA', 'empresa': 'manluz.ltda'},
+    {'nome': 'RH', 'sigla': 'RH', 'empresa': 'manluz.ltda'},
+    {'nome': 'ADMINISTRAÇÃO', 'sigla': 'ADMIN', 'empresa': 'manluz.ltda'},
+    {'nome': 'LOGÍSTICA', 'sigla': 'LOGIS', 'empresa': 'manluz.ltda'},
+    {'nome': 'TI', 'sigla': 'TI', 'empresa': 'manluz.ltda'},
+    {'nome': 'COMERCIAL', 'sigla': 'COMER', 'empresa': 'manluz.ltda'},
+    {'nome': 'MANUTENÇÃO', 'sigla': 'MANUT', 'empresa': 'manluz.ltda'},
+]
+
+locais_lista = [
+    {'nome': 'WC PRIVATIVO', 'sigla': 'WCPRI', 'setor': 'DIRETORIA'},
+    {'nome': 'SALA REUNIÃO', 'sigla': 'SLREU', 'setor': 'DIRETORIA'},
+    {'nome': 'WC FEMININO', 'sigla': 'WCFEM', 'setor': 'RH'},
+    {'nome': 'WC MASCULINO', 'sigla': 'WCMAS', 'setor': 'RH'},
+    {'nome': 'COPA', 'sigla': 'COPA', 'setor': 'ADMINISTRAÇÃO'},
+    {'nome': 'LAVADOR PEÇAS', 'sigla': 'LAPEC', 'setor': 'MANUTENÇÃO'},
+    {'nome': 'OFICINA ELÉTRICA', 'sigla': 'OFELE', 'setor': 'MANUTENÇÃO'},
+    {'nome': 'OFICINA MECÂNICA', 'sigla': 'OFMEC', 'setor': 'MANUTENÇÃO'},
+]
+
+localizacao_lista = [
+    {'nome': 'DIRET_WCPRI_PAV04', 'local': 'WC PRIVATIVO', 'pavimento': '4º ANDAR'},
+    {'nome': 'DIRET_SLREU_PAV04', 'local': 'SALA REUNIÃO', 'pavimento': '4º ANDAR'},
+    {'nome': 'RH_WCFEM_PAV03', 'local': 'WC FEMININO', 'pavimento': '3º ANDAR'},
+    {'nome': 'RH_WCMAS_PAV03', 'local': 'WC MASCULINO', 'pavimento': '3º ANDAR'},
+    {'nome': 'ADMIN_COPA_PAV02', 'local': 'COPA', 'pavimento': '2º ANDAR'},
+    {'nome': 'MANUT_LAPEC_PAV01', 'local': 'LAVADOR PEÇAS', 'pavimento': '1º ANDAR'},
+    {'nome': 'MANUT_OFELE_TERRE', 'local': 'OFICINA ELÉTRICA', 'pavimento': 'TÉRREO'},
+    {'nome': 'MANUT_OFMEC_SUB01', 'local': 'OFICINA MECÂNICA', 'pavimento': 'SUBSOLO 01'},
 ]
 
 equipamento_lista = [
@@ -618,7 +671,7 @@ def criar_tipos_empresa(lista: List[dict]) -> List[Tipoempresa]:
         return []
 
 
-def criar_empresas(lista: List[dict]) -> List[Perfil]:
+def criar_empresas(lista: List[dict]) -> List[PerfilAcesso]:
     empresas_existentes = {emp.razao_social for emp in Empresa.query.all()}
     tipos_empresas = {tipo.nome: tipo for tipo in Tipoempresa.query.all()}
     contratos = {contrato.nome: contrato for contrato in Contrato.query.all()}
@@ -658,24 +711,24 @@ def criar_empresas(lista: List[dict]) -> List[Perfil]:
         return []
 
 
-def criar_perfis(lista: List[dict]) -> List[Perfil]:
+def criar_perfis(lista: List[dict]) -> List[PerfilAcesso]:
     """
    Cria novos perfis a partir de uma lista de dicionários.
    Args:
        lista (List[dict]): Lista de dicionários contendo informações de novos perfis.
    Returns:
-       List[Perfil]: Lista de novos perfis criados e adicionados na base de dados.
+       List[PerfilAcesso]: Lista de novos perfis criados e adicionados na base de dados.
    """
 
     empresas = {e.razao_social: e.id for e in Empresa.query.all()}
 
     # Criando a lista de novas perfis a serem adicionadas
-    novos_perfis = [Perfil(nome=item['nome'],
-                           descricao=item['descricao'],
-                           ativo=item['ativo'],
-                           empresa_id=empresas[item['empresa']])
+    novos_perfis = [PerfilAcesso(nome=item['nome'],
+                                 descricao=item['descricao'],
+                                 ativo=item['ativo'],
+                                 empresa_id=empresas[item['empresa']])
                     for item in lista if item['nome'] not in [pe.nome
-                                                              for pe in Perfil.query.all()]]
+                                                              for pe in PerfilAcesso.query.all()]]
 
     try:
         # Adicionando as novas perfis na sessão e realizando o commit
@@ -687,30 +740,30 @@ def criar_perfis(lista: List[dict]) -> List[Perfil]:
         return novos_perfis
     except Exception as e:
         # Em caso de erro, realizando o rollback da transação e retornando uma lista vazia
-        log.error(f'Erro ao inserir Perfil: {e}')
+        log.error(f'Erro ao inserir PerfilAcesso: {e}')
         db.session.rollback()
         return []
 
 
-def criar_telasperfil(lista: List[dict]) -> List[Telaperfil]:
+def criar_telasperfil(lista: List[dict]) -> List[TelaPerfilAcesso]:
     """
    Cria novos perfis a partir de uma lista de dicionários.
    Args:
        lista (List[dict]): Lista de dicionários contendo informações de novos perfis.
    Returns:
-       List[Perfil]: Lista de novos perfis criados e adicionados na base de dados.
+       List[PerfilAcesso]: Lista de novos perfis criados e adicionados na base de dados.
    """
 
     telasperfis = []
 
     for item in lista:
         empresa = Empresa.query.filter_by(razao_social=item['empresa']).one_or_none()
-        perfil = Perfil.query.filter_by(nome=item['role'], empresa_id=empresa.id).one_or_none()
+        perfilacesso = PerfilAcesso.query.filter_by(nome=item['role'], empresa_id=empresa.id).one_or_none()
         tela = Tela.query.filter_by(nome=item['tela']).one_or_none()
-        telaperfil = Telaperfil.query.filter_by(tela_id=tela.id, perfil_id=perfil.id).one_or_none()
+        telaperfil = TelaPerfilAcesso.query.filter_by(tela_id=tela.id, perfilacesso_id=perfilacesso.id).one_or_none()
 
         if not telaperfil:
-            telasperfis.append(Telaperfil(perfil_id=perfil.id, tela_id=tela.id, ativo=True))
+            telasperfis.append(TelaPerfilAcesso(perfilacesso_id=perfilacesso.id, tela_id=tela.id, ativo=True))
 
     try:
         db.session.add_all(telasperfis)
@@ -729,7 +782,7 @@ def criar_senhas(lista: List[dict]) -> List[Senha]:
    Args:
        lista (List[dict]): Lista de dicionários contendo informações de novos perfis.
    Returns:
-       List[Perfil]: Lista de novos perfis criados e adicionados na base de dados.
+       List[PerfilAcesso]: Lista de novos perfis criados e adicionados na base de dados.
    """
 
     # Criando a lista de novas perfis a serem adicionadas
@@ -769,14 +822,14 @@ def criar_usuarios(lista: List[dict]) -> List[Usuario]:
     novos_usuarios = []
     for item in lista:
         if item['nome'] not in usuarios:
-            perfis = {p.nome: p.id for p in Perfil.query.filter_by(empresa_id=empresas[item['empresa']])}
+            perfis = {p.nome: p.id for p in PerfilAcesso.query.filter_by(empresa_id=empresas[item['empresa']])}
 
             usuario = Usuario(nome=item['nome'],
                               email=item['email'],
                               data_assinatura=item['data_assinatura'],
                               ativo=True,
                               senha_id=senhas[item['senha']],
-                              perfil_id=perfis[item['perfil']],
+                              perfilacesso_id=perfis[item['perfil']],
                               empresa_id=empresas[item['empresa']])
 
             novos_usuarios.append(usuario)
@@ -856,6 +909,139 @@ def criar_subgrupo(lista: List[dict]) -> List[Subgrupo]:
     except SQLAlchemyError as e:
         # Em caso de erro, realizando o rollback da transação e retornando uma lista vazia
         log.error(f'Erro ao inserir Subgrupos: {e}')
+        # Realizando o rollback da transação e retornando uma lista vazia
+        db.session.rollback()
+        return []
+
+
+def criar_pavimento(lista: List[dict]) -> List[Pavimento]:
+    """
+       Cria novos tipos de datas para os planos de manutenção.
+       Args:
+           lista (List[dict]): Lista de dicionários contendo informações das datas.
+       Returns:
+           List[TipoData]: Lista das novas datas e adicionados na base de dados.
+       """
+
+    empresas = {e.razao_social: e.id for e in Empresa.query.all()}
+
+    # Criando uma lista de novos tipodatas para serem adicionados
+    novos_pavimentos = [Pavimento(nome=item['nome'],
+                                  sigla=item['sigla'],
+                                  empresa_id=empresas[item['empresa']])
+                        for item in lista if item['nome'] not in [pav.nome for pav in Pavimento.query.all()]]
+
+    try:
+        # Adicionando os novos contratos na sessão e realizando o commit
+        db.session.add_all(novos_pavimentos)
+        db.session.commit()
+        # Registrando o evento no sistema de logs
+        log.info(f'{len(novos_pavimentos)} Pavimentos inseridos com sucesso.')
+        # Retornando a lista de novos contratos adicionados
+        return novos_pavimentos
+    except SQLAlchemyError as e:
+        # Em caso de erro, realizando o rollback da transação e retornando uma lista vazia
+        log.error(f'Erro ao inserir pavimentos: {e}')
+        # Realizando o rollback da transação e retornando uma lista vazia
+        db.session.rollback()
+        return []
+
+
+def criar_setor(lista: List[dict]) -> List[Setor]:
+    """
+       Cria novos tipos de datas para os planos de manutenção.
+       Args:
+           lista (List[dict]): Lista de dicionários contendo informações das datas.
+       Returns:
+           List[TipoData]: Lista das novas datas e adicionados na base de dados.
+       """
+
+    empresas = {e.razao_social: e.id for e in Empresa.query.all()}
+
+    # Criando uma lista de novos tipodatas para serem adicionados
+    novos_setores = [Setor(nome=item['nome'],
+                           sigla=item['sigla'],
+                           empresa_id=empresas[item['empresa']])
+                     for item in lista if item['nome'] not in [s.nome for s in Setor.query.all()]]
+
+    try:
+        # Adicionando os novos contratos na sessão e realizando o commit
+        db.session.add_all(novos_setores)
+        db.session.commit()
+        # Registrando o evento no sistema de logs
+        log.info(f'{len(novos_setores)} Setores inseridos com sucesso.')
+        # Retornando a lista de novos contratos adicionados
+        return novos_setores
+    except SQLAlchemyError as e:
+        # Em caso de erro, realizando o rollback da transação e retornando uma lista vazia
+        log.error(f'Erro ao inserir setores: {e}')
+        # Realizando o rollback da transação e retornando uma lista vazia
+        db.session.rollback()
+        return []
+
+
+def criar_locais(lista: List[dict]) -> List[Local]:
+    """
+       Cria novos tipos de datas para os planos de manutenção.
+       Args:
+           lista (List[dict]): Lista de dicionários contendo informações das datas.
+       Returns:
+           List[TipoData]: Lista das novas datas e adicionados na base de dados.
+       """
+
+    setores = {se.nome: se.id for se in Setor.query.all()}
+
+    # Criando uma lista de novos tipodatas para serem adicionados
+    novos_locais = [Local(nome=item['nome'],
+                          sigla=item['sigla'],
+                          setor_id=setores[item['setor']])
+                    for item in lista if item['nome'] not in [lo.nome for lo in Local.query.all()]]
+
+    try:
+        # Adicionando os novos contratos na sessão e realizando o commit
+        db.session.add_all(novos_locais)
+        db.session.commit()
+        # Registrando o evento no sistema de logs
+        log.info(f'{len(novos_locais)} Locais inseridos com sucesso.')
+        # Retornando a lista de novos contratos adicionados
+        return novos_locais
+    except SQLAlchemyError as e:
+        # Em caso de erro, realizando o rollback da transação e retornando uma lista vazia
+        log.error(f'Erro ao inserir locais: {e}')
+        # Realizando o rollback da transação e retornando uma lista vazia
+        db.session.rollback()
+        return []
+
+
+def criar_localizacao(lista: List[dict]) -> List[Localizacao]:
+    """
+       Cria novos tipos de datas para os planos de manutenção.
+       Args:
+           lista (List[dict]): Lista de dicionários contendo informações das datas.
+       Returns:
+           List[TipoData]: Lista das novas datas e adicionados na base de dados.
+       """
+
+    locais = {lo.nome: lo.id for lo in Local.query.all()}
+    pavimentos = {p.nome: p.id for p in Pavimento.query.all()}
+
+    # Criando uma lista de novos tipodatas para serem adicionados
+    novas_localizacoes = [Localizacao(nome=item['nome'],
+                                      local_id=locais[item['local']],
+                                      pavimento_id=pavimentos[item['pavimento']])
+                          for item in lista if item['nome'] not in [lo.nome for lo in Localizacao.query.all()]]
+
+    try:
+        # Adicionando os novos contratos na sessão e realizando o commit
+        db.session.add_all(novas_localizacoes)
+        db.session.commit()
+        # Registrando o evento no sistema de logs
+        log.info(f'{len(novas_localizacoes)} Localizações inseridos com sucesso.')
+        # Retornando a lista de novos contratos adicionados
+        return novas_localizacoes
+    except SQLAlchemyError as e:
+        # Em caso de erro, realizando o rollback da transação e retornando uma lista vazia
+        log.error(f'Erro ao inserir localizações: {e}')
         # Realizando o rollback da transação e retornando uma lista vazia
         db.session.rollback()
         return []
@@ -1346,6 +1532,10 @@ criar_usuarios(usuario_lista)
 # carregamento para os equipamentos
 criar_grupo(grupo_lista)
 criar_subgrupo(subgrupo_lista)
+criar_pavimento(pavimento_lista)
+criar_setor(setor_lista)
+criar_locais(locais_lista)
+criar_localizacao(localizacao_lista)
 criar_equipamento(equipamento_lista)
 
 # carregamento para os fornecedores

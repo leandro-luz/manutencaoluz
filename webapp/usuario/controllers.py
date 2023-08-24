@@ -4,11 +4,11 @@ import numpy as np
 import pandas as pd
 from flask import (render_template, Blueprint, redirect, url_for, flash)
 from flask_login import login_user, logout_user, current_user, login_required
-from webapp.usuario.models import Senha, Usuario, Perfil, Telaperfil
+from webapp.usuario.models import Senha, Usuario, PerfilAcesso, TelaPerfilAcesso
 from webapp.empresa.models import Empresa
 from webapp.contrato.models import Telacontrato
 from .forms import LoginForm, AlterarSenhaForm, SolicitarNovaSenhaForm, AlterarSenhaTokenForm, \
-    AlterarEmailForm, EditarUsuarioForm, PerfilForm, TelaPerfilForm
+    AlterarEmailForm, EditarUsuarioForm, PerfilAcessoForm, TelaPerfilForm
 from webapp.usuario import has_view
 from webapp.utils.email import send_email
 from webapp.utils.tools import create_token, verify_token
@@ -242,7 +242,7 @@ def usuario(usuario_id):
 
 @usuario_blueprint.route('/usuario_listar', methods=['GET', 'POST'])
 @login_required
-@has_view('RH')
+@has_view('Usuário')
 def usuario_listar() -> str:
     """    Função que retorna uma lista de usuários    """
     # retorna uma lista de usuários da empresa, exceto os adminluz(administradores de sistema)
@@ -254,7 +254,7 @@ def usuario_listar() -> str:
 
 @usuario_blueprint.route('/usuario_editar/<int:usuario_id>', methods=['GET', 'POST'])
 @login_required
-@has_view('RH')
+@has_view('Usuário')
 def usuario_editar(usuario_id):
     """    Função atualiza as informações do usuário    """
     if usuario_id > 0:  # se o identificador foi passado com parâmetro
@@ -277,7 +277,7 @@ def usuario_editar(usuario_id):
             if form.perfil.data:
                 r_d = form.perfil.data
             else:
-                r_d = usuario_.perfil_id
+                r_d = usuario_.perfilacesso_id
         else:
             flash("Usuário não localizado", category="danger")
             return redirect(url_for("usuario.usuario_listar"))
@@ -293,8 +293,8 @@ def usuario_editar(usuario_id):
 
     # --------- LISTAS
     form.perfil.choices = [(0, '')] + [(perfis.id, perfis.nome) for perfis in
-                                       Perfil.query.filter_by(empresa_id=current_user.empresa_id).filter(
-                                           Perfil.nome.notlike("%adminluz%")).all()]
+                                       PerfilAcesso.query.filter_by(empresa_id=current_user.empresa_id).filter(
+                                           PerfilAcesso.nome.notlike("%adminluz%")).all()]
     form.perfil.data = r_d
 
     # --------- VALIDAÇÕES
@@ -331,7 +331,7 @@ def usuario_editar(usuario_id):
 
 @usuario_blueprint.route('/gerar_padrao_usuarios/', methods=['GET', 'POST'])
 @login_required
-@has_view('RH')
+@has_view('Usuário')
 def gerar_padrao_usuarios():
     result, path = arquivo_padrao(nome_arquivo=Usuario.nome_doc, valores=[[x] for x in Usuario.titulos_doc])
     if result:
@@ -343,7 +343,7 @@ def gerar_padrao_usuarios():
 
 @usuario_blueprint.route('/cadastrar_lote_usuarios>', methods=['GET', 'POST'])
 @login_required
-@has_view('RH')
+@has_view('Usuário')
 def cadastrar_lote_usuarios():
     form = EditarUsuarioForm()
 
@@ -388,12 +388,12 @@ def cadastrar_lote_usuarios():
                     [df.at[linha, 'Nome*'], "rejeitado devido Email já existir no banco de dados"])
 
         # verificar existência do perfil
-        perfil = Perfil.query.filter_by(nome=df.at[linha, 'Perfil*'],
-                                        empresa_id=current_user.empresa_id).one_or_none()
+        perfil = PerfilAcesso.query.filter_by(nome=df.at[linha, 'PerfilAcesso*'],
+                                              empresa_id=current_user.empresa_id).one_or_none()
         if not perfil:
             rejeitados.append(df.at[linha, 'Nome*'])
             rejeitados_texto.append(
-                [df.at[linha, 'Nome*'], "rejeitado devido Perfil não cadastrado"])
+                [df.at[linha, 'Nome*'], "rejeitado devido PerfilAcesso não cadastrado"])
 
         # verifica se não existe na lista atual
         if df.at[linha, 'Nome*'] in aceitos_cod:
@@ -415,7 +415,7 @@ def cadastrar_lote_usuarios():
             senha.salvar()
 
             # altera o valor do perfil de nome para id na tabela
-            df.at[linha, 'Perfil*'] = perfil.id
+            df.at[linha, 'PerfilAcesso*'] = perfil.id
 
             # cria um equipamento e popula ele
             usuario_ = Usuario()
@@ -456,98 +456,100 @@ def cadastrar_lote_usuarios():
     return redirect(url_for("usuario.usuario_listar"))
 
 
-@usuario_blueprint.route('/perfil_listar', methods=['GET', 'POST'])
+@usuario_blueprint.route('/perfilacesso_listar/<int:usuario_id>', methods=['GET', 'POST'])
 @login_required
-@has_view('RH')
-def perfil_listar():
-    lista_perfis = [{'perfil': perfil, 'total': Usuario.query.filter(Usuario.empresa_id == Empresa.id,
-                                                                     Usuario.perfil_id == perfil.id,
-                                                                     Empresa.id == current_user.empresa_id).count()}
-                    for perfil in Perfil.query.filter_by(empresa_id=current_user.empresa_id). \
-                        filter(Perfil.nome.notlike("%adminluz%")).order_by(Perfil.nome).all()]
+@has_view('Usuário')
+def perfilacesso_listar(usuario_id):
+    lista_perfis = [{'perfilacesso': perfilacesso, 'total': Usuario.query.filter(Usuario.empresa_id == Empresa.id,
+                                                                                 Usuario.perfilacesso_id == perfilacesso.id,
+                                                                                 Empresa.id == current_user.empresa_id).count()}
+                    for perfilacesso in PerfilAcesso.query.filter_by(empresa_id=current_user.empresa_id). \
+                        filter(PerfilAcesso.nome.notlike("%adminluz%")).order_by(PerfilAcesso.nome).all()]
 
-    return render_template('perfil_listar.html', perfis=lista_perfis)
+    return render_template('perfilacesso_listar.html', perfisacesso=lista_perfis, usuario_id=usuario_id)
 
 
-@usuario_blueprint.route('/perfil_editar/<int:perfil_id>', methods=['GET', 'POST'])
+@usuario_blueprint.route('/perfilacesso_editar/<int:perfilacesso_id>/<int:usuario_id>', methods=['GET', 'POST'])
 @login_required
-@has_view('RH')
-def perfil_editar(perfil_id):
+@has_view('Usuário')
+def perfilacesso_editar(perfilacesso_id, usuario_id):
     usuarios = []
-    if perfil_id > 0:
+    if perfilacesso_id > 0:
         # Atualizar
-        perfil = Perfil.query.filter(
+        perfilacesso = PerfilAcesso.query.filter(
             current_user.empresa_id == Empresa.id,
-            Empresa.id == Perfil.empresa_id,
-            Perfil.id == perfil_id
+            Empresa.id == PerfilAcesso.empresa_id,
+            PerfilAcesso.id == perfilacesso_id
         ).one_or_none()
 
         # verifica se o perfil existe
-        if perfil:
-            form = PerfilForm(obj=perfil)
+        if perfilacesso:
+            form = PerfilAcessoForm(obj=perfilacesso)
             new = False
 
             # Usuários vinculados no perfil
-            usuarios = Usuario.query.filter_by(perfil_id=perfil.id).all()
+            usuarios = Usuario.query.filter_by(perfilacesso_id=perfilacesso.id).all()
 
         else:
-            flash("Perfil não localizado", category="danger")
-            return redirect(url_for("usuario.perfil_listar"))
+            flash("PerfilAcesso não localizado", category="danger")
+            return redirect(url_for("usuario.perfilacesso_listar"))
 
     else:
         # Cadastrar
-        perfil = Perfil()
-        perfil.id = 0
-        form = PerfilForm()
+        perfilacesso = PerfilAcesso()
+        perfilacesso.id = 0
+        form = PerfilAcessoForm()
         new = True
 
     # Lista
     form.tela.choices = [(0, '')] + [(telasperfil.id, telasperfil.tela.nome)
                                      for telasperfil in
-                                     Telaperfil.query.filter_by(perfil_id=perfil_id, ativo=True).all()]
+                                     TelaPerfilAcesso.query.filter_by(perfilacesso_id=perfilacesso_id,
+                                                                      ativo=True).all()]
     # Validação
     if form.validate_on_submit():
-        perfil.alterar_atributos(form, current_user.empresa.id)
-        if perfil.salvar(new):
+        perfilacesso.alterar_atributos(form, current_user.empresa.id)
+        if perfilacesso.salvar(new):
             # Mensagens
-            if perfil_id > 0:
-                flash("Perfil atualizado", category="success")
+            if perfilacesso_id > 0:
+                flash("PerfilAcesso atualizado", category="success")
             else:
-                flash("Perfil cadastrado", category="success")
-            return redirect(url_for("usuario.perfil_listar"))
+                flash("PerfilAcesso cadastrado", category="success")
+            return redirect(url_for("usuario.perfilacesso_listar"))
         else:
-            flash("Perfil não cadastrado/atualizado", category="danger")
+            flash("PerfilAcesso não cadastrado/atualizado", category="danger")
     else:
         flash_errors(form)
-    return render_template("perfil_editar.html", form=form, perfil=perfil, usuarios=usuarios)
+    return render_template("perfilacesso_editar.html", form=form, perfilacesso=perfilacesso, usuarios=usuarios,
+                           usuario_id=usuario_id)
 
 
-@usuario_blueprint.route('/perfil_ativar/<int:perfil_id>', methods=['GET', 'POST'])
+@usuario_blueprint.route('/perfilacesso_ativar/<int:perfilacesso_id>', methods=['GET', 'POST'])
 @login_required
-@has_view('RH')
-def perfil_ativar(perfil_id):
+@has_view('Usuário')
+def perfilacesso_ativar(perfilacesso_id):
     """    Função que ativa/desativa um perfil    """
     # instância um perfil com base no identificador
-    perfil = Perfil.query.filter_by(id=perfil_id).one_or_none()
+    perfilacesso = PerfilAcesso.query.filter_by(id=perfilacesso_id).one_or_none()
     # se o perfil existir
-    if perfil:
+    if perfilacesso:
         # ativa/inativa o perfil
-        perfil.ativar_desativar()
+        perfilacesso.ativar_desativar()
         # salva no banco de dados a alteração
-        if perfil.salvar():
-            flash("Perfil ativado/desativado com sucesso", category="success")
+        if perfilacesso.salvar():
+            flash("PerfilAcesso ativado/desativado com sucesso", category="success")
         else:
-            flash("Perfil não foi ativado/desativado", category="danger")
+            flash("PerfilAcesso não foi ativado/desativado", category="danger")
     else:
-        flash("Perfil não registrado", category="danger")
-    return redirect(url_for('usuario.perfil_listar'))
+        flash("PerfilAcesso não registrado", category="danger")
+    return redirect(url_for('usuario.perfilacesso_listar'))
 
 
 @usuario_blueprint.route('/gerar_padrao_perfis/', methods=['GET', 'POST'])
 @login_required
-@has_view('RH')
+@has_view('Usuário')
 def gerar_padrao_perfis():
-    result, path = arquivo_padrao(nome_arquivo=Perfil.nome_doc, valores=[[x] for x in Perfil.titulos_doc])
+    result, path = arquivo_padrao(nome_arquivo=PerfilAcesso.nome_doc, valores=[[x] for x in PerfilAcesso.titulos_doc])
     if result:
         flash(f'Foi gerado o arquivo padrão no caminho: {path}', category="success")
     else:
@@ -557,23 +559,23 @@ def gerar_padrao_perfis():
 
 @usuario_blueprint.route('/cadastrar_lote_perfis/>', methods=['GET', 'POST'])
 @login_required
-@has_view('RH')
+@has_view('Usuário')
 def cadastrar_lote_perfis():
-    form = PerfilForm()
+    form = PerfilAcessoForm()
 
     filestream = form.file.data
     filestream.seek(0)
-    df = pd.DataFrame(pd.read_csv(filestream, sep=";", names=Perfil.titulos_doc, encoding='latin-1'))
+    df = pd.DataFrame(pd.read_csv(filestream, sep=";", names=PerfilAcesso.titulos_doc, encoding='latin-1'))
 
     # converter os valores Nan para Null
     df = df.replace({np.NAN: None})
 
     # lista dos titulos obrigatórios
-    titulos_obrigatorio = [x for x in Perfil.titulos_doc if x.count('*')]
+    titulos_obrigatorio = [x for x in PerfilAcesso.titulos_doc if x.count('*')]
     # lista dos equipamentos existentes
-    existentes = [x.nome for x in Perfil.query.filter(
+    existentes = [x.nome for x in PerfilAcesso.query.filter(
         current_user.empresa_id == Empresa.id,
-        Empresa.id == Perfil.empresa_id
+        Empresa.id == PerfilAcesso.empresa_id
     ).all()]
 
     rejeitados_texto = [['NOME', 'MOTIVO']]
@@ -613,7 +615,7 @@ def cadastrar_lote_perfis():
         # Verifica se não foi rejeitado
         if df.at[linha, 'Nome*'] not in rejeitados:
             # cria um equipamento e popula ele
-            perfil = Perfil()
+            perfil = PerfilAcesso()
             perfil.nome = df.at[linha, 'Nome*'].upper()
             perfil.descricao = df.at[linha, 'Descrição'].upper()
             perfil.ativo = ativo
@@ -642,21 +644,23 @@ def cadastrar_lote_perfis():
     return redirect(url_for('usuario.perfil_listar'))
 
 
-@usuario_blueprint.route('/telaperfil_listar/<int:perfil_id>', methods=['GET', 'POST'])
+@usuario_blueprint.route('/telaperfilacesso_listar/<int:perfilacesso_id>', methods=['GET', 'POST'])
 @login_required
-@has_view('RH')
-def telaperfil_listar(perfil_id):
-    telasperfil = Telaperfil.query.filter_by(perfil_id=perfil_id).all()
-    return render_template('telaperfil_listar.html', telasperfil=telasperfil, perfil_id=perfil_id)
+@has_view('Usuário')
+def telaperfilacesso_listar(perfilacesso_id):
+    telasperfilacesso = TelaPerfilAcesso.query.filter_by(perfilacesso_id=perfilacesso_id).all()
+    return render_template('telaperfilacesso_listar.html', telasperfilacesso=telasperfilacesso,
+                           perfilacesso_id=perfilacesso_id)
 
 
-@usuario_blueprint.route('/telaperfil_editar/<int:perfil_id>', methods=['GET', 'POST'])
+@usuario_blueprint.route('/telaperfilacesso_editar/<int:perfilacesso_id>', methods=['GET', 'POST'])
 @login_required
-@has_view('RH')
-def telaperfil_editar(perfil_id):
+@has_view('Usuário')
+def telaperfilacessp_editar(perfilacesso_id):
     form = TelaPerfilForm()
 
-    form.perfil.choices = [(perfis.id, perfis.nome) for perfis in Perfil.query.filter_by(id=perfil_id)]
+    form.perfilacesso.choices = [(perfisacesso.id, perfisacesso.nome) for perfisacesso in
+                                 PerfilAcesso.query.filter_by(id=perfilacesso_id)]
 
     form.tela.choices = [(telascontrato.tela.id, telascontrato.tela.nome)
                          for telascontrato in
@@ -664,29 +668,29 @@ def telaperfil_editar(perfil_id):
 
     # Validação
     if form.validate_on_submit():
-        telaperfil = Telaperfil()
-        telaperfil.alterar_atributos(form)
-        if telaperfil.salvar():
+        telaperfilacesso = TelaPerfilAcesso()
+        telaperfilacesso.alterar_atributos(form)
+        if telaperfilacesso.salvar():
             # Mensagens
-            if perfil_id > 0:
+            if perfilacesso_id > 0:
                 flash("Tela do perfil cadastrada", category="success")
             else:
                 flash("Tela do perfil atualizada", category="success")
         else:
             flash("Tela do perfil não cadastrada/atualizada", category="success")
-        return redirect(url_for("usuario.telaperfil_listar", perfil_id=perfil_id))
-    return render_template("telaperfil_editar.html", form=form, perfil_id=perfil_id)
+        return redirect(url_for("usuario.telaperfil_listar", perfilacesso_id=perfilacesso_id))
+    return render_template("telaperfil_editar.html", form=form, perfilacesso_id=perfilacesso_id)
 
 
-@usuario_blueprint.route('/telaperfil_ativar/<int:perfil_id>', methods=['GET', 'POST'])
+@usuario_blueprint.route('/telaperfilacesso_ativar/<int:perfilacesso_id>', methods=['GET', 'POST'])
 @login_required
-@has_view('RH')
-def telaperfil_ativar(perfil_id):
-    telaperfil = Telaperfil.query.filter_by(id=perfil_id).one_or_none()
-    if telaperfil:
-        telaperfil.ativar_desativar()
-        if telaperfil.salvar():
+@has_view('Usuário')
+def telaperfilacesso_ativar(perfilacesso_id):
+    telaperfilacesso = TelaPerfilAcesso.query.filter_by(id=perfilacesso_id).one_or_none()
+    if telaperfilacesso:
+        telaperfilacesso.ativar_desativar()
+        if telaperfilacesso.salvar():
             flash("Tela do perfil ativada/desativada", category="success")
         else:
             flash("Tela do perfil não ativada/desativada", category="danger")
-    return redirect(url_for('usuario.telaperfil_listar', perfil_id=telaperfil.perfil_id))
+    return redirect(url_for('usuario.telaperfilacesso_listar', perfilacesso_id=telaperfilacesso.perfilacesso_id))

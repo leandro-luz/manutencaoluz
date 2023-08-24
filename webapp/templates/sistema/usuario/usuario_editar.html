@@ -14,7 +14,7 @@
     {{form.email.label}} {{form.email(size=50)}}<br>
 
     {{form.perfil.label}} {{form.perfil}}
-    <a href="{{ url_for('usuario.perfil_listar') }}">
+    <a href="{{ url_for('usuario.perfilacesso_listar', usuario_id=usuario.id) }}">
             <span data-tooltip="Atualizar">
                 <i class="bi-caret-down fs-6"></i>
             </span>

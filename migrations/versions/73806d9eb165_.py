@@ -36,13 +36,13 @@ def upgrade():
     op.create_foreign_key(None, 'supplier', 'empresa', ['company_id'], ['id'])
     op.create_foreign_key(None, 'tela_contrato', 'contrato', ['contrato_id'], ['id'])
     op.create_foreign_key(None, 'tela_contrato', 'tela', ['tela_id'], ['id'])
-    op.create_foreign_key(None, 'tela_perfil', 'perfil', ['perfil_id'], ['id'])
+    op.create_foreign_key(None, 'tela_perfil', 'perfil', ['perfilacesso_id'], ['id'])
     op.create_foreign_key(None, 'tela_perfil', 'tela', ['tela_id'], ['id'])
     op.create_foreign_key(None, 'tramitacao_ordem', 'usuario', ['usuario_id'], ['id'])
     op.create_foreign_key(None, 'tramitacao_ordem', 'ordem_servico', ['ordemservico_id'], ['id'])
     op.create_foreign_key(None, 'tramitacao_ordem', 'situacao_ordem', ['situacaoordem_id'], ['id'])
     op.create_foreign_key(None, 'usuario', 'senha', ['senha_id'], ['id'])
-    op.create_foreign_key(None, 'usuario', 'perfil', ['perfil_id'], ['id'])
+    op.create_foreign_key(None, 'usuario', 'perfil', ['perfilacesso_id'], ['id'])
     op.create_foreign_key(None, 'usuario', 'empresa', ['empresa_id'], ['id'])
     # ### end Alembic commands ###
 

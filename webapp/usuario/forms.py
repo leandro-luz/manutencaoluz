@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm as Form
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, IntegerField, FileField
 from wtforms.validators import InputRequired, Length, EqualTo, Email, Regexp, Optional
-from webapp.usuario.models import Usuario, Telaperfil
+from webapp.usuario.models import Usuario, TelaPerfilAcesso
 from webapp.empresa.models import Empresa
 from flask import flash
 from flask_login import current_user
@@ -98,7 +98,7 @@ class EditarUsuarioForm(Form):
                                           'números, ponto ou sublinha')],
                        render_kw={"placeholder": "Digite o seu nome"})
     email = StringField('Email', [InputRequired(), Email()], render_kw={"placeholder": "Digite o seu email"})
-    perfil = SelectField('Perfil', choices=[], coerce=int)
+    perfil = SelectField('PerfilAcesso', choices=[], coerce=int)
     ativo = BooleanField('Ativo', render_kw={"placeholder": "Informe se a usuário está ativo"})
 
     file = FileField('Escolha um arquivo para o cadastro de usuarios em Lote (4MB):', validators=[Optional()],
@@ -139,7 +139,7 @@ class EditarUsuarioForm(Form):
                         return False
 
             if self.perfil.data == 0:
-                flash("Perfil não selecionado", category="danger")
+                flash("PerfilAcesso não selecionado", category="danger")
                 return False
 
             return True
@@ -223,8 +223,8 @@ class AlterarEmailForm(Form):
             return False
 
 
-class PerfilForm(Form):
-    nome = StringField('Perfil', validators=[InputRequired(), Length(max=50)],
+class PerfilAcessoForm(Form):
+    nome = StringField('PerfilAcesso', validators=[InputRequired(), Length(max=50)],
                        render_kw={"placeholder": "Digite o nome do perfil"})
     descricao = StringField('Descrição', validators=[InputRequired(), Length(max=50)],
                             render_kw={"placeholder": "Digite a descrição do perfil"})
@@ -236,7 +236,7 @@ class PerfilForm(Form):
     submit = SubmitField("Cadastrar")
 
     def validate(self, **kwargs):
-        check_validate = super(PerfilForm, self).validate()
+        check_validate = super(PerfilAcessoForm, self).validate()
         if check_validate:
             return True
         else:
@@ -245,7 +245,7 @@ class PerfilForm(Form):
 
 class TelaPerfilForm(Form):
     tela = SelectField('Telas', choices=[], coerce=int)
-    perfil = SelectField('Perfil', choices=[], coerce=int)
+    perfilacesso = SelectField('PerfilAcesso', choices=[], coerce=int)
     submit = SubmitField("Cadastrar")
 
     def validate(self, **kwargs):
@@ -253,7 +253,7 @@ class TelaPerfilForm(Form):
         check_validate = super(TelaPerfilForm, self).validate()
         if check_validate:
 
-            if Telaperfil.query.filter_by(perfil_id=self.perfil.data, tela_id=self.tela.data).first() is not None:
+            if TelaPerfilAcesso.query.filter_by(perfilacesso_id=self.perfilacesso.data, tela_id=self.tela.data).first() is not None:
                 flash("Tela já registrada para este perfil", category="danger")
                 return False
             else:

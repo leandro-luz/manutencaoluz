@@ -1,0 +1,25 @@
+{% extends "sistema_base.html" %}
+{% block body %}
+<body>
+<form action="{{ url_for('equipamento.pavimento_editar', pavimento_id=0,
+localizacao_id=localizacao_id, equipamento_id=equipamento_id) }}"
+      method="POST">
+    {{form.csrf_token}}
+
+    {% if pavimento.id == 0 %}
+    <h2>Cadastro do Pavimento</h2>
+    {% else %}
+    <h2>Pavimento</h2>
+    {% endif %}
+
+    {{form.nome.label}} {{form.nome(size=80)}}<br>
+    {{form.sigla.label}} {{form.sigla(size=20)}}<br>
+
+    <input type="submit" value="Cadastrar"/>
+
+</form>
+
+
+<a href="{{ url_for('equipamento.pavimento_listar', localizacao_id=localizacao_id, equipamento_id=equipamento_id) }}">Voltar</a>
+</body>
+{% endblock %}

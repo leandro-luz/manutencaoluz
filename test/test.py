@@ -7,7 +7,7 @@ env = os.environ.get('WEBAPP_ENV', 'test')
 app = create_app('config.%sConfig' % env.capitalize())
 app.app_context().push()
 
-from webapp.usuario.models import Perfil, Senha, Usuario, Telaperfil
+from webapp.usuario.models import PerfilAcesso, Senha, Usuario, TelaPerfilAcesso
 from webapp.usuario.forms import PerfilForm
 from dados_sistema import criar_contrato
 from webapp.contrato.models import Contrato
@@ -23,7 +23,7 @@ class Test_Auth(unittest.TestCase):
     #     form.description.data = descricao
     #     form.company.data = company
     #
-    #     role = Perfil()
+    #     role = PerfilAcesso()
     #     role.alterar_atributos(form)
     #
     #     self.assertEqual(role.nome, name)

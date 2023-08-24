@@ -1,0 +1,26 @@
+{% extends "sistema_base.html" %}
+{% block body %}
+<body>
+<form action="{{ url_for('equipamento.local_editar', local_id=0,
+localizacao_id=localizacao_id, equipamento_id=equipamento_id) }}"
+      method="POST">
+    {{form.csrf_token}}
+
+    {% if local.id == 0 %}
+    <h2>Cadastro do Local</h2>
+    {% else %}
+    <h2>Local</h2>
+    {% endif %}
+
+    {{form.nome.label}} {{form.nome(size=80)}}<br>
+    {{form.sigla.label}} {{form.sigla(size=20)}}<br>
+    {{form.setor.label}} {{form.setor}}<br>
+
+    <input type="submit" value="Cadastrar"/>
+
+</form>
+
+
+<a href="{{ url_for('equipamento.local_listar', localizacao_id=localizacao_id, equipamento_id=equipamento_id) }}">Voltar</a>
+</body>
+{% endblock %}

@@ -109,7 +109,7 @@ class Empresa(db.Model):
     bairro = db.Column(db.String(50), nullable=False, unique=False)
     municipio = db.Column(db.String(50), nullable=False, unique=False)
     uf = db.Column(db.String(3), nullable=False, unique=False)
-    localizacao = db.Column(db.String(50), nullable=True, unique=False)
+    latitude = db.Column(db.String(20), nullable=True)
     telefone = db.Column(db.String(20), nullable=False, unique=False)
     email = db.Column(db.String(50), nullable=False, unique=False)
     ativo = db.Column(db.Boolean, default=True)
@@ -122,9 +122,10 @@ class Empresa(db.Model):
     contrato = db.relationship("Contrato", back_populates="empresa")
     tipoempresa = db.relationship("Tipoempresa", back_populates="empresa")
     usuario = db.relationship("Usuario", back_populates="empresa")
-    perfil = db.relationship("Perfil", back_populates="empresa")
-
+    perfilacesso = db.relationship("PerfilAcesso", back_populates="empresa")
     grupo = db.relationship("Grupo", back_populates="empresa")
+    pavimento = db.relationship("Pavimento", back_populates="empresa")
+    setor = db.relationship("Setor", back_populates="empresa")
 
     supplier = db.relationship("Supplier", back_populates="empresa")
 
@@ -163,7 +164,6 @@ class Empresa(db.Model):
         self.cnae_principal_texto = form.cnae_principal_texto.data.upper()
         self.inscricao_estadual = form.inscricao_estadual.data.upper()
         self.inscricao_municipal = form.inscricao_municipal.data.upper()
-        self.localizacao = form.localizacao.data
         self.ativo = form.ativo.data
 
     def ativar_desativar(self) -> None:

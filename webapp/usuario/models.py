@@ -16,27 +16,27 @@ logging.getLogger().setLevel(logging.DEBUG)
 log = logging.getLogger(__name__)
 
 
-class Perfil(db.Model):
+class PerfilAcesso(db.Model):
     """    Classe do perfil de acesso    """
 
     # nome do arquivo para cadastro em lote
-    nome_doc = 'padrão_perfis'
+    nome_doc = 'padrão_perfil_acesso'
     # titulos para cadastro
     titulos_doc = {'Nome*': 'nome', 'Descrição': 'descricao', 'Ativo': 'ativo'}
 
-    __tablename__ = 'perfil'
+    __tablename__ = 'perfil_acesso'
     id = db.Column(db.Integer(), primary_key=True)
     nome = db.Column(db.String(50), unique=False, index=True)
     descricao = db.Column(db.String(50))
     ativo = db.Column(db.Boolean, nullable=False, default=False)
     empresa_id = db.Column(db.Integer(), db.ForeignKey("empresa.id"), nullable=False)
 
-    usuario = db.relationship("Usuario", back_populates="perfil")
-    empresa = db.relationship("Empresa", back_populates="perfil")
-    telaperfil = db.relationship("Telaperfil", back_populates="perfil")
+    usuario = db.relationship("Usuario", back_populates="perfilacesso")
+    empresa = db.relationship("Empresa", back_populates="perfilacesso")
+    telaperfilacesso = db.relationship("TelaPerfilAcesso", back_populates="perfilacesso")
 
     def __repr__(self) -> str:
-        return f'<Perfil: {self.id}-{self.nome}>'
+        return f'<PerfilAcesso: {self.id}-{self.nome}>'
 
     def ativar_desativar(self):
         if self.ativo:
@@ -51,15 +51,15 @@ class Perfil(db.Model):
             db.session.add(self)
             db.session.commit()
             if new:
-                perfil_ = Perfil.query.filter_by(nome=nome, empresa_id=current_user.empresa.id).one_or_none()
+                perfil_ = PerfilAcesso.query.filter_by(nome=nome, empresa_id=current_user.empresa.id).one_or_none()
                 telascontrato = Telacontrato.query.filter_by(contrato_id=current_user.empresa.contrato.id).all()
 
                 for telacontrato in telascontrato:
-                    telaperfil = Telaperfil()
-                    telaperfil.ativo = False
-                    telaperfil.perfil_id = perfil_.id
-                    telaperfil.tela_id = telacontrato.tela_id
-                    if not telaperfil.salvar():
+                    telaperfilacesso = TelaPerfilAcesso()
+                    telaperfilacesso.ativo = False
+                    telaperfilacesso.perfilacesso_id = perfil_.id
+                    telaperfilacesso.tela_id = telacontrato.tela_id
+                    if not telaperfilacesso.salvar():
                         flash("Tela do perfil não cadastrado", category="danger")
 
             return True
@@ -75,7 +75,7 @@ class Perfil(db.Model):
 
     @staticmethod
     def listar_regras_by_empresa(empresa_id: int):
-        return Perfil.query.filter_by(empresa_id=empresa_id).all()
+        return PerfilAcesso.query.filter_by(empresa_id=empresa_id).all()
 
 
 class Senha(db.Model):
@@ -157,7 +157,7 @@ class Usuario(db.Model):
     # nome do arquivo para cadastro em lote
     nome_doc = 'padrão_usuarios'
     # titulos para cadastro
-    titulos_doc = {'Nome*': 'nome', 'Email*': 'email', 'Perfil*': 'perfil_id'}
+    titulos_doc = {'Nome*': 'nome', 'Email*': 'email', 'PerfilAcesso*': 'perfilacesso_id'}
 
     __tablename__ = 'usuario'
     id = db.Column(db.Integer(), primary_key=True)
@@ -167,11 +167,11 @@ class Usuario(db.Model):
     data_ultima_entrada = db.Column(db.DateTime(), nullable=True)
     ativo = db.Column(db.Boolean, nullable=False, default=True)
 
-    perfil_id = db.Column(db.Integer(), db.ForeignKey("perfil.id"), nullable=False)
+    perfilacesso_id = db.Column(db.Integer(), db.ForeignKey("perfil_acesso.id"), nullable=False)
     empresa_id = db.Column(db.Integer(), db.ForeignKey("empresa.id"), nullable=False)
     senha_id = db.Column(db.Integer(), db.ForeignKey("senha.id"), nullable=False)
 
-    perfil = db.relationship("Perfil", back_populates="usuario")
+    perfilacesso = db.relationship("PerfilAcesso", back_populates="usuario")
     empresa = db.relationship("Empresa", back_populates="usuario")
     senha = db.relationship("Senha", back_populates="usuario")
     ordemservico = db.relationship("OrdemServico", back_populates="usuario")
@@ -180,13 +180,13 @@ class Usuario(db.Model):
     def __repr__(self):
         return f'<Usuario: {self.id}-{self.nome}>'
 
-    def usuario_administrador(self, nome: str, email: str, empresa_id: int, perfil_id: int, senha_id: int) -> None:
+    def usuario_administrador(self, nome: str, email: str, empresa_id: int, perfilacesso_id: int, senha_id: int) -> None:
         """    Função para cadastrar as informações de administrador     """
         self.nome = nome.upper()
         self.email = email.upper()
         self.senha_id = senha_id
         self.empresa_id = empresa_id
-        self.perfil_id = perfil_id
+        self.perfilacesso_id = perfilacesso_id
         self.ativo = True
         self.data_assinatura = datetime.datetime.now()
 
@@ -217,7 +217,7 @@ class Usuario(db.Model):
         """
         Verifica se a tela está cadastrada para o perfil e se está ativo
         """
-        for telacontrato in Telaperfil.query.filter_by(perfil_id=self.perfil_id, ativo=True).all():
+        for telacontrato in TelaPerfilAcesso.query.filter_by(perfilacesso_id=self.perfilacesso_id, ativo=True).all():
             tela = Tela.query.filter_by(id=telacontrato.tela_id).one_or_none()
             if tela.nome == nome:
                 return True
@@ -269,7 +269,7 @@ class Usuario(db.Model):
         self.nome = form.nome.data.upper()
         self.email = form.email.data.upper()
         self.empresa_id = empresa_id
-        self.perfil_id = form.perfil.data
+        self.perfilacesso_id = form.perfilacesso.data
         self.ativo = form.ativo.data
 
         if new:
@@ -285,26 +285,26 @@ class Usuario(db.Model):
     def retornar_telas_by_regras(self):
         """Função retorna as telas permitidas ao usuário em ordem"""
         telas = []
-        lista_telas = Tela.query.filter(Tela.id == Telaperfil.tela_id,
-                                        Telaperfil.perfil_id == self.perfil_id).order_by(Tela.posicao.asc())
+        lista_telas = Tela.query.filter(Tela.id == TelaPerfilAcesso.tela_id,
+                                        TelaPerfilAcesso.perfilacesso_id == self.perfilacesso_id).order_by(Tela.posicao.asc())
         telas = [{'nome': tela.nome, 'url': tela.url, 'icon': tela.icon} for tela in lista_telas]
         return telas
 
 
-class Telaperfil(db.Model):
-    """    Classe relacionamento entre Tela e Perfil    """
-    __tablename__ = 'tela_perfil'
+class TelaPerfilAcesso(db.Model):
+    """    Classe relacionamento entre Tela e PerfilAcesso    """
+    __tablename__ = 'tela_perfil_acesso'
     id = db.Column(db.Integer(), primary_key=True)
     ativo = db.Column(db.Boolean, default=True)
 
-    perfil_id = db.Column(db.Integer(), db.ForeignKey("perfil.id"), nullable=False)
+    perfilacesso_id = db.Column(db.Integer(), db.ForeignKey("perfil_acesso.id"), nullable=False)
     tela_id = db.Column(db.Integer(), db.ForeignKey("tela.id"), nullable=False)
 
-    perfil = db.relationship("Perfil", back_populates="telaperfil")
-    tela = db.relationship("Tela", back_populates="telaperfil")
+    perfilacesso = db.relationship("PerfilAcesso", back_populates="telaperfilacesso")
+    tela = db.relationship("Tela", back_populates="telaperfilacesso")
 
     def __repr__(self) -> str:
-        return f'<Telaperfil: {self.id}-{self.perfil_id}-{self.tela_id}>'
+        return f'<TelaPerfilAcesso: {self.id}-{self.perfilacesso_id}-{self.tela_id}>'
 
     def salvar(self) -> bool:
         """    Função para salvar no banco de dados o objeto    """
@@ -318,7 +318,7 @@ class Telaperfil(db.Model):
             return False
 
     def alterar_atributos(self, form):
-        self.perfil_id = form.perfil.data
+        self.perfilacesso_id = form.perfilacesso.data
         self.tela_id = form.tela.data
 
     def ativar_desativar(self):
@@ -334,25 +334,25 @@ class Telaperfil(db.Model):
 
     @staticmethod
     def alterar_perfil(ativo: bool, *args):
-        [[[Telaperfil.save_change(ativo, item) for item in posicao] for posicao in id_] for id_ in args]
+        [[[TelaPerfilAcesso.save_change(ativo, item) for item in posicao] for posicao in id_] for id_ in args]
 
     @staticmethod
     def save_change(ativo: bool, kwargs) -> None:
-        telaperfil = Telaperfil.query.filter_by(perfil_id=kwargs['perfil_id'], tela_id=kwargs['tela_id']).one_or_none()
+        telaperfilacesso = TelaPerfilAcesso.query.filter_by(perfilacesso_id=kwargs['perfilacesso_id'], tela_id=kwargs['tela_id']).one_or_none()
 
-        if telaperfil:  # se exister a tela para o perfil
+        if telaperfilacesso:  # se exister a tela para o perfil
             if ativo:  # é para ativar
                 if kwargs['perfil_nome'] == 'admin':  # o perfil é administrador
-                    telaperfil.ativo = True
+                    telaperfilacesso.ativo = True
             else:  # o perfil não é administrador
-                telaperfil.ativo = False  # desativa para qualquer perfil
+                telaperfilacesso.ativo = False  # desativa para qualquer perfil
         else:
-            telaperfil = Telaperfil()
-            telaperfil.perfil_id = kwargs['perfil_id']
-            telaperfil.tela_id = kwargs['tela_id']
+            telaperfilacesso = TelaPerfilAcesso()
+            telaperfilacesso.perfilacesso_id = kwargs['perfilacesso_id']
+            telaperfilacesso.tela_id = kwargs['tela_id']
             if kwargs['perfil_nome'] == 'admin':  # o perfil é administrador
-                telaperfil.ativo = True  # deixa ativa a tela
+                telaperfilacesso.ativo = True  # deixa ativa a tela
             else:  # o perfil não é administrador
-                telaperfil.ativo = False  # deixa desativada a tela
-        if telaperfil.salvar():
+                telaperfilacesso.ativo = False  # deixa desativada a tela
+        if telaperfilacesso.salvar():
             flash("Tela do perfil não cadastrada", category="danger")

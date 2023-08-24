@@ -59,7 +59,7 @@ class Tela(db.Model):
     url = db.Column(db.String(50), nullable=False)
     posicao = db.Column(db.Integer(), nullable=False)
     telacontrato = db.relationship("Telacontrato", back_populates="tela")
-    telaperfil = db.relationship("Telaperfil", back_populates="tela")
+    telaperfilacesso = db.relationship("TelaPerfilAcesso", back_populates="tela")
 
     def __repr__(self) -> str:
         return f'<Tela: {self.id}-{self.nome}>'

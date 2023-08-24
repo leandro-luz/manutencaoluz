@@ -28,10 +28,10 @@ def upgrade():
     op.create_foreign_key(None, 'telacontrato', 'tela', ['tela_id'], ['id'])
     op.create_foreign_key(None, 'telacontrato', 'contrato', ['contrato_id'], ['id'])
     op.create_foreign_key(None, 'telaperfil', 'tela', ['tela_id'], ['id'])
-    op.create_foreign_key(None, 'telaperfil', 'perfil', ['perfil_id'], ['id'])
+    op.create_foreign_key(None, 'telaperfil', 'perfil', ['perfilacesso_id'], ['id'])
     op.create_foreign_key(None, 'usuario', 'senha', ['senha_id'], ['id'])
     op.create_foreign_key(None, 'usuario', 'empresa', ['empresa_id'], ['id'])
-    op.create_foreign_key(None, 'usuario', 'perfil', ['perfil_id'], ['id'])
+    op.create_foreign_key(None, 'usuario', 'perfil', ['perfilacesso_id'], ['id'])
     # ### end Alembic commands ###
 
 

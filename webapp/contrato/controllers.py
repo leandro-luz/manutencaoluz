@@ -3,7 +3,7 @@ from flask_login import login_required
 from .models import Contrato, Tela, Telacontrato
 from webapp.contrato.forms import ContratoForm, TelaForm, TelaContratoForm
 from webapp.empresa.models import Empresa
-from webapp.usuario.models import Perfil, Telaperfil
+from webapp.usuario.models import PerfilAcesso, TelaPerfilAcesso
 from webapp.usuario import has_view
 from webapp.utils.erros import flash_errors
 
@@ -139,12 +139,12 @@ def telacontrato_editar(contrato_id: int):
         if telacontrato.salvar():
 
             # retorna a lista com todos os perfis que contem o contrato alterado
-            ids = [[dict(perfil_name=perfis.nome, perfil_id=perfis.id, tela_id=telacontrato.tela_id)
-                    for perfis in Perfil.listar_regras_by_empresa(companies.id)]
+            ids = [[dict(perfil_name=perfis.nome, perfilacesso_id=perfis.id, tela_id=telacontrato.tela_id)
+                    for perfis in PerfilAcesso.listar_regras_by_empresa(companies.id)]
                    for companies in Empresa.listar_empresas_by_plano(telacontrato.contrato_id)]
 
             # libera a tela e/ou inativa as telas para todos os perfis
-            Telaperfil.alterar_perfil(telacontrato.ativo, ids)
+            TelaPerfilAcesso.alterar_perfil(telacontrato.ativo, ids)
 
             # --------- MENSAGENS
             if contrato_id > 0:
@@ -173,12 +173,12 @@ def telacontrato_ativar(telacontrato_id: int):
         if telacontrato.salvar():
 
             # retorna a lista com todos os perfis que contem o contrato alterado
-            ids = [[dict(perfil_nome=perfis.nome, perfil_id=perfis.id, tela_id=telacontrato.tela_id)
-                    for perfis in Perfil.listar_regras_by_empresa(companies.id)]
+            ids = [[dict(perfil_nome=perfis.nome, perfilacesso_id=perfis.id, tela_id=telacontrato.tela_id)
+                    for perfis in PerfilAcesso.listar_regras_by_empresa(companies.id)]
                    for companies in Empresa.listar_empresas_by_plano(telacontrato.contrato_id)]
 
             # libera a tela e/ou inativa as telas para todos os perfis
-            Telaperfil.alterar_perfil(telacontrato.ativo, ids)
+            TelaPerfilAcesso.alterar_perfil(telacontrato.ativo, ids)
         else:
             flash("Tela do contrato não foi ativada/desativada", category="danger")
     return redirect(url_for('contrato.telacontrato_listar', contrato_id=telacontrato.contrato_id))

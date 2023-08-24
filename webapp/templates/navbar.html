@@ -3,7 +3,7 @@
         <a class="navbar-brand" href="{{url_for('main.index')}}"> MANUTENÇÃOLUZ </a>
         {% if current_user.is_authenticated %}
         <a class="navbar-brand"> {{ current_user.empresa.razao_social }} </a>
-        <a class="navbar-brand"> {{ current_user.perfil.nome }} </a>
+        <a class="navbar-brand"> {{ current_user.perfilacesso.nome }} </a>
         {% endif %}
         <div id="navbar-items">
             <ul class="navbar-nav">

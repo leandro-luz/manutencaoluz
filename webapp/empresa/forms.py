@@ -37,7 +37,9 @@ class EmpresaForm(Form):
     bairro = StringField('Bairro', validators=[InputRequired()], render_kw={"placeholder": "Digite o bairro"})
     municipio = StringField('Município', validators=[InputRequired()], render_kw={"placeholder": "Digite o município"})
     uf = StringField('UF', validators=[InputRequired()], render_kw={"placeholder": "Digite o UF"})
-    localizacao = StringField('Localização', render_kw={"placeholder": "Digite as coordenadas"})
+
+    latitude = StringField('Latitude', validators=[Optional()], render_kw={"placeholder": "Digite a latitude"})
+    longitude = StringField('longitude', validators=[Optional()], render_kw={"placeholder": "Digite a longitude"})
 
     ativo = BooleanField('Ativo')
 

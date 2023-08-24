@@ -10,7 +10,7 @@ from webapp import create_app
 from webapp.plano_manutencao.models import PlanoManutencao, TipoData
 from webapp.ordem_servico.models import OrdemServico
 
-env = os.environ.get('WEBAPP_ENV', 'prod')
+env = os.environ.get('WEBAPP_ENV', 'dev')
 app = create_app('config.%sConfig' % env.capitalize())
 
 with app.app_context():
