@@ -7,6 +7,7 @@ from webapp.contrato.models import Contrato, Telacontrato
 
 class ContratoForm(Form):
     """    Classe do formulário de contrato de assinaturas    """
+    id = IntegerField('id')
     nome = StringField('Nome', validators=[InputRequired(), Length(max=50)],
                        render_kw={"placeholder": "Digite o nome do contrato"})
     tela = SelectField('Telas', choices=[], validate_choice=False, coerce=int)
@@ -19,13 +20,12 @@ class ContratoForm(Form):
 
         if check_validate:  # checa a validação inicial
             # busca se existe algum contrato com o nome
-            plan = Contrato.query.filter_by(nome=self.nome.data).one_or_none()
-
-            if plan:  # se existe deve gerar uma falha
-                flash(f'Já existe um Contrato de Assinatura com este nome "{self.nome.data}"', category="danger")
+            if Contrato.query.filter(Contrato.id != self.id.data,
+                                     Contrato.nome == self.nome.data).one_or_none():
+                flash(f'Já existe um Contrato com este nome "{self.nome.data}"', category="danger")
                 return False
         else:
-            flash("Contrato de Assinatura não válidado", category="danger")
+            flash("Contrato não válidado", category="danger")
             return False
 
         return True
@@ -34,21 +34,19 @@ class ContratoForm(Form):
 class TelaContratoForm(Form):
     """    Formulário o relacionamento Contrato de assinatura e Telas    """
     tela = SelectField('Telas', choices=[], validate_choice=False, coerce=int)
-    contrato = SelectField('Contrato', choices=[], validate_choice=False, coerce=int)
     submit = SubmitField("Cadastrar")
 
     def validate(self, **kwargs):
         """    Função que válida as informações do formulário    """
         check_validate = super(TelaContratoForm, self).validate()  # válida inicialmente as informações
 
-        if check_validate:
-            telacontrato = Telacontrato.query.filter_by(contrato_id=self.contrato.data,
-                                                        tela_id=self.tela.data).one_or_none()
-            if telacontrato:
-                flash("Tela já registrada para este contrato", category="danger")
-                return False
-        else:
+        if not check_validate:
+            # telacontrato = Telacontrato.query.filter_by(contrato_id=self.contrato.data,
+            #                                             tela_id=self.tela.data).one_or_none()
+            # if telacontrato:
+            #     flash("Tela já registrada para este contrato", category="danger")
             return False
+            #     return False
 
         return True
 

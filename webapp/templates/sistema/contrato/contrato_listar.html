@@ -2,66 +2,90 @@
 {% block body %}
 <body>
 
-<h2> LISTA DE CONTRATOS </h2>
-<a href="{{ url_for('contrato.contrato_editar', contrato_id=0) }}">
-    Adicionar
+<a href="{{ url_for('sistema.index') }}">
+    <span data-tooltip="">
+        <i class="bi-backspace fs-6">VOLTAR</i>
+    </span>
 </a>
 
-<input class="form-control" id="myInput" placeholder="Filtrar.." type="text"><br>
-<button onclick="exportar_lista('contrato.csv', 2)" type="button"> Exportar Lista</button>
+<h2> LISTA DE CONTRATOS </h2>
 
-
-<table class="table">
-    <thead>
-    <tr>
-        <th scope="col">NOME</th>
-        <th scope="col">ATIVO</th>
-        <th scope="col">TOTAL EMPRESAS</th>
-        <th scope="col"></th>
-    </tr>
-    </thead>
-
-    <tbody id="myTable">
-    {% for contrato in contratos %}
-    <tr>
-        <td>{{ contrato['contrato'].nome }}</td>
-
-        {% if contrato['contrato'].ativo == True %}
-        <td>
-            <a href="{{ url_for('contrato.contrato_ativar', contrato_id=contrato['contrato'].id) }}">
-                <span data-tooltip="Desativar">
-                    <i class="bi-hand-thumbs-up fs-6"></i>
-                </span>
+<br>
+<div class="container">
+    <div class="row">
+        <div class="col-2">
+            <a>
+               <span data-bs-target="#modal" data-bs-toggle="modal">
+                   <i class="bi-plus-square fs-6"> Incluir</i>
+               </span>
+                {% include "contrato_incluir.html" %}
             </a>
-        </td>
-        {% else %}
-        <td>
-            <a href="{{ url_for('contrato.contrato_ativar', contrato_id=contrato['contrato'].id) }}">
-                <span data-tooltip="Ativar">
-                    <i class="bi-hand-thumbs-down fs-6"></i>
-                </span>
-            </a>
-        </td>
-        {% endif %}
+        </div>
+        <div class="col-4">
+            <input class="form-control" id="myInput" placeholder="Filtrar.." type="text"><br>
+        </div>
 
-        <td>{{ contrato['total'] }}</td>
+    </div>
 
-        <td>
-            <a href="{{ url_for('contrato.contrato_editar', contrato_id=contrato['contrato'].id) }}">
-                <span data-tooltip="Informações">
-                    <i class="bi-caret-right fs-6"></i>
-                </span>
-            </a>
-        </td>
-    </tr>
-    {% endfor %}
-    </tbody>
-</table>
 
-<a href="{{url_for('sistema.index')}}">Voltar</a>
+    <div class="row">
+        <div class="col-6">
+
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">NOME</th>
+                    <th scope="col">ATIVO</th>
+                    <th scope="col">TOTAL EMPRESAS</th>
+                    <th scope="col"></th>
+                </tr>
+                </thead>
+
+                <tbody id="myTable">
+                {% for contrato in contratos %}
+                <tr>
+                    <td>{{ contrato['contrato'].nome }}</td>
+
+                    {% if contrato['contrato'].ativo == True %}
+                    <td>
+                        <a href="{{ url_for('contrato.contrato_ativar', contrato_id=contrato['contrato'].id) }}">
+                            <span data-tooltip="Desativar">
+                                <i class="bi-hand-thumbs-up fs-6"></i>
+                            </span>
+                        </a>
+                    </td>
+                    {% else %}
+                    <td>
+                        <a href="{{ url_for('contrato.contrato_ativar', contrato_id=contrato['contrato'].id) }}">
+                            <span data-tooltip="Ativar">
+                                <i class="bi-hand-thumbs-down fs-6"></i>
+                            </span>
+                        </a>
+                    </td>
+                    {% endif %}
+
+                    <td>{{ contrato['total'] }}</td>
+
+                    <td>
+                        <a href="{{ url_for('contrato.contrato_editar', contrato_id=contrato['contrato'].id) }}">
+                            <span data-tooltip="Informações">
+                                <i class="bi-caret-right fs-6"></i>
+                            </span>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+
+        </div>
+    </div>
+</div>
+
 
 </body>
-<script src="/static/js/exportar_consulta.js" type="text/javascript"></script>
+
 <script src="/static/js/filtro_coluna.js" type="text/javascript"></script>
 
 {% endblock %}

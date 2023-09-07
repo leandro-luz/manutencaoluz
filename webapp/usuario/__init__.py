@@ -37,10 +37,13 @@ def criar_modulo(app, **kwargs) -> None:
 def has_view(name):
     def real_decorator(f):
         def wraps(*args, **kwargs):
-            if current_user.tela_permitida(name):
-                return f(*args, **kwargs)
+            if current_user.ativo:
+                if current_user.tela_permitida(name):
+                    return f(*args, **kwargs)
+                else:
+                    abort(403)
             else:
-                abort(403)
+                return redirect(url_for('usuario.logout'))
         return functools.update_wrapper(wraps, f)
     return real_decorator
 

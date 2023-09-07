@@ -2,15 +2,21 @@ import unittest
 import os
 from webapp import create_app
 
-
-env = os.environ.get('WEBAPP_ENV', 'test')
+env = os.environ.get('WEBAPP_ENV', 'Test')
 app = create_app('config.%sConfig' % env.capitalize())
 app.app_context().push()
 
 from webapp.usuario.models import PerfilAcesso, Senha, Usuario, TelaPerfilAcesso
-from webapp.usuario.forms import PerfilForm
-from dados_sistema import criar_contrato
+
+from funcoes_sistema import criar_contrato
 from webapp.contrato.models import Contrato
+
+from webapp import db
+
+print("Excluindo todas as tabelas")
+db.drop_all()
+print("Criando todas as tabelas")
+db.create_all()
 
 
 class Test_Auth(unittest.TestCase):
@@ -30,10 +36,13 @@ class Test_Auth(unittest.TestCase):
     #     self.assertEqual(role.descricao, descricao)
     #     self.assertEqual(role.empresa_id, company)
 
+    def test_criar_contratos(self):
+        contratos_lista = [
+            {'nome': 'COMPLETO_1', 'ativo': True, 'empresa': None},
+            {'nome': 'COMPLETO_2', 'ativo': True, 'empresa': None},
+            {'nome': 'COMPLETO_3', 'ativo': True, 'empresa': None}
+        ]
 
-    contratos_lista = [{'nome': 'Contrato 1'}, {'nome': 'Contrato 2'}, {'nome': 'Contrato 3'}]
-
-    def test_criar_contratos(self, contratos_lista):
         # Inserindo os contratos na base de dados
         criar_contrato(contratos_lista)
 
@@ -49,7 +58,3 @@ class Test_Auth(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-
-
-

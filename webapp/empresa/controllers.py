@@ -7,6 +7,7 @@ from webapp.empresa.models import Interessado, Tipoempresa, Empresa
 from webapp.empresa.forms import EmpresaForm, EmpresaSimplesForm, RegistroInteressadoForm
 from webapp.contrato.models import Contrato
 from webapp.usuario.models import Senha, Usuario, PerfilAcesso, TelaPerfilAcesso
+from webapp.usuario.forms import LoginForm
 from webapp.contrato.models import Telacontrato
 from webapp.usuario import has_view
 from webapp.utils.email import send_email
@@ -31,12 +32,14 @@ def empresa_listar() -> str:
     """    Retorna a lista de empresas vinculada a empresa do usuario     """
     empresas = Empresa.query.filter_by(empresa_gestora_id=current_user.empresa_id)  # retorna uma lista com base no _
 
+    form_login = LoginForm()
+
     # lista_empresas = [(empresa.empresa_gestora_id, empresa.id) for empresa in empresas]
     # empresas_nome = [(empresa.nome_fantasia) for empresa in empresas]
     # print(lista_empresas, empresas_nome)
     # gerar_grafo(lista_empresas, empresas_nome)
     # grafo=''
-    return render_template('empresa_listar.html', empresas=empresas)
+    return render_template('empresa_listar.html', form_login=form_login, empresas=empresas)
 
 
 @empresa_blueprint.route('/empresa_ativar/<int:empresa_id>', methods=['GET', 'POST'])
@@ -46,11 +49,24 @@ def empresa_ativar(empresa_id):
     """    Função que ativa/desativa uma empresa    """
     empresa = Empresa.query.filter_by(id=empresa_id).one_or_none()  # instância uma empresa com base no identificador
     if empresa:  # se a empresa existir
+        ativo = empresa.ativo
+
+        # caso a empresa naõ esteja ativa
+        if not ativo:
+            # caso o contrato não esteja ativo
+            if not empresa.contrato.ativo:
+                flash("O contrato desta empresa não está ativo", category="danger")
+                return redirect(url_for('empresa.empresa_listar'))
+
         empresa.ativar_desativar()  # ativa/inativa a empresa
         if empresa.salvar():  # salva no banco de dados a alteração
-            flash("Empresa ativada/desativada com sucesso", category="success")
+            if ativo:
+                flash("Empresa desativada com sucesso", category="success")
+            else:
+                flash("Empresa ativada com sucesso", category="success")
         else:
-            flash("Empresa não foi ativada/desativada", category="danger")
+            flash("Erro ao ativar/desativar empresa", category="danger")
+
     else:
         flash("Empresa não registrada", category="danger")
     return redirect(url_for('empresa.empresa_listar'))
@@ -94,7 +110,10 @@ def empresa_editar(empresa_id):
         p_d = form.contrato.data
 
     # --------- LISTAS
-    form.contrato.choices = [(0, '')] + [(plans.id, plans.nome) for plans in Contrato.query.all()]
+    form.contrato.choices = [(0, '')] + [(contratos.id, contratos.nome)
+                                         for contratos in Contrato.query.filter(
+            Contrato.ativo == True,
+            Contrato.empresa_gestora_id == current_user.empresa_id).all()]
     form.contrato.data = p_d
 
     # atribuindo o tipo "Cliente" para a empresa
@@ -134,17 +153,18 @@ def new_admin(empresa: [Empresa], enviar_email):
     # laço de repetição
     for valor in lista:
         # cadastro da regra
-        perfilacesso = PerfilAcesso(nome=valor['nome'], descricao=valor['descricao'], empresa_id=empresa.id)
-        if not perfilacesso.salvar(new=True):
+        perfilacesso = PerfilAcesso(nome=valor['nome'], descricao=valor['descricao'], empresa_id=empresa.id, ativo=True)
+        if not perfilacesso.salvar():
             flash("Erro ao salvar o perfil", category="danger")
             break
 
         # busca a lista de telas liberadas para a empresa
-        telascontrato = Telacontrato.query.filter_by(contrato_id=empresa.contrato_id).all()
+        telascontrato = Telacontrato.query.filter_by(ativo=True,
+                                                     contrato_id=empresa.contrato_id).all()
         for telacontrato in telascontrato:
-            # cadastro de viewroles para o administrador
+            # cadastro de perfisacesso para o administrador
             telaperfilacesso = TelaPerfilAcesso(perfilacesso_id=perfilacesso.id, tela_id=telacontrato.tela_id,
-                                                ativo=telacontrato.ativo)
+                                                ativo=True)
             if not telaperfilacesso.salvar():
                 flash("Erro ao salvar a tela no perfil", category="danger")
                 break
@@ -423,17 +443,27 @@ def empresa_registrar(token):
 @has_view('Empresa')
 def empresa_acessar(empresa_id):
     """Função para acesso rápido a empresa subsidiária"""
-    if empresa_id != current_user.empresa_id:
-        usuario = Usuario.query.filter(
-            Usuario.empresa_id == empresa_id,
-            Usuario.nome.like("%admin%"),
-            Usuario.nome.notlike("%luz%")).one_or_none()
-        # caso o usuário exista
-        if usuario:
-            login_user(usuario)
-            return redirect(url_for('sistema.index'))
+
+    empresa = Empresa.query.filter_by(id=empresa_id).one_or_none()
+
+    if empresa:
+        if empresa_id != current_user.empresa_id:
+            usuario = Usuario.query.filter(
+                Usuario.empresa_id == empresa_id,
+                Usuario.nome.like("%admin%"),
+                Usuario.nome.notlike("%luz%")).one_or_none()
+            # caso o usuário exista
+            if empresa.ativo:
+                if usuario:
+                    login_user(usuario)
+                    return redirect(url_for('sistema.index'))
+                else:
+                    flash("Acesso não permitido!", category="danger")
+            else:
+                flash("Empresa não ativa", category="danger")
         else:
-            flash("Acesso não permitido!", category="danger")
+            flash("Empresa atual", category="danger")
     else:
-        flash("Empresa atual", category="danger")
+        flash("Empresa não cadastrada", category="danger")
+
     return redirect(url_for('empresa.empresa_listar'))

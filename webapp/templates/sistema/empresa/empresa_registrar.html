@@ -1,34 +1,32 @@
 {% extends "base.html" %}
 {% block body %}
-    <body>
-        <form action="{{ url_for('empresa.empresa_registrar', token=token) }}" method="POST">
-            {{form.csrf_token}}
+<body>
+<a href="{{ url_for('empresa.empresa_listar') }}">Voltar</a>
+<form action="{{ url_for('empresa.empresa_registrar', token=token) }}" method="POST">
+    {{form.csrf_token}}
 
-            <h2>Cadastre sua Empresa</h2>
+    <h2>Cadastre sua Empresa</h2>
 
-            {{form.nome_fantasia.label}}    {{form.nome_fantasia(size=20)}}<br>
-            {{form.cnpj.label}}    {{form.cnpj(size=20)}}<br>
-            {{form.cep.label}}    {{form.cep(size=20)}}<br>
-            {{form.numero.label}}    {{form.numero(size=20)}}
-            {{form.complemento.label}}    {{form.complemento(size=20)}}
-            {{form.logradouro.label}}    {{form.logradouro(size=20)}}<br>
-            {{form.bairro.label}}    {{form.bairro(size=20)}}
-            {{form.municipio.label}}    {{form.municipio(size=20)}}
-            {{form.uf.label}}    {{form.uf(size=20)}}<br>
+    {{form.nome_fantasia.label}} {{form.nome_fantasia(size=20)}}<br>
+    {{form.cnpj.label}} {{form.cnpj(size=20)}}<br>
+    {{form.cep.label}} {{form.cep(size=20)}}<br>
+    {{form.numero.label}} {{form.numero(size=20)}}
+    {{form.complemento.label}} {{form.complemento(size=20)}}
+    {{form.logradouro.label}} {{form.logradouro(size=20)}}<br>
+    {{form.bairro.label}} {{form.bairro(size=20)}}
+    {{form.municipio.label}} {{form.municipio(size=20)}}
+    {{form.uf.label}} {{form.uf(size=20)}}<br>
 
-            {{form.email.label}}    {{form.email(size=20)}}<br>
-            {{form.telefone.label}}    {{form.telefone(size=20)}}<br>
-            {{form.contrato.label}}    {{form.contrato}}<br>
+    {{form.email.label}} {{form.email(size=20)}}<br>
+    {{form.telefone.label}} {{form.telefone(size=20)}}<br>
+    {{form.contrato.label}} {{form.contrato}}<br>
 
-            <input type="submit" value="Cadastrar"/>
+    <input type="submit" value="Cadastrar"/>
+</form>
 
-        </form>
+</body>
 
-    <a href="{{ url_for('empresa.empresa_listar') }}">Voltar</a>
-
-    </body>
-
-    <script type="text/javascript" src="/static/js/consulta_cep.js"></script>
+<script src="/static/js/consulta_cep.js" type="text/javascript"></script>
 
 {% endblock %}
 

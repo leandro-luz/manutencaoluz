@@ -1,8 +1,8 @@
 import datetime
-from dateutil.relativedelta import relativedelta
 import logging
 from webapp import db
 from webapp.plano_manutencao.models import Atividade, ListaAtividade
+from webapp.usuario.models import PerfilManutentorUsuario, PerfilManutentor
 from sqlalchemy import func
 from flask_login import current_user
 from flask import flash
@@ -32,15 +32,51 @@ class TipoSituacaoOrdem(db.Model):
     id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
     nome = db.Column(db.String(50), nullable=False, index=True)
     sigla = db.Column(db.String(5), nullable=False, index=True)
+
     ordemservico = db.relationship("OrdemServico", back_populates="tiposituacaoordem")
     tramitacaoordem = db.relationship("TramitacaoOrdem", back_populates="tiposituacaoordem")
+
+    tiposituacaoordemperfilmanutentor = db.relationship("TipoSituacaoOrdemPerfilManutentor",
+                                                        back_populates="tiposituacaoordem")
 
     def __repr__(self) -> str:
         return f'<Situação de Ordem: {self.id}-{self.nome}>'
 
     @staticmethod
-    def retornar_id_situacao(nome):
-        return TipoSituacaoOrdem.query.filter_by(nome=nome).one_or_none().id
+    def retornar_id_situacao(sigla):
+        return TipoSituacaoOrdem.query.filter_by(sigla=sigla).one_or_none().id
+
+
+class TipoStatusOrdem(db.Model):
+    __tablename__ = 'tipo_status_ordem'
+
+    id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    nome = db.Column(db.String(50), nullable=False, index=True)
+    sigla = db.Column(db.String(5), nullable=False, index=True)
+
+    ordemservico = db.relationship("OrdemServico", back_populates="tipostatusordem")
+
+    def __repr__(self) -> str:
+        return f'<Status de Ordem: {self.id}-{self.nome}>'
+
+    @staticmethod
+    def retornar_id_status(sigla):
+        return TipoStatusOrdem.query.filter_by(sigla=sigla).one_or_none().id
+
+
+class TipoSituacaoOrdemPerfilManutentor(db.Model):
+    """    Classe relacionamento entre Tela e PerfilAcesso    """
+    __tablename__ = 'tipo_situacao_ordem_perfil_manutentor'
+    id = db.Column(db.Integer(), primary_key=True)
+
+    tiposituacaoordem_id = db.Column(db.Integer(), db.ForeignKey("tipo_situacao_ordem.id"), nullable=False)
+    perfilmanutentor_id = db.Column(db.Integer(), db.ForeignKey("perfil_manutentor.id"), nullable=False)
+
+    tiposituacaoordem = db.relationship("TipoSituacaoOrdem", back_populates="tiposituacaoordemperfilmanutentor")
+    perfilmanutentor = db.relationship("PerfilManutentor", back_populates="tiposituacaoordemperfilmanutentor")
+
+    def __repr__(self) -> str:
+        return f'<TipoSituacaoOrdemPerfilManutentor: {self.id}-{self.tiposituacaoordem.nome}-{self.perfilmanutentor.nome}>'
 
 
 class FluxoOrdem(db.Model):
@@ -98,12 +134,25 @@ class TramitacaoOrdem(db.Model):
         ordem = OrdemServico.query.filter_by(id=ordem_id).one_or_none()
         # Alterando para a situação da tramitação
         ordem.tiposituacaoordem_id = tipo_situacao_id
+
         # Cria um objeto SituacaoOrdem
-        sit = TipoSituacaoOrdem.query.filter_by(nome="Fiscalizada").one_or_none()
-        # Verifica se o id da SituacaoOrdem eh igual ao da tramitacao vigente
-        if tipo_situacao_id == sit.id:
+        situacao = TipoSituacaoOrdem.query.filter_by(id=tipo_situacao_id).one_or_none()
+
+        # Alterando o status do ordem
+        if situacao.sigla == "CONC":
+            status = TipoStatusOrdem.query.filter_by(sigla='CONC').one_or_none()
+            ordem.tipostatusordem_id = status.id
+        if situacao.sigla == "CANC":
+            status = TipoStatusOrdem.query.filter_by(sigla='CANC').one_or_none()
+            ordem.tipostatusordem_id = status.id
+
+        # Verifica estara aguardando fiscalização dará por encerrada
+        if situacao.sigla == "AGFI":
             # Caso seja, colocará a data de fechamento da OrdemServico
             ordem.data_fechamento = datetime.datetime.now()
+            # Gera um incremento no tempo para que as tramitações fiquem na ordem
+            self.data = datetime.datetime.now() + datetime.timedelta(seconds=1)
+
         if ordem.salvar():
             flash("Ordem de Serviço Atualizada", category="success")
         else:
@@ -133,6 +182,7 @@ class OrdemServico(db.Model):
 
     equipamento_id = db.Column(db.Integer(), db.ForeignKey("equipamento.id"), nullable=False)
     tiposituacaoordem_id = db.Column(db.Integer(), db.ForeignKey("tipo_situacao_ordem.id"), nullable=False)
+    tipostatusordem_id = db.Column(db.Integer(), db.ForeignKey("tipo_status_ordem.id"), nullable=False)
     solicitante_id = db.Column(db.Integer(), db.ForeignKey("usuario.id"), nullable=True)
     tipoordem_id = db.Column(db.Integer(), db.ForeignKey("tipo_ordem.id"), nullable=False)
     planomanutencao_id = db.Column(db.Integer(), nullable=True)
@@ -140,6 +190,7 @@ class OrdemServico(db.Model):
 
     equipamento = db.relationship("Equipamento", back_populates="ordemservico")
     tiposituacaoordem = db.relationship("TipoSituacaoOrdem", back_populates="ordemservico")
+    tipostatusordem = db.relationship("TipoStatusOrdem", back_populates="ordemservico")
     usuario = db.relationship("Usuario", back_populates="ordemservico")
     tipoordem = db.relationship("TipoOrdem", back_populates="ordemservico")
     tramitacaoordem = db.relationship("TramitacaoOrdem", back_populates="ordemservico")
@@ -166,7 +217,8 @@ class OrdemServico(db.Model):
             self.data_abertura = datetime.datetime.now()
             self.data_prevista = dta_prevista
             self.solicitante_id = current_user.id
-            self.tiposituacaoordem_id = TipoSituacaoOrdem.retornar_id_situacao("Pendente")
+            self.tiposituacaoordem_id = TipoSituacaoOrdem.retornar_id_situacao("AGAP")
+            self.tipostatusordem_id = TipoStatusOrdem.retornar_id_status("PEND")
             self.tipoordem_id = form.tipo.data
             self.descricao = form.descricao.data.upper()
             self.equipamento_id = form.equipamento.data
@@ -176,7 +228,8 @@ class OrdemServico(db.Model):
         self.codigo = OrdemServico.gerar_codigo_ordem()
         self.data_abertura = datetime.datetime.now()
         self.solicitante_id = None
-        self.tiposituacaoordem_id = TipoSituacaoOrdem.retornar_id_situacao("Pendente")
+        self.tiposituacaoordem_id = TipoSituacaoOrdem.retornar_id_situacao("AGAP")
+        self.tipostatusordem_id = TipoStatusOrdem.retornar_id_status("PEND")
         self.tipoordem_id = plano.tipoordem_id
         self.descricao = plano.nome
         self.equipamento_id = plano.equipamento_id
@@ -185,14 +238,12 @@ class OrdemServico(db.Model):
         self.listaatividade_id = plano.listaatividade_id
         ListaAtividade.copiar_lista(plano.listaatividade_id)
 
-        # self.data_prevista = self.data_futura(new, data=plano.data_inicio, tempo=plano.periodicidade.tempo,
-        # #                                       unidade=plano.periodicidade.unidade.nome)
-
     def alterar_atributos_by_ordem(self, ordem, plano):
         self.codigo = OrdemServico.gerar_codigo_ordem()
         self.data_abertura = datetime.datetime.now()
         self.solicitante_id = None
-        self.tiposituacaoordem_id = TipoSituacaoOrdem.retornar_id_situacao("Pendente")
+        self.tiposituacaoordem_id = TipoSituacaoOrdem.retornar_id_situacao("AGAP")
+        self.tipostatusordem_id = TipoStatusOrdem.retornar_id_status("PEND")
         self.tipoordem_id = ordem.tipoordem_id
         self.descricao = ordem.descricao
         self.equipamento_id = ordem.equipamento_id
@@ -200,24 +251,20 @@ class OrdemServico(db.Model):
         self.data_prevista = plano.data_inicio
         self.listaatividade_id = ListaAtividade.copiar_lista(plano.listaatividade_id)
 
-        # self.data_prevista = self.data_futura(new, data=datetime.datetime.now() - datetime.timedelta(days=1),
-        #                                       tempo=tempo, unidade=unidade)
-
     @staticmethod
     def gerar_codigo_ordem():
         """Função para retornar o número para a proxima OS"""
         return db.session.query(func.max(OrdemServico.codigo)).first()[0] + 1
 
-    # def data_futura(self, new, data, tempo, unidade):
-    #     """ Função que calcula e retorna uma data no futuro"""
-    #     if new:
-    #         return data
-    #     else:
-    #         # Verifica se a base do tempo é dia
-    #         if unidade in ["dia", "semana"]:
-    #             return data.replace(hour=0, minute=0, second=0, microsecond=0) + \
-    #                    datetime.timedelta(days=tempo)
-    #         # Verifica se a base do tempo é mensal
-    #         if unidade in ["mês", "ano"]:
-    #             return data.replace(hour=0, minute=0, second=0, microsecond=0) + \
-    #                    relativedelta(months=tempo)
+    def verificar_ordem_perfil_manutentor(self):
+        resultado = False
+
+        if OrdemServico.query.filter(
+                OrdemServico.id == self.id,
+                OrdemServico.tiposituacaoordem_id == TipoSituacaoOrdemPerfilManutentor.tiposituacaoordem_id,
+                TipoSituacaoOrdemPerfilManutentor.perfilmanutentor_id == PerfilManutentorUsuario.perfilmanutentor_id,
+                PerfilManutentorUsuario.ativo == True,
+                PerfilManutentorUsuario.usuario_id == current_user.id).one_or_none():
+            resultado = True
+
+        return resultado

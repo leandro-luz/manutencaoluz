@@ -158,13 +158,17 @@ class Equipamento(db.Model):
     centro_custo = db.Column(db.String(50), nullable=True)
     ativo = db.Column(db.Boolean, nullable=False, default=True)
 
-    localizacao_id = db.Column(db.Integer(), db.ForeignKey("localizacao.id"), nullable=True)
     subgrupo_id = db.Column(db.Integer(), db.ForeignKey("subgrupo.id"), nullable=True)
+    setor_id = db.Column(db.Integer(), db.ForeignKey("setor.id"), nullable=True)
+    local_id = db.Column(db.Integer(), db.ForeignKey("local.id"), nullable=True)
+    pavimento_id = db.Column(db.Integer(), db.ForeignKey("pavimento.id"), nullable=True)
 
     subgrupo = db.relationship("Subgrupo", back_populates="equipamento")
     planomanutencao = db.relationship("PlanoManutencao", back_populates="equipamento")
     ordemservico = db.relationship("OrdemServico", back_populates="equipamento")
-    localizacao = db.relationship("Localizacao", back_populates="equipamento")
+    setor = db.relationship("Setor", back_populates="equipamento")
+    local = db.relationship("Local", back_populates="equipamento")
+    pavimento = db.relationship("Pavimento", back_populates="equipamento")
 
     def __repr__(self):
         return f'<Equipamento: {self.id}-{self.descricao_curta}>'
@@ -197,12 +201,14 @@ class Equipamento(db.Model):
         self.depreciacao = form.depreciacao.data
         self.tag = form.tag.data.upper()
         self.patrimonio = form.patrimonio.data
-        self.localizacao_id = form.localizacao.data
         self.latitude = form.latitude.data
         self.longitude = form.longitude.data
         self.centro_custo = form.centro_custo.data.upper()
         self.ativo = form.ativo.data
         self.subgrupo_id = form.subgrupo.data
+        self.setor_id = form.setor.data
+        self.local_id = form.local.data
+        self.pavimento_id = form.pavimento.data
 
     def ativar_desativar(self):
         if self.ativo:
@@ -248,7 +254,7 @@ class Pavimento(db.Model):
     empresa_id = db.Column(db.Integer(), db.ForeignKey("empresa.id"), nullable=False)
 
     empresa = db.relationship("Empresa", back_populates="pavimento")
-    localizacao = db.relationship("Localizacao", back_populates="pavimento")
+    equipamento = db.relationship("Equipamento", back_populates="pavimento")
 
     def __repr__(self):
         return f'<Pavimento: {self.id}-{self.nome}>'
@@ -282,11 +288,10 @@ class Setor(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     nome = db.Column(db.String(50), nullable=False, index=True)
     sigla = db.Column(db.String(5), nullable=False)
-
     empresa_id = db.Column(db.Integer(), db.ForeignKey("empresa.id"), nullable=False)
 
     empresa = db.relationship("Empresa", back_populates="setor")
-    local = db.relationship("Local", back_populates="setor")
+    equipamento = db.relationship("Equipamento", back_populates="setor")
 
     def __repr__(self):
         return f'<Setor: {self.id}-{self.nome}>'
@@ -320,11 +325,10 @@ class Local(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     nome = db.Column(db.String(50), nullable=False, index=True)
     sigla = db.Column(db.String(5), nullable=False)
+    empresa_id = db.Column(db.Integer(), db.ForeignKey("empresa.id"), nullable=False)
 
-    setor_id = db.Column(db.Integer(), db.ForeignKey("setor.id"), nullable=False)
-
-    setor = db.relationship("Setor", back_populates="local")
-    localizacao = db.relationship("Localizacao", back_populates="local")
+    empresa = db.relationship("Empresa", back_populates="local")
+    equipamento = db.relationship("Equipamento", back_populates="local")
 
     def __repr__(self):
         return f'<Local: {self.id}-{self.nome}>'
@@ -333,54 +337,7 @@ class Local(db.Model):
         """    Função para alterar os atributos do objeto    """
         self.nome = form.nome.data.upper()
         self.sigla = form.sigla.data.upper()
-        self.setor_id = form.setor.data
-
-    def salvar(self) -> bool:
-        """    Função para salvar no banco de dados o objeto"""
-        try:
-            db.session.add(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
-
-
-class Localizacao(db.Model):
-    """    Classe de grupo de ativos    """
-
-    nome_doc = 'localizacao'
-    # titulos para cadastro
-    titulos_doc = {'Nome*': 'nome'}
-
-    __tablename__ = 'localizacao'
-    id = db.Column(db.Integer(), primary_key=True)
-    nome = db.Column(db.String(50), nullable=False, index=True)
-
-    pavimento_id = db.Column(db.Integer(), db.ForeignKey("pavimento.id"), nullable=False)
-    local_id = db.Column(db.Integer(), db.ForeignKey("local.id"), nullable=False)
-
-    pavimento = db.relationship("Pavimento", back_populates="localizacao")
-    local = db.relationship("Local", back_populates="localizacao")
-
-    equipamento = db.relationship("Equipamento", back_populates="localizacao")
-
-    def __repr__(self):
-        return f'<Localizacao: {self.id}-{self.nome}>'
-
-    def alterar_atributos(self, form):
-        """    Função para alterar os atributos do objeto    """
-        self.nome = self.gerar_nome(form)
-        self.pavimento_id = form.pavimento.data
-        self.local_id = form.local.data
-
-    def gerar_nome(self, form):
-        """Função para gerar o nome da localização"""
-
-        pavimento = Pavimento.query.filter_by(id=form.pavimento.data).one_or_none()
-        local = Local.query.filter_by(id=form.local.data).one_or_none()
-        return local.setor.sigla + "_" + local.sigla + "_" + pavimento.sigla
+        self.empresa_id = current_user.empresa_id
 
     def salvar(self) -> bool:
         """    Função para salvar no banco de dados o objeto"""

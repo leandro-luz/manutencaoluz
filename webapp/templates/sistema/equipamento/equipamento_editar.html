@@ -1,6 +1,7 @@
 {% extends "sistema_base.html" %}
 {% block body %}
 <body>
+<a href="{{ url_for('equipamento.equipamento_listar') }}">Voltar</a>
 <form action="{{ url_for('equipamento.equipamento_editar', equipamento_id=equipamento.id) }}" method="POST">
     {{form.csrf_token}}
     {% if equipamento.id == 0 %}
@@ -16,8 +17,22 @@
                 </span>
     </a> <br>
 
-    {{form.localizacao.label}} {{form.localizacao}}
-    <a href="{{ url_for('equipamento.localizacao_listar', equipamento_id=equipamento.id) }}">
+    <a onchange="atualizar_locais()">{{form.setor.label}} {{form.setor}}</a>
+    <a href="{{ url_for('equipamento.setor_listar', equipamento_id=equipamento.id) }}">
+                <span data-tooltip="Atualizar">
+                    <i class="bi-caret-down fs-6"></i>
+                </span>
+    </a> <br>
+
+    {{form.local.label}} {{form.local}}
+    <a href="{{ url_for('equipamento.local_listar', equipamento_id=equipamento.id) }}">
+                <span data-tooltip="Atualizar">
+                    <i class="bi-caret-down fs-6"></i>
+                </span>
+    </a> <br>
+
+    {{form.pavimento.label}} {{form.pavimento}}
+    <a href="{{ url_for('equipamento.pavimento_listar', equipamento_id=equipamento.id) }}">
                 <span data-tooltip="Atualizar">
                     <i class="bi-caret-down fs-6"></i>
                 </span>
@@ -68,7 +83,6 @@
 <br>
 {% endif %}
 
-<a href="{{ url_for('equipamento.equipamento_listar') }}">Voltar</a>
 
 </body>
 

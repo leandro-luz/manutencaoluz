@@ -1,7 +1,7 @@
 {% extends "sistema_base.html" %}
 {% block body %}
 <body>
-
+<a href="{{ url_for('ordem_servico.ordem_editar', ordem_id=ordem_id) }}">Voltar</a>
 <h5>ATIVIDADES</h5>
 
 <table class="table">
@@ -36,7 +36,7 @@
 {{listaatividade.observacao}}
 <br><br>
 
-<a href="{{ url_for('ordem_servico.ordem_editar', ordem_id=ordem_id) }}">Voltar</a>
+
 
 </body>
 

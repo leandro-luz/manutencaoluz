@@ -1,6 +1,8 @@
 import logging
 from webapp import db
 from flask import flash
+from flask_login import current_user
+from webapp.empresa.models import Empresa
 
 logging.basicConfig(format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
 logging.getLogger().setLevel(logging.DEBUG)
@@ -13,6 +15,9 @@ class Contrato(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     nome = db.Column(db.String(50), nullable=False, index=True)
     ativo = db.Column(db.Boolean, nullable=False, default=False)
+
+    empresa_gestora_id = db.Column(db.Integer(), nullable=True)
+
     empresa = db.relationship("Empresa", back_populates="contrato")
     telacontrato = db.relationship("Telacontrato", back_populates="contrato")
 
@@ -20,8 +25,9 @@ class Contrato(db.Model):
         return f'<Contrato: {self.id}-{self.nome}>'
 
     def alterar_atributos(self, form) -> None:
-        self.nome = form.nome.data
+        self.nome = form.nome.data.upper()
         self.ativo = form.ativo.data
+        self.empresa_gestora_id = current_user.empresa_id
 
     def ativar_desativar(self):
         if self.ativo:
@@ -29,25 +35,24 @@ class Contrato(db.Model):
         else:
             self.ativo = True
 
-    def salvar(self, new, form) -> bool:
+    def salvar(self) -> bool:
         """    Função para salvar no banco de dados o objeto"""
         try:
             db.session.add(self)
             db.session.commit()
-
-            if new:
-                #     # cadastrar todas as telas para o novo contrato
-                new_contrato = Contrato.query.filter_by(nome=form.nome.data).one_or_none()
-                telascontrato = [Telacontrato(tela_id=tela.id, contrato_id=new_contrato.id, ativo=False)
-                                 for tela in Tela.query.all()]
-                db.session.add_all(telascontrato)
-                db.session.commit()
 
             return True
         except Exception as e:
             log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
             db.session.rollback()
             return False
+
+    @staticmethod
+    def inativar_by_id(contrato_id):
+        """Função que inativa o contrato pelo contrato_id"""
+        contrato = Contrato.query.filter_by(id=contrato_id).one_or_none()
+        contrato.ativo = False
+        contrato.salvar()
 
 
 class Tela(db.Model):
@@ -98,19 +103,17 @@ class Telacontrato(db.Model):
     def __repr__(self):
         return f'<Telacontrato: {self.id}-{self.contrato_id}-{self.tela_id}>'
 
-    def alterar_atributos(self, form) -> None:
+    def alterar_atributos(self, form, contrato_id) -> None:
         """    Altera os valores do contrato e tela    """
-        self.contrato_id = form.contrato.data
+        self.contrato_id = contrato_id
         self.tela_id = form.tela.data
 
-    def ativar_desativar(self) -> None:
-        """    Altera em ativo e inativo a tela do contrato de assinatura    """
-        if self.ativo:
-            self.ativo = False
-            flash("Contrato desativado com sucesso", category="success")
-        else:
-            self.ativo = True
-            flash("Contrato ativado com sucesso", category="success")
+    # def ativar_desativar(self) -> None:
+    #     """    Altera em ativo e inativo a tela do contrato de assinatura    """
+    #     if self.ativo:
+    #         self.ativo = False
+    #     else:
+    #         self.ativo = True
 
     def salvar(self) -> bool:
         """    Função para salvar no banco de dados o objeto"""
@@ -122,3 +125,28 @@ class Telacontrato(db.Model):
             log.error(f'Erro salvar no bando de dados: {self.__repr__()}:{e}')
             db.session.rollback()
             return False
+
+    def excluir(self) -> bool:
+        """    Função para retirar do banco de dados o objeto"""
+        try:
+            db.session.delete(self)
+            db.session.commit()
+            return True
+        except Exception as e:
+            log.error(f'Erro Deletar objeto no banco de dados: {self.__repr__()}:{e}')
+            db.session.rollback()
+            return False
+
+    @staticmethod
+    def contagem_telas_ativas(contrato_id):
+        return Telacontrato.query.filter_by(ativo=True, contrato_id=contrato_id).count()
+
+    @staticmethod
+    def verifica_empresas_vinculadas(contrato_id):
+        """Função que verifica se o contrato não tem tela ativas e inativa as empresas vinculados"""
+        # Caso não exista telas ativas para o contrato
+        if Telacontrato.contagem_telas_ativas(contrato_id) == 0:
+            # Inativa o contrato
+            Contrato.inativar_by_id(contrato_id)
+            # Busca as empresas vinculados ao contrato e inativa elas
+            Empresa.inativar_by_contrato(contrato_id)

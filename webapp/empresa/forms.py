@@ -4,7 +4,7 @@ from flask_wtf import FlaskForm as Form
 from wtforms import StringField, IntegerField, SelectField, BooleanField, SubmitField, ValidationError, DateField, \
     FileField
 from wtforms.validators import InputRequired, Length, Email, NumberRange, Optional
-
+from webapp.contrato.models import Contrato
 from webapp.empresa.models import Interessado, Empresa
 from datetime import datetime
 
@@ -113,6 +113,11 @@ class EmpresaForm(Form):
 
             if self.contrato.data == 0:
                 flash("Não informado o contrato para a empresa", category="danger")
+                return False
+
+            contrato = Contrato.query.filter_by(id=self.contrato.data).one_or_none()
+            if not contrato.ativo:
+                flash("Contrato não está ativo", category="danger")
                 return False
 
             return True

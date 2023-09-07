@@ -2,10 +2,12 @@
 {% block body %}
 <body>
 
+{% if lib_solicitante %}
 <h2> LISTA DE ORDENS DE SERVIÇOS </h2>
 <a href="{{ url_for('ordem_servico.ordem_editar', ordem_id=0) }}">
     Adicionar
 </a>
+{% endif %}
 
 <input class="form-control" id="myInput" placeholder="Filtrar.." type="text"><br>
 <button onclick="exportar_lista('ordens_serviços.csv', 1)" type="button"> Exportar Lista</button>
@@ -18,6 +20,7 @@
         <th scope="col">EQUIPAMENTO</th>
         <th scope="col">TIPO</th>
         <th scope="col">SITUAÇÃO</th>
+        <th scope="col">STATUS</th>
         <th scope="col">DATA ABERTURA</th>
         <th scope="col">DATA PREVISTA</th>
         <th scope="col">DATA FECHAMENTO</th>
@@ -33,6 +36,7 @@
         <td>{{ ordem.equipamento.descricao_curta }}</td>
         <td>{{ ordem.tipoordem.sigla }}</td>
         <td>{{ ordem.tiposituacaoordem.sigla }}</td>
+        <td>{{ ordem.tipostatusordem.sigla }}</td>
         <td>{{ ordem.data_abertura }}</td>
         <td>{{ ordem.data_prevista }}</td>
         <td>{{ ordem.data_fechamento }}</td>

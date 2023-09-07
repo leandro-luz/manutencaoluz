@@ -1,6 +1,7 @@
 {% extends "sistema_base.html" %}
 {% block body %}
 <body>
+<a href="{{ url_for('usuario.perfilacesso_listar', usuario_id=usuario_id) }}">Voltar</a>
 <form action="{{ url_for('usuario.perfilacesso_editar', perfilacesso_id=perfilacesso.id, usuario_id=usuario_id) }}" method="POST">
     {{form.csrf_token}}
 
@@ -18,7 +19,7 @@
     {% else %}
 
     {{form.tela.label}} {{form.tela}}
-    <a href="{{ url_for('usuario.telaperfil_listar', perfilacesso_id=perfilacesso.id) }}">
+    <a href="{{ url_for('usuario.telaperfilacesso_listar', perfilacesso_id=perfilacesso.id,  usuario_id=usuario_id) }}">
                     <span data-tooltip="Atualizar">
                         <i class="bi-caret-down fs-6"></i>
                     </span>
@@ -73,8 +74,6 @@
 <br>
 {% endif %}
 
-
-<a href="{{ url_for('usuario.perfilacesso_listar', usuario_id=usuario_id) }}">Voltar</a>
 
 </body>
 {% endblock %}

@@ -1,7 +1,7 @@
 {% extends "sistema_base.html" %}
 {% block body %}
 <body>
-
+<a href="{{url_for('sistema.index')}}">Voltar</a>
 <h2> EMPRESAS </h2>
 <a href="{{ url_for('empresa.empresa_editar', empresa_id=0) }}">
     Adicionar
@@ -37,6 +37,14 @@
                 </span>
             </a>
         </td>
+        <td>
+            <a href="{{ url_for('empresa.empresa_acessar', empresa_id=empresa.id) }}">
+                <span data-tooltip="Acesso">
+                    <i class="bi-box-arrow-in-down fs-6"></i>
+                </span>
+            </a>
+        </td>
+
         {% else %}
         <td>
             <a href="{{ url_for('empresa.empresa_ativar', empresa_id=empresa.id) }}">
@@ -45,6 +53,7 @@
                 </span>
             </a>
         </td>
+        <td></td>
         {% endif %}
         <td>
             <a href="{{ url_for('empresa.empresa_editar', empresa_id=empresa.id) }}">
@@ -54,20 +63,11 @@
             </a>
         </td>
 
-        <td>
-            <a href="{{ url_for('empresa.empresa_acessar', empresa_id=empresa.id) }}">
-                <span data-tooltip="Acesso">
-                    <i class="bi-box-arrow-in-down fs-6"></i>
-                </span>
-            </a>
-        </td>
 
     </tr>
     {% endfor %}
     </tbody>
 </table>
-
-<a href="{{url_for('sistema.index')}}">Voltar</a>
 
 </body>
 <script src="/static/js/exportar_consulta.js" type="text/javascript"></script>

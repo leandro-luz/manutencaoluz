@@ -1,7 +1,7 @@
 {% extends "sistema_base.html" %}
 {% block body %}
 <body>
-
+<a href="{{url_for('sistema.index')}}">Voltar</a>
 <h2> LISTA DE USUÁRIOS </h2>
 <a href="{{ url_for('usuario.usuario_editar', usuario_id=0) }}">
     Adicionar
@@ -58,8 +58,6 @@
     {% endfor %}
     </tbody>
 </table>
-
-<a href="{{url_for('sistema.index')}}">Voltar</a>
 
 </body>
 <script src="/static/js/exportar_consulta.js" type="text/javascript"></script>

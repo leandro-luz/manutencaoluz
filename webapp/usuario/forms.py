@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm as Form
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, IntegerField, FileField
 from wtforms.validators import InputRequired, Length, EqualTo, Email, Regexp, Optional
-from webapp.usuario.models import Usuario, TelaPerfilAcesso
+from webapp.usuario.models import Usuario, TelaPerfilAcesso, PerfilManutentorUsuario, PerfilAcesso
 from webapp.empresa.models import Empresa
 from flask import flash
 from flask_login import current_user
@@ -98,7 +98,8 @@ class EditarUsuarioForm(Form):
                                           'números, ponto ou sublinha')],
                        render_kw={"placeholder": "Digite o seu nome"})
     email = StringField('Email', [InputRequired(), Email()], render_kw={"placeholder": "Digite o seu email"})
-    perfil = SelectField('PerfilAcesso', choices=[], coerce=int)
+    perfilacesso = SelectField('Perfil de Acesso', choices=[], coerce=int)
+    perfil_manutentor = SelectField('Perfil de Manutentor', choices=[], coerce=int, validate_choice=False)
     ativo = BooleanField('Ativo', render_kw={"placeholder": "Informe se a usuário está ativo"})
 
     file = FileField('Escolha um arquivo para o cadastro de usuarios em Lote (4MB):', validators=[Optional()],
@@ -138,8 +139,13 @@ class EditarUsuarioForm(Form):
                         flash("Usuário já cadastrado com este email", category="danger")
                         return False
 
-            if self.perfil.data == 0:
+            if self.perfilacesso.data == 0:
                 flash("PerfilAcesso não selecionado", category="danger")
+                return False
+
+            perfilacesso = PerfilAcesso.query.filter_by(id=self.perfilacesso.data).one_or_none()
+            if not perfilacesso.ativo:
+                flash("PerfilAcesso não está ativo", category="danger")
                 return False
 
             return True
@@ -224,7 +230,7 @@ class AlterarEmailForm(Form):
 
 
 class PerfilAcessoForm(Form):
-    nome = StringField('PerfilAcesso', validators=[InputRequired(), Length(max=50)],
+    nome = StringField('Nome', validators=[InputRequired(), Length(max=50)],
                        render_kw={"placeholder": "Digite o nome do perfil"})
     descricao = StringField('Descrição', validators=[InputRequired(), Length(max=50)],
                             render_kw={"placeholder": "Digite a descrição do perfil"})
@@ -245,18 +251,35 @@ class PerfilAcessoForm(Form):
 
 class TelaPerfilForm(Form):
     tela = SelectField('Telas', choices=[], coerce=int)
-    perfilacesso = SelectField('PerfilAcesso', choices=[], coerce=int)
     submit = SubmitField("Cadastrar")
 
     def validate(self, **kwargs):
-
         check_validate = super(TelaPerfilForm, self).validate()
-        if check_validate:
+        if not check_validate:
+            return False
 
-            if TelaPerfilAcesso.query.filter_by(perfilacesso_id=self.perfilacesso.data, tela_id=self.tela.data).first() is not None:
-                flash("Tela já registrada para este perfil", category="danger")
+        return True
+
+
+class PerfilManutentorForm(Form):
+    usuario_id = IntegerField()
+    perfilmanutentor = SelectField('Perfil', choices=[], coerce=int)
+    submit = SubmitField('Reset Senha')
+
+    def validate(self, **kwargs):
+        # if our validators do not pass
+        check_validate = super(PerfilManutentorForm, self).validate()
+        if check_validate:
+            if self.perfilmanutentor.data == 0:
+                flash("Perfil não selecionado", category="danger")
                 return False
-            else:
-                return True
+            if PerfilManutentorUsuario.query.filter(
+                    PerfilManutentorUsuario.usuario_id == self.usuario_id.data,
+                    PerfilManutentorUsuario.perfilmanutentor_id == self.perfilmanutentor.data
+            ).all():
+                flash("Perfil já Cadastrado para este Usuário", category="danger")
+                return False
+
+            return True
         else:
             return False

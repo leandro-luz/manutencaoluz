@@ -1,6 +1,7 @@
 {% extends "sistema_base.html" %}
 {% block body %}
 <body>
+<a href="{{ url_for('ordem_servico.ordem_listar') }}">Voltar</a>
 <form action="{{ url_for('ordem_servico.ordem_editar', ordem_id=ordem.id) }}" method="POST">
     {{form.csrf_token}}
 
@@ -17,7 +18,9 @@
     Descrição: {{ ordem.descricao }}<br>
     Tipo de Ordem: {{ ordem.tipoordem.nome}}<br>
     Equipamento: {{ ordem.equipamento.descricao_curta}}<br>
-    Localização: {{ ordem.equipamento.localizacao}}<br>
+    Localização: {{ ordem.equipamento.setor.nome }} /
+    {{ ordem.equipamento.local.nome }} /
+    {{ ordem.equipamento.pavimento.nome }}<br>
     Solicitante: {{ ordem.usuario.nome }}<br>
     Data Abertura: {{ ordem.data_abertura }}<br>
     Data Prevista: {{ ordem.data_prevista }}<br>
@@ -29,22 +32,24 @@
 <br>
 
 
-{% if ordem.tiposituacaoordem.sigla == "EXEC" and ordem.id > 0 %}
-
+{% if lib_executante and ordem.tiposituacaoordem.sigla == "AGEX" %}
 <button class="btn btn-info" data-bs-target="#modal_atividade_preencher"
         data-bs-toggle="modal" type="button">
     ATIVIDADES
 </button>
 {% include "atividade_preencher.html" %}
+{% endif %}
 
-{% else %}
+{% if ordem.tiposituacaoordem.sigla != "AGEX" %}
+{% if lib_aprovador or lib_fiscalizador %}
 {% for nova_t in novas_tramitacoes %}
-{% if not nova_t.nome == 'Concluída' %}
+{% if not nova_t.sigla == 'CONC' %}
 <a href="{{ url_for('ordem_servico.tramitacao', ordem_id=ordem.id, tipo_situacao_id=nova_t.id) }}">
     <button class="btn btn-info"> {{ nova_t.nome }}</button>
 </a>
 {% endif %}
 {% endfor %}
+{% endif %}
 {% endif %}
 
 {% if ordem.tiposituacaoordem.sigla == "CONC" or ordem.tiposituacaoordem.sigla == "FISC" %}
@@ -79,7 +84,6 @@
     </tbody>
 </table>
 <br><br>
-<a href="{{ url_for('ordem_servico.ordem_listar') }}">Voltar</a>
 
 
 </body>

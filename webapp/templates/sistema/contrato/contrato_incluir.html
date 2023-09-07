@@ -5,18 +5,18 @@
     <div class="modal-dialog modal-sm">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalLabel">Inclusão de Telas</h5>
+                <h5 class="modal-title" id="modalLabel">Cadastro de Contrato</h5>
                 <button aria-label="Close" class="btn-close"
                         data-bs-dismiss="modal" type="button">
                 </button>
             </div>
             <div class="modal-body">
-                <form action="{{ url_for('contrato.telacontrato_editar', contrato_id=contrato.id) }}" method="POST">
+             <form action="{{ url_for('contrato.contrato_editar', contrato_id=0) }}" method="POST">
                     {{form.csrf_token}}
 
-                    {{form_telacontrato.tela.label}} {{form_telacontrato.tela}}<br><br>
+                    {{form.nome.label}} {{form.nome(size=30)}}<br><br>
+                    <input type="submit" value="Cadastrar"/>
 
-                    <input type="submit" value="Inclusão"/>
                 </form>
             </div>
         </div>

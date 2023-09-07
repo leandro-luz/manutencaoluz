@@ -1,6 +1,8 @@
 {% extends "sistema_base.html" %}
 {% block body %}
 <body>
+<a href="{{ url_for('equipamento.grupo_listar', subgrupo_id=subgrupo_id, equipamento_id=equipamento_id) }}">Voltar</a>
+
 <form action="{{ url_for('equipamento.grupo_editar', grupo_id=grupo.id, subgrupo_id=subgrupo_id, equipamento_id=equipamento_id) }}"
       method="POST">
     {{form.csrf_token}}
@@ -74,7 +76,5 @@
 <br>
 {% endif %}
 
-
-<a href="{{ url_for('equipamento.grupo_listar', subgrupo_id=subgrupo_id, equipamento_id=equipamento_id) }}">Voltar</a>
 </body>
 {% endblock %}

@@ -1,8 +1,9 @@
 {% extends "sistema_base.html" %}
 {% block body %}
 <body>
-<form action="{{ url_for('equipamento.pavimento_editar', pavimento_id=0,
-localizacao_id=localizacao_id, equipamento_id=equipamento_id) }}"
+<a href="{{ url_for('equipamento.pavimento_listar', equipamento_id=equipamento_id) }}">Voltar</a>
+
+<form action="{{ url_for('equipamento.pavimento_editar', pavimento_id=pavimento.id, equipamento_id=equipamento_id) }}"
       method="POST">
     {{form.csrf_token}}
 
@@ -15,11 +16,14 @@ localizacao_id=localizacao_id, equipamento_id=equipamento_id) }}"
     {{form.nome.label}} {{form.nome(size=80)}}<br>
     {{form.sigla.label}} {{form.sigla(size=20)}}<br>
 
+    {% if pavimento.id == 0 %}
     <input type="submit" value="Cadastrar"/>
+    {% else %}
+    <input type="submit" value="Atualizar"/>
+    {% endif %}
 
 </form>
 
 
-<a href="{{ url_for('equipamento.pavimento_listar', localizacao_id=localizacao_id, equipamento_id=equipamento_id) }}">Voltar</a>
 </body>
 {% endblock %}

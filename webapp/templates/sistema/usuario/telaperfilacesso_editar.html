@@ -1,30 +1,25 @@
-{% extends "sistema_base.html" %}
-{% block body %}
-<body>
-<form action="{{ url_for('usuario.telaperfilacesso_editar', perfilacesso_id=perfilacesso_id) }}" method="POST">
-    {{form.csrf_token}}
+<!-- Add New Modal -->
+<!-- Modal -->
+<div aria-hidden="true" aria-labelledby="modalLabel" class="modal fade"
+     id="modal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLabel">Inclusão de Telas</h5>
+                <button aria-label="Close" class="btn-close"
+                        data-bs-dismiss="modal" type="button">
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('usuario.telaperfilacesso_editar', perfilacesso_id=perfilacesso_id, usuario_id=usuario_id) }}"
+                      method="POST">
+                    {{form.csrf_token}}
 
-    <h2>Inclusão de Telas</h2>
+                    {{form.tela.label}} {{form.tela}}<br><br>
 
-    {{form.perfil.label}} {{form.perfil}}<br>
-    {{form.tela.label}} {{form.tela}}<br>
-
-    <input type="submit" value="Inclusão"/>
-
-</form>
-
-{% if perfilacesso_id == 0 %}
-<form action="{{ url_for('usuario.cadastrar_lote_perfis') }}" enctype="multipart/form-data" method="POST">
-    {{ form.file.label }} {{ form.file }}
-    <input type="submit" value="Cadastrar_Lote"/>
-</form>
-<a href="{{ url_for('usuario.gerar_padrao_perfis') }}">Gerar Arquivo Base</a>
-<br>
-<br>
-{% endif %}
-
-
-<a href="{{ url_for('usuario.telaperfilacesso_listar', perfilacesso_id=perfilacesso_id) }}">Voltar</a>
-
-</body>
-{% endblock %}
+                    <input type="submit" value="Inclusão"/>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

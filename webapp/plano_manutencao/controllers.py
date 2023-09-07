@@ -53,6 +53,7 @@ def atividade_editar(plano_id, listaatividade_id, atividade_id, tipo):
     atividade = Atividade()
     form_atividade = AtividadeForm()
     totalOS = 0
+    atualizar_revisao = False
 
     if atividade_id > 0:
         # Verifica se a atividade existe no BD
@@ -87,12 +88,13 @@ def atividade_editar(plano_id, listaatividade_id, atividade_id, tipo):
         # Verifica se a lista de atividades existe
         if listaatividade:
 
-            # se não houver ordens de serviços vinculadas a lista
+            # calcula o total de ordens vinculadas a esta lista
             totalOS = ListaAtividade.query.filter(
                 ListaAtividade.nome == listaatividade.nome,
                 OrdemServico.listaatividade_id == ListaAtividade.id
             ).count()
 
+            # se não houver ordens de serviços vinculadas a lista
             if totalOS == 0:
                 # vincula a lista de atividade na atividade,
                 form_atividade.listaatividade_id.data = listaatividade_id
@@ -106,7 +108,7 @@ def atividade_editar(plano_id, listaatividade_id, atividade_id, tipo):
     if listaatividade_id == 0 or lista_new:
         listaatividade_id_nova = 0
         if totalOS > 0:
-            # Gera as copias das atividades caso exista para a nova lista
+            # Gera as copias das atividades caso exista OS vinculadas nesta nova lista
             listaatividade_id_nova = ListaAtividade.copiar_lista(listaatividade_id, True)
             listaatividade = ListaAtividade.query.filter_by(id=listaatividade_id_nova).one_or_none()
 
@@ -122,6 +124,7 @@ def atividade_editar(plano_id, listaatividade_id, atividade_id, tipo):
         else:
             listaatividade = ListaAtividade.query.filter_by(id=listaatividade.id).one_or_none()
             form_atividade.listaatividade_id.data = listaatividade.id
+            atualizar_revisao = True
 
         if tipo == "excluir":
             # Verifica se o plano existe
@@ -129,7 +132,7 @@ def atividade_editar(plano_id, listaatividade_id, atividade_id, tipo):
             if plano:
                 # Alterar a referencia da lista no plano
                 if listaatividade_id_nova > 0:
-                    plano.alterar_lista(listaatividade.id)
+                    plano.alterar_lista(listaatividade.id, True)
 
                 # Calcula a quantidade de atividades na lista
                 totalATV = Atividade.query.filter_by(listaatividade_id=listaatividade.id).count()
@@ -151,7 +154,7 @@ def atividade_editar(plano_id, listaatividade_id, atividade_id, tipo):
             plano = PlanoManutencao.query.filter_by(id=plano_id).one_or_none()
             if plano:
                 # alterar a listaatividade do plano
-                plano.alterar_lista(listaatividade.id)
+                plano.alterar_lista(listaatividade.id, atualizar_revisao)
             flash("Atividade cadastrada no plano de manutenção", category="success")
         else:
             # Se ocorrer um erro ao salvar a atividade, exclui
@@ -163,58 +166,94 @@ def atividade_editar(plano_id, listaatividade_id, atividade_id, tipo):
     return redirect(url_for("plano_manutencao.plano_editar", plano_id=plano_id))
 
 
-@plano_manutencao_blueprint.route(
-    '/listaatividade_editar/<int:ordem_id>/<int:listaatividade_id>/<tramitacao_sigla>/',
-    methods=['GET', 'POST'])
+@plano_manutencao_blueprint.route('/listaatividade_editar/<int:ordem_id>/<int:listaatividade_id>/<tramitacao_sigla>/',
+                                  methods=['GET', 'POST'])
 @login_required
 @has_view('Plano de Manutenção')
 def listaatividade_editar(ordem_id, listaatividade_id, tramitacao_sigla):
     form_listaatividade = ListaAtividadeForm()
 
-    listaatividade = ListaAtividade.query.filter_by(id=listaatividade_id).one_or_none()
-    if listaatividade:
-        tipo_situacao = TipoSituacaoOrdem.query.filter_by(sigla=tramitacao_sigla).one_or_none()
-        if tipo_situacao:
-            # instanciar o formulário
-            form_atividade = AtividadeForm()
+    # verifica a existência da ordem de serviço
+    ordem = OrdemServico.query.filter_by(id=ordem_id).one_or_none()
+    if ordem:
 
-            # coletar as atividades da lista
-            atividades = Atividade.query.filter(
-                OrdemServico.id == ordem_id,
-                ListaAtividade.id == OrdemServico.listaatividade_id,
-                Atividade.listaatividade_id == ListaAtividade.id
-            ).all()
+        # verifica se a ordem não é proviniente de um plano
+        if not ordem.tipoordem.plano:
+            #   cria uma listaatividade nova
+            listaatividade = ListaAtividade()
+            listaatividade.alterar_atributos()
 
-            # coletar os valores preenchidos
-            string_valores = request.form['valores']
-            list_valores = string_valores.split(";")
+            if listaatividade:
+                tipo_situacao = TipoSituacaoOrdem.query.filter_by(sigla=tramitacao_sigla).one_or_none()
+                if tipo_situacao:
+                    # vincula a listaatividade na ordem
+                    ordem.listaatividade_id = listaatividade.id
+                    if not ordem.salvar():
+                        flash("Erro ao atualizar a ordem de serviço", category="danger")
 
-            for x in range(len(atividades)):
-                # coletar o tipo de valor
-                tipo_valor = list_valores[x].split(":")
-                # inserir o valor no local correto do objeto
-                match tipo_valor[0]:
-                    case 'valorbinario_id':
-                        atividades[x].valorbinario_id = tipo_valor[1]
-                    case 'valorinteiro':
-                        atividades[x].valorinteiro = tipo_valor[1]
-                    case 'valordecimal':
-                        atividades[x].valordecimal = tipo_valor[1]
-                    case 'valortexto':
-                        atividades[x].valortexto = tipo_valor[1]
-                # salvar a atividade
-                if not atividades[x].salvar():
-                    flash("Valores da atividade não registrado", category="danger")
+                    # Salvar as informações do campo observação
+                    listaatividade.alterar_observacao(form_listaatividade.observacao.data)
+                    if not listaatividade.salvar():
+                        flash("Erro ao salvar nova lista de atividades", category="danger")
 
-            # Salvar as informações do campo observação
-            listaatividade.alterar_observacao(form_listaatividade.observacao.data)
+                    # gera a nova tramitação
+                    return redirect(
+                        url_for("ordem_servico.tramitacao", ordem_id=ordem_id, tipo_situacao_id=tipo_situacao.id))
+                else:
+                    flash("Tipo Situação não cadastrada", category="danger")
+            else:
+                flash("Lista de atividades não cadastrada", category="danger")
 
-            # gera a nova tramitação
-            return redirect(url_for("ordem_servico.tramitacao", ordem_id=ordem_id, tipo_situacao_id=tipo_situacao.id))
         else:
-            flash("Tipo de Tramitação não cadastrada", category="danger")
+            # verifica a existencia da lista de atividade
+            listaatividade = ListaAtividade.query.filter_by(id=listaatividade_id).one_or_none()
+            if listaatividade:
+                # verifica a existencia do tipo de situação da ordem
+                tipo_situacao = TipoSituacaoOrdem.query.filter_by(sigla=tramitacao_sigla).one_or_none()
+                if tipo_situacao:
+                    # instanciar o formulário
+                    form_atividade = AtividadeForm()
+
+                    # coletar as atividades da lista
+                    atividades = Atividade.query.filter(
+                        OrdemServico.id == ordem_id,
+                        ListaAtividade.id == OrdemServico.listaatividade_id,
+                        Atividade.listaatividade_id == ListaAtividade.id
+                    ).all()
+
+                    # coletar os valores preenchidos
+                    string_valores = request.form['valores']
+                    list_valores = string_valores.split(";")
+
+                    for x in range(len(atividades)):
+                        # coletar o tipo de valor
+                        tipo_valor = list_valores[x].split(":")
+                        # inserir o valor no local correto do objeto
+                        match tipo_valor[0]:
+                            case 'valorbinario_id':
+                                atividades[x].valorbinario_id = tipo_valor[1]
+                            case 'valorinteiro':
+                                atividades[x].valorinteiro = tipo_valor[1]
+                            case 'valordecimal':
+                                atividades[x].valordecimal = tipo_valor[1]
+                            case 'valortexto':
+                                atividades[x].valortexto = tipo_valor[1]
+                        # salvar a atividade
+                        if not atividades[x].salvar():
+                            flash("Valores da atividade não registrado", category="danger")
+
+                    # Salvar as informações do campo observação
+                    listaatividade.alterar_observacao(form_listaatividade.observacao.data)
+
+                    # gera a nova tramitação
+                    return redirect(
+                        url_for("ordem_servico.tramitacao", ordem_id=ordem_id, tipo_situacao_id=tipo_situacao.id))
+                else:
+                    flash("Tipo de Tramitação não cadastrada", category="danger")
+            else:
+                flash("Lista de Atividades não cadastrada", category="danger")
     else:
-        flash("Lista de Atividades não não cadastrada", category="danger")
+        flash("Ordem de Serviço não cadastrada", category="danger")
 
     return redirect(url_for("ordem_servico.ordem_listar"))
 

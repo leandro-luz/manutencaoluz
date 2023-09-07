@@ -247,7 +247,7 @@ class PlanoManutencao(db.Model):
     ativo = db.Column(db.Boolean, nullable=False, default=False)
     total_tecnico = db.Column(db.Integer(), nullable=False)
     tempo_estimado = db.Column(db.Integer(), nullable=False)
-
+    revisao = db.Column(db.Integer(), nullable=False, default=0)
 
     tipodata_id = db.Column(db.Integer(), db.ForeignKey("tipo_data.id"), nullable=False)
     periodicidade_id = db.Column(db.Integer(), db.ForeignKey("periodicidade.id"), nullable=False)
@@ -276,8 +276,10 @@ class PlanoManutencao(db.Model):
         self.total_tecnico = form.total_tecnico.data
         self.tempo_estimado = form.tempo_estimado.data
 
-    def alterar_lista(self, listaatividade_id):
+    def alterar_lista(self, listaatividade_id, alterar_revisao):
         self.listaatividade_id = listaatividade_id
+        if alterar_revisao:
+            self.revisao += 1
         self.salvar()
 
     def alterar_ativo(self, ativo):

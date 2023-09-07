@@ -55,10 +55,12 @@
                 </form>
                 <br>
                 {% for nova_t in novas_tramitacoes %}
-                {% if not nova_t.nome == 'Concluída' %}
+                {% if not nova_t.sigla == 'CONC' %}
                 <a href="{{ url_for('ordem_servico.tramitacao', ordem_id=ordem.id, tipo_situacao_id=nova_t.id) }}">
-                    <button class="btn btn-info" onclick="coletar_valores_atividade()"> {{ nova_t.nome }}</button>
+                    <button class="btn btn-info" onclick="coletar_valores_atividade()"> {{ nova_t.sigla }}</button>
                 </a>
+
+
                 {% endif %}
                 {% endfor %}
 

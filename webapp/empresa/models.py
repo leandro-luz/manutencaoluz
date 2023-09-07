@@ -126,6 +126,7 @@ class Empresa(db.Model):
     grupo = db.relationship("Grupo", back_populates="empresa")
     pavimento = db.relationship("Pavimento", back_populates="empresa")
     setor = db.relationship("Setor", back_populates="empresa")
+    local = db.relationship("Local", back_populates="empresa")
 
     supplier = db.relationship("Supplier", back_populates="empresa")
 
@@ -219,3 +220,14 @@ class Empresa(db.Model):
     def listar_empresas_by_plano(value):
         """    Função que retorna uma lista de empresas com base no identificador    """
         return Empresa.query.filter_by(contrato_id=value).all()
+
+    @staticmethod
+    def inativar_by_contrato(contrato_id):
+        """Função que inativa os empresas vinculadas a um contrato"""
+        # Busca as empresas vinculados ao contrato
+        empresas = Empresa.query.filter_by(contrato_id=contrato_id).all()
+        if empresas:
+            # Inativa a empresa
+            for empresa in empresas:
+                empresa.ativo = False
+                empresa.salvar()

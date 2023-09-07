@@ -1,9 +1,10 @@
 {% extends "sistema_base.html" %}
 {% block body %}
 <body>
+<a href="{{ url_for('equipamento.equipamento_editar', equipamento_id=equipamento_id) }}">Voltar</a>
 
 <h2> LISTA DE SETORES </h2>
-<a href="{{ url_for('equipamento.setor_editar', setor_id=0, localizacao_id=localizacao_id, equipamento_id=equipamento_id) }}">
+<a href="{{ url_for('equipamento.setor_editar', setor_id=0, equipamento_id=equipamento_id) }}">
     Adicionar
 </a>
 
@@ -15,6 +16,7 @@
     <tr>
         <th scope="col">NOME</th>
         <th scope="col">SIGLA</th>
+        <th scope="col"></th>
     </tr>
     </thead>
 
@@ -24,12 +26,19 @@
         <td>{{ setor.nome }}</td>
         <td>{{ setor.sigla }}</td>
 
+        <td>
+            <a href="{{ url_for('equipamento.setor_editar', setor_id=setor.id, equipamento_id=equipamento_id) }}">
+                <span data-tooltip="Informações">
+                    <i class="bi-caret-right fs-6"></i>
+                </span>
+            </a>
+        </td>
+
     </tr>
     {% endfor %}
     </tbody>
 </table>
 
-<a href="{{ url_for('equipamento.localizacao_editar', localizacao_id=localizacao_id, equipamento_id=equipamento_id) }}">Voltar</a>
 
 </body>
 <script src="/static/js/exportar_consulta.js" type="text/javascript"></script>

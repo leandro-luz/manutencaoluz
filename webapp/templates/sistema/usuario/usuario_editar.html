@@ -1,24 +1,33 @@
 {% extends "sistema_base.html" %}
 {% block body %}
 <body>
+<a href="{{ url_for('usuario.usuario_listar') }}">Voltar</a>
 <form action="{{ url_for('usuario.usuario_editar', usuario_id=usuario.id) }}" method="POST">
     {{form.csrf_token}}
 
-    {% if usuario.id == 0 %}
-    <h2>Cadastro de Usuário</h2>
-    {% else %}
-    <h2>Usuário</h2>
-    {% endif %}
+
+    <h2>Cadastro do Usuário</h2>
 
     {{form.nome.label}} {{form.nome(size=50)}}<br>
     {{form.email.label}} {{form.email(size=50)}}<br>
 
-    {{form.perfil.label}} {{form.perfil}}
+    {{form.perfilacesso.label}} {{form.perfilacesso}}
     <a href="{{ url_for('usuario.perfilacesso_listar', usuario_id=usuario.id) }}">
             <span data-tooltip="Atualizar">
                 <i class="bi-caret-down fs-6"></i>
             </span>
     </a> <br>
+
+    {% if ppm %}
+    {{form.perfil_manutentor.label}} {{form.perfil_manutentor}}
+    {% if usuario.id > 0 %}
+    <a href="{{ url_for('usuario.perfilmanutentorusuario_listar', usuario_id=usuario.id) }}">
+                <span data-tooltip="Atualizar">
+                    <i class="bi-caret-down fs-6"></i>
+                </span>
+    </a> <br>
+    {% endif %}
+    {% endif %}
 
     {{form.ativo.label}} {{form.ativo(size=20)}}<br>
 
@@ -40,8 +49,6 @@
 <br>
 <br>
 {% endif %}
-
-<a href="{{ url_for('usuario.usuario_listar') }}">Voltar</a>
 
 </body>
 

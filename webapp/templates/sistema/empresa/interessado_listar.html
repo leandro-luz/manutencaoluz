@@ -1,6 +1,7 @@
 {% extends "sistema_base.html" %}
 {% block body %}
 <body>
+<a href="{{url_for('sistema.index')}}">Voltar</a>
 
 <h2> INTERESSADOS </h2>
 
@@ -43,9 +44,6 @@
     {% endfor %}
     </tbody>
 </table>
-
-<a href="{{url_for('sistema.index')}}">Voltar</a>
-<br>
 
 
 </body>

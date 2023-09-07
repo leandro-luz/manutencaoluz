@@ -1,6 +1,7 @@
 {% extends "sistema_base.html" %}
 {% block body %}
 <body>
+<a href="{{ url_for('empresa.empresa_listar') }}">Voltar</a>
 <form action="{{ url_for('empresa.empresa_editar', empresa_id=empresa.id) }}" method="POST">
     {{form.csrf_token}}
 
@@ -66,8 +67,6 @@
 <br>
 {% endif %}
 
-
-<a href="{{ url_for('empresa.empresa_listar') }}">Voltar</a>
 
 </body>
 

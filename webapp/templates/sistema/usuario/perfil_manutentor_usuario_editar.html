@@ -1,0 +1,19 @@
+{% extends "sistema_base.html" %}
+{% block body %}
+<body>
+<a href="{{ url_for('usuario.perfilmanutentorusuario_listar', usuario_id=usuario_id) }}">Voltar</a>
+
+<form action="{{ url_for('usuario.perfilmanutentorusuario_editar', usuario_id=usuario_id) }}"
+      method="POST">
+    {{form.csrf_token}}
+
+    <h2>INCLUSÃO DE PERFIL DO MANUTENTOR</h2>
+
+    {{ form.perfilmanutentor.label }} {{ form.perfilmanutentor }} <br><br>
+
+    <input type="submit" value="Inclusão"/>
+
+</form>
+
+</body>
+{% endblock %}

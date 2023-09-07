@@ -6,6 +6,7 @@ import random
 from flask import flash
 from webapp.usuario import bcrypt, AnonymousUserMixin, jwt
 from webapp import db
+from webapp.empresa.models import Empresa
 from webapp.contrato.models import Tela, Telacontrato
 from flask_login import current_user
 from flask_jwt_extended import create_access_token, get_jwt_identity
@@ -44,27 +45,26 @@ class PerfilAcesso(db.Model):
         else:
             self.ativo = True
 
-    def salvar(self, new) -> bool:
+    def salvar(self) -> bool:
         """    Função para salvar no banco de dados o objeto"""
         try:
-            nome = self.nome
             db.session.add(self)
             db.session.commit()
-            if new:
-                perfil_ = PerfilAcesso.query.filter_by(nome=nome, empresa_id=current_user.empresa.id).one_or_none()
-                telascontrato = Telacontrato.query.filter_by(contrato_id=current_user.empresa.contrato.id).all()
-
-                for telacontrato in telascontrato:
-                    telaperfilacesso = TelaPerfilAcesso()
-                    telaperfilacesso.ativo = False
-                    telaperfilacesso.perfilacesso_id = perfil_.id
-                    telaperfilacesso.tela_id = telacontrato.tela_id
-                    if not telaperfilacesso.salvar():
-                        flash("Tela do perfil não cadastrado", category="danger")
 
             return True
         except Exception as e:
             log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
+            db.session.rollback()
+            return False
+
+    def excluir(self) -> bool:
+        """    Função para retirar do banco de dados o objeto"""
+        try:
+            db.session.delete(self)
+            db.session.commit()
+            return True
+        except Exception as e:
+            log.error(f'Erro Deletar objeto no banco de dados: {self.__repr__()}:{e}')
             db.session.rollback()
             return False
 
@@ -74,8 +74,67 @@ class PerfilAcesso(db.Model):
         self.empresa_id = empresa_id
 
     @staticmethod
+    def inativar_by_id(perfilacesso_id):
+        perfilacesso = PerfilAcesso.query.filter_by(id=perfilacesso_id).one_or_none()
+        perfilacesso.ativo = False
+        perfilacesso.salvar()
+
+    @staticmethod
     def listar_regras_by_empresa(empresa_id: int):
         return PerfilAcesso.query.filter_by(empresa_id=empresa_id).all()
+
+
+class PerfilManutentor(db.Model):
+    """    Classe do perfil de acesso    """
+
+    __tablename__ = 'perfil_manutentor'
+    id = db.Column(db.Integer(), primary_key=True)
+    nome = db.Column(db.String(50), unique=False, index=True)
+
+    tiposituacaoordemperfilmanutentor = db.relationship("TipoSituacaoOrdemPerfilManutentor",
+                                                        back_populates="perfilmanutentor")
+    perfilmanutentorusuario = db.relationship("PerfilManutentorUsuario", back_populates="perfilmanutentor")
+
+    def __repr__(self) -> str:
+        return f'<PerfilManutentor: {self.id}-{self.nome}>'
+
+
+class PerfilManutentorUsuario(db.Model):
+    """    Classe relacionamento entre Tela e PerfilAcesso    """
+    __tablename__ = 'perfil_manutentor_usuario'
+    id = db.Column(db.Integer(), primary_key=True)
+    ativo = db.Column(db.Boolean, nullable=False, default=False)
+
+    perfilmanutentor_id = db.Column(db.Integer(), db.ForeignKey("perfil_manutentor.id"), nullable=False)
+    usuario_id = db.Column(db.Integer(), db.ForeignKey("usuario.id"), nullable=False)
+
+    perfilmanutentor = db.relationship("PerfilManutentor", back_populates="perfilmanutentorusuario")
+    usuario = db.relationship("Usuario", back_populates="perfilmanutentorusuario")
+
+    def __repr__(self) -> str:
+        return f'<PerfilManutentorUsuario: {self.id}-{self.perfilmanutentor_id}-{self.usuario_id}>'
+
+    def alterar_atributos(self, form, usuario_id):
+        self.perfilmanutentor_id = form.perfilmanutentor.data
+        self.usuario_id = usuario_id
+
+    def salvar(self) -> bool:
+        """    Função para salvar no banco de dados o objeto    """
+        try:
+            db.session.add(self)
+            db.session.commit()
+            return True
+        except Exception as e:
+            log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
+            db.session.rollback()
+            return False
+
+    def ativar_desativar(self):
+        """Função para ativar e desativar"""
+        if self.ativo:
+            self.ativo = False
+        else:
+            self.ativo = True
 
 
 class Senha(db.Model):
@@ -176,11 +235,13 @@ class Usuario(db.Model):
     senha = db.relationship("Senha", back_populates="usuario")
     ordemservico = db.relationship("OrdemServico", back_populates="usuario")
     tramitacaoordem = db.relationship("TramitacaoOrdem", back_populates="usuario")
+    perfilmanutentorusuario = db.relationship("PerfilManutentorUsuario", back_populates="usuario")
 
     def __repr__(self):
         return f'<Usuario: {self.id}-{self.nome}>'
 
-    def usuario_administrador(self, nome: str, email: str, empresa_id: int, perfilacesso_id: int, senha_id: int) -> None:
+    def usuario_administrador(self, nome: str, email: str, empresa_id: int, perfilacesso_id: int,
+                              senha_id: int) -> None:
         """    Função para cadastrar as informações de administrador     """
         self.nome = nome.upper()
         self.email = email.upper()
@@ -217,7 +278,7 @@ class Usuario(db.Model):
         """
         Verifica se a tela está cadastrada para o perfil e se está ativo
         """
-        for telacontrato in TelaPerfilAcesso.query.filter_by(perfilacesso_id=self.perfilacesso_id, ativo=True).all():
+        for telacontrato in TelaPerfilAcesso.query.filter_by(perfilacesso_id=self.perfilacesso_id).all():
             tela = Tela.query.filter_by(id=telacontrato.tela_id).one_or_none()
             if tela.nome == nome:
                 return True
@@ -286,16 +347,58 @@ class Usuario(db.Model):
         """Função retorna as telas permitidas ao usuário em ordem"""
         telas = []
         lista_telas = Tela.query.filter(Tela.id == TelaPerfilAcesso.tela_id,
-                                        TelaPerfilAcesso.perfilacesso_id == self.perfilacesso_id).order_by(Tela.posicao.asc())
+                                        # TelaPerfilAcesso.ativo == True,
+                                        TelaPerfilAcesso.perfilacesso_id == self.perfilacesso_id).order_by(
+            Tela.posicao.asc())
         telas = [{'nome': tela.nome, 'url': tela.url, 'icon': tela.icon} for tela in lista_telas]
         return telas
+
+    @staticmethod
+    def verifica_perfil_manutentor(perfil_nome):
+        """Função que verifica se o usuário tem o perfil de manutentor e está ativo"""
+        resultado = False
+        if PerfilManutentor.query.filter(
+                PerfilManutentor.nome == perfil_nome,
+                PerfilManutentorUsuario.perfilmanutentor_id == PerfilManutentor.id,
+                PerfilManutentorUsuario.ativo == True,
+                Usuario.id == PerfilManutentorUsuario.usuario_id,
+                Usuario.id == current_user.id
+        ).one_or_none():
+            resultado = True
+
+        return resultado
+
+    @staticmethod
+    def verifica_usuario_acesso_tela(tela_nome):
+        """Função que verifica se o usuário tem perfil de acesso e está ativo"""
+        resultado = False
+        if TelaPerfilAcesso.query.filter(
+                # TelaPerfilAcesso.ativo == True,
+                TelaPerfilAcesso.tela_id == Tela.id,
+                Tela.nome == tela_nome,
+                Usuario.perfilacesso_id == TelaPerfilAcesso.perfilacesso_id,
+                Usuario.id == current_user.id
+        ).one_or_none():
+            resultado = True
+
+        return resultado
+
+    @staticmethod
+    def inativar_by_perfilacesso(perfilacesso_id):
+        """Função que inativa os usuarios vinculados a um perfilacesso"""
+        # Busca os usuarios vinculados ao perfilacesso
+        usuarios = Usuario.query.filter_by(perfilacesso_id=perfilacesso_id).all()
+        if usuarios:
+            # Inativa o usuário
+            for usuario in usuarios:
+                usuario.ativo = False
+                usuario.salvar()
 
 
 class TelaPerfilAcesso(db.Model):
     """    Classe relacionamento entre Tela e PerfilAcesso    """
     __tablename__ = 'tela_perfil_acesso'
     id = db.Column(db.Integer(), primary_key=True)
-    ativo = db.Column(db.Boolean, default=True)
 
     perfilacesso_id = db.Column(db.Integer(), db.ForeignKey("perfil_acesso.id"), nullable=False)
     tela_id = db.Column(db.Integer(), db.ForeignKey("tela.id"), nullable=False)
@@ -317,8 +420,19 @@ class TelaPerfilAcesso(db.Model):
             db.session.rollback()
             return False
 
-    def alterar_atributos(self, form):
-        self.perfilacesso_id = form.perfilacesso.data
+    def excluir(self) -> bool:
+        """    Função para retirar do banco de dados o objeto"""
+        try:
+            db.session.delete(self)
+            db.session.commit()
+            return True
+        except Exception as e:
+            log.error(f'Erro Deletar objeto no banco de dados: {self.__repr__()}:{e}')
+            db.session.rollback()
+            return False
+
+    def alterar_atributos(self, form, perfilacesso_id):
+        self.perfilacesso_id = perfilacesso_id
         self.tela_id = form.tela.data
 
     def ativar_desativar(self):
@@ -326,6 +440,12 @@ class TelaPerfilAcesso(db.Model):
             self.ativo = False
         else:
             self.ativo = True
+
+    @staticmethod
+    def excluir_by_id(telaperfilacesso_id):
+        """Função que inativa uma telaperfilacesso pelo id"""
+        telaperfilacesso = TelaPerfilAcesso.query.filter_by(id=telaperfilacesso_id).one_or_none()
+        telaperfilacesso.excluir()
 
     @staticmethod
     def retornar_name_tela(id_):
@@ -338,7 +458,8 @@ class TelaPerfilAcesso(db.Model):
 
     @staticmethod
     def save_change(ativo: bool, kwargs) -> None:
-        telaperfilacesso = TelaPerfilAcesso.query.filter_by(perfilacesso_id=kwargs['perfilacesso_id'], tela_id=kwargs['tela_id']).one_or_none()
+        telaperfilacesso = TelaPerfilAcesso.query.filter_by(perfilacesso_id=kwargs['perfilacesso_id'],
+                                                            tela_id=kwargs['tela_id']).one_or_none()
 
         if telaperfilacesso:  # se exister a tela para o perfil
             if ativo:  # é para ativar
@@ -356,3 +477,34 @@ class TelaPerfilAcesso(db.Model):
                 telaperfilacesso.ativo = False  # deixa desativada a tela
         if telaperfilacesso.salvar():
             flash("Tela do perfil não cadastrada", category="danger")
+
+    @staticmethod
+    def contagem_telas_ativas(perfilacesso_id):
+        return TelaPerfilAcesso.query.filter_by(perfilacesso_id=perfilacesso_id).count()
+
+    @staticmethod
+    def verifica_usuarios_vinculados(perfilacesso_id):
+        """Função que verifica se o perfil não tem tela ativas e inativa os usuarios vinculados"""
+        # Caso não exista telas ativas para o perfil
+        if TelaPerfilAcesso.contagem_telas_ativas(perfilacesso_id) == 0:
+            # Inativa o perfilacesso
+            PerfilAcesso.inativar_by_id(perfilacesso_id)
+            # Busca os usuarios vinculados ao perfilacesso e inativa eles
+            Usuario.inativar_by_perfilacesso(perfilacesso_id)
+
+    @staticmethod
+    def inativar_by_contrato(tela_id, contrato_id):
+        """Função que inativa os perfisacesso e usuários que estiverem vinculados a tela e contrato"""
+
+        # Localiza as telas vinculadas a um perfilacesso vinculados a um contrato
+        telasperfilacesso = TelaPerfilAcesso.query.filter(
+            TelaPerfilAcesso.tela_id == tela_id,
+            TelaPerfilAcesso.perfilacesso_id == PerfilAcesso.id,
+            PerfilAcesso.empresa_id == Empresa.id,
+            Empresa.contrato_id == contrato_id).all()
+
+        for telaperfilacesso in telasperfilacesso:
+            # Inativa todas as telas encontradas
+            telaperfilacesso.excluir_by_id(telaperfilacesso.id)
+            # Verifica se o perfilacesso está sem telas ativas
+            TelaPerfilAcesso.verifica_usuarios_vinculados(telaperfilacesso.perfilacesso_id)

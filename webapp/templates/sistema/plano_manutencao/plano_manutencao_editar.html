@@ -1,11 +1,11 @@
 {% extends "sistema_base.html" %}
 {% block body %}
 <body>
+<a href="{{ url_for('plano_manutencao.plano_listar') }}">Voltar</a>
 <form action="{{ url_for('plano_manutencao.plano_editar', plano_id=plano.id) }}" method="POST">
     {{form.csrf_token}}
     {% if plano.id == 0 %}
     <h2>Cadastro de Plano de Manutenção</h2>
-
 
     {{form.nome.label}} {{form.nome(size=80)}}<br>
     {{form.codigo.label}} {{form.codigo(size=80)}}<br>
@@ -15,12 +15,7 @@
     {{form.tipodata.label}} {{form.tipodata}}<br>
     {{form.data_inicio.label}} {{form.data_inicio}}<br>
     {{form.periodicidade.label}} {{form.periodicidade}}<br>
-    {{form.equipamento.label}} {{form.equipamento}}
-    <a href="#">
-        <span data-tooltip="Atualizar">
-            <i class="bi-caret-down fs-6"></i>
-        </span>
-    </a> <br>
+    {{form.equipamento.label}} {{form.equipamento}}<br>
 
     <input type="submit" value="Cadastrar"/>
     {% endif %}
@@ -39,14 +34,16 @@ Tipo de Data Inicial: {{ plano.tipodata.nome }}<br>
 Data Inicial: {{ plano.data_inicio }}<br>
 Periodicidade: {{ plano.periodicidade.nome }}<br>
 Equipamento: {{ plano.equipamento.descricao_curta }}<br>
+Localização: {{ plano.equipamento.setor.nome }} /
+{{ plano.equipamento.local.nome }} /
+{{ plano.equipamento.pavimento.nome }}<br>
 Ativo: {{ plano.ativo }}<br><br>
-
 
 <h5>LISTA DE ATIVIDADES</h5>
 
 
 {% if plano.listaatividade.id %}
-Referência: #{{plano.listaatividade.id}} <br>
+Revisão: #{{plano.revisao}} <br>
 Atualizado em: {{plano.listaatividade.data}} <br>
 {% endif %}
 
@@ -118,7 +115,7 @@ Atualizado em: {{plano.listaatividade.data}} <br>
 <br>
 {% endif %}
 
-<a href="{{ url_for('plano_manutencao.plano_listar') }}">Voltar</a>
+
 
 </body>
 

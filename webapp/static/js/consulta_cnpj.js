@@ -1,7 +1,6 @@
 function pesquisar_cnpj() {
     cnpj_select = document.getElementById('cnpj')
     var cnpj = cnpj_select.value.replace(/\D/g, '');
-
     //Verifica se campo cep possui valor informado.
         if (cnpj != "") {
             //Expressão regular para validar o CNPJ.
@@ -10,7 +9,6 @@ function pesquisar_cnpj() {
              //Valida o formato do CEP.
             if(validacnpj.test(cnpj)) {
                 //Preenche os campos com "..." enquanto consulta webservice.
-
                 document.getElementById('razao_social').value="...";
                 document.getElementById('nome_fantasia').value="...";
                 document.getElementById('data_abertura').value="...";
@@ -29,16 +27,13 @@ function pesquisar_cnpj() {
                 document.getElementById('bairro').value="...";
                 document.getElementById('municipio').value="...";
                 document.getElementById('uf').value="...";
-                document.getElementById('localizacao').value="...";
                 document.getElementById('email').value="...";
                 document.getElementById('telefone').value="...";
 
                 //Cria um elemento javascript.
                 var script_cnpj = document.createElement('script');
-
                 //Sincroniza com o callback.
                 script_cnpj.src = 'https://receitaws.com.br/v1/cnpj/' + cnpj +'?callback=callback_cnpj';
-
                 //Insere script no documento e carrega o conteúdo.
                 document.body.appendChild(script_cnpj);
             }

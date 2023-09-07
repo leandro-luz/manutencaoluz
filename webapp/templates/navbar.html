@@ -22,7 +22,8 @@
                             <b>{{ current_user.nome }}</b>
                         </a>
                         <ul aria-labelledby="dropdownMenuButton1" class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('usuario.usuario', usuario_id=current_user.id) }}">Conta</a>
+                            <li><a class="dropdown-item"
+                                   href="{{ url_for('usuario.usuario', usuario_id=current_user.id) }}">Conta</a>
                             </li>
                             <li><a class="dropdown-item" href="{{ url_for('usuario.trocar_senha') }}">Trocar senha</a>
                             </li>
@@ -37,6 +38,11 @@
                     <a class="nav-link" href="#">
                         <i class="bi bi-chat-left"></i>
                         <b>Ajuda</b>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{url_for('usuario.login')}}">
+                        <i class="bi-bootstrap-reboot"></i>
                     </a>
                 </li>
                 {% else %}
