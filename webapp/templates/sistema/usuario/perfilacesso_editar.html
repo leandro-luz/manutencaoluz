@@ -1,79 +1,115 @@
 {% extends "sistema_base.html" %}
 {% block body %}
 <body>
-<a href="{{ url_for('usuario.perfilacesso_listar', usuario_id=usuario_id) }}">Voltar</a>
-<form action="{{ url_for('usuario.perfilacesso_editar', perfilacesso_id=perfilacesso.id, usuario_id=usuario_id) }}" method="POST">
-    {{form.csrf_token}}
 
-    {% if perfilacesso.id == 0 %}
-    <h2>Cadastro de PerfilAcesso</h2>
-    {% else %}
-    <h2>PerfilAcesso</h2>
-    {% endif %}
+<a href="{{ url_for('usuario.perfilacesso_listar') }}">
+    <span data-tooltip="VOLTAR">
+        <i class="bi-backspace fs-6"></i>
+    </span>
+</a>
 
-    {{form.nome.label}} {{form.nome(size=50)}}<br>
-    {{form.descricao.label}} {{form.descricao(size=50)}}<br>
+<div class="container">
+    <div class="row">
+        <div class="col-9">
+            <h2>PERFIL DE ACESSO</h2>
+        </div>
+    </div>
 
-    {% if perfilacesso.id == 0 %}
-    <input type="submit" value="Cadastrar"/>
-    {% else %}
+    <div class="row">
+        <div class="col-4">
+            <form action="{{ url_for('usuario.perfilacesso_editar', perfilacesso_id=perfilacesso.id) }}" method="POST">
+                {{form.csrf_token}}
 
-    {{form.tela.label}} {{form.tela}}
-    <a href="{{ url_for('usuario.telaperfilacesso_listar', perfilacesso_id=perfilacesso.id,  usuario_id=usuario_id) }}">
-                    <span data-tooltip="Atualizar">
-                        <i class="bi-caret-down fs-6"></i>
-                    </span>
-    </a> <br>
-    <input type="submit" value="Atualizar"/>
+                {{form.nome.label}} {{form.nome(size=50)}}<br>
+                {{form.descricao.label}} {{form.descricao(size=50)}}<br>
 
-    <table class="table">
-        <thead>
-        <tr>
-            <th scope="col">USUÁRIO</th>
-            <th scope="col">ATIVO</th>
-        </tr>
-        </thead>
+                <input type="submit" value="Atualizar"/>
+            </form>
+        </div>
+    </div>
 
-        <tbody id="myTable">
-        {% for usuario in usuarios %}
-        <tr>
-            <td>{{ usuario.nome }}</td>
-            {% if usuario.ativo == True %}
-            <td>
-                <a href="#">
-                <span data-tooltip="Ativa">
-                    <i class="bi-hand-thumbs-up fs-6"></i>
-                </span>
-                </a>
-            </td>
-            {% else %}
-            <td>
-                <a href="#">
-                <span data-tooltip="Inativa">
-                    <i class="bi-hand-thumbs-down fs-6"></i>
-                </span>
-                </a>
-            </td>
-            {% endif %}
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    <br>
+    <a>
+        <span data-bs-target="#modal" data-bs-toggle="modal" data-tooltip="INCLUIR TELA">
+            <i class="bi-window fs-4">+</i>
+        </span>
+        {% include "telaperfilacesso_editar.html" %}
+    </a>
 
-    {% endif %}
-</form>
+    <div class="row">
+        <div class="col-4">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">TELAS</th>
+                    <th scope="col">EXCLUIR</th>
+                </tr>
+                </thead>
+
+                <tbody id="myTable">
+                {% for telaperfilacesso in telasperfilacesso %}
+                <tr>
+                    <td>{{ telaperfilacesso.tela.nome }}</td>
+
+                    <td>
+                        <a href="{{ url_for('usuario.telaperfilacesso_excluir',
+                        telaperfilacesso_id=telaperfilacesso.id,
+                        perfilacesso_id=perfilacesso.id) }}">
+                            <span data-tooltip="Desativar">
+                                <i class="bi-trash fs-6"></i>
+                            </span>
+                        </a>
+                    </td>
+
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
 
-{% if perfilacesso.id == 0 %}
-<form action="{{ url_for('usuario.cadastrar_lote_perfis') }}" enctype="multipart/form-data" method="POST">
-    {{ form.file.label }} {{ form.file }}
-    <input type="submit" value="Cadastrar_Lote"/>
-</form>
-<a href="{{ url_for('usuario.gerar_padrao_perfis') }}">Gerar Arquivo Base</a>
-<br>
-<br>
-{% endif %}
+        <div class="col-4">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">USUÁRIO</th>
+                    <th scope="col">ATIVO</th>
+                </tr>
+                </thead>
 
+                <tbody id="tabela_usuarios">
+                {% for usuario in usuarios %}
+                <tr>
+                    <td>{{ usuario.nome }}</td>
+                    {% if usuario.ativo == True %}
+                    <td>
+                        <a href="#">
+                            <span data-tooltip="Ativa">
+                                <i class="bi-hand-thumbs-up fs-6"></i>
+                            </span>
+                        </a>
+                    </td>
+                    {% else %}
+                    <td>
+                        <a href="#">
+                            <span data-tooltip="Inativa">
+                                <i class="bi-hand-thumbs-down fs-6"></i>
+                            </span>
+                        </a>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+
+</div>
 
 </body>
+
+
 {% endblock %}

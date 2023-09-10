@@ -274,7 +274,7 @@ def criar_telasperfil(lista: List[dict]) -> List[TelaPerfilAcesso]:
         telaperfil = TelaPerfilAcesso.query.filter_by(tela_id=tela.id, perfilacesso_id=perfilacesso.id).one_or_none()
 
         if not telaperfil:
-            telasperfis.append(TelaPerfilAcesso(perfilacesso_id=perfilacesso.id, tela_id=tela.id, ativo=True))
+            telasperfis.append(TelaPerfilAcesso(perfilacesso_id=perfilacesso.id, tela_id=tela.id))
 
     try:
         db.session.add_all(telasperfis)

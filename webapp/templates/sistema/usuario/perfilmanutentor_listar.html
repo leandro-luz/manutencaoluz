@@ -2,7 +2,7 @@
 {% block body %}
 <body>
 
-<a href="{{ url_for('usuario.usuario_listar') }}">
+<a href="{{ url_for('usuario.usuario_editar', usuario_id=usuario_id) }}">
     <span data-tooltip="VOLTAR">
         <i class="bi-backspace fs-6"></i>
     </span>
@@ -12,82 +12,63 @@
 <div class="container">
     <div class="row">
         <div class="col-9">
-            <h2> LISTA DOS PERFIS DE ACESSO </h2>
+            <h2> PERFIS DE MANUTENTOR </h2>
         </div>
-
-        <div class="col-4">
-            <input class="form-control" id="myInput" placeholder="Filtrar.." type="text"><br>
-        </div>
+    </div>
 
         <div class="col-2">
             <a>
                <span data-bs-target="#modal" data-bs-toggle="modal" data-tooltip="INCLUIR PERFIL">
                    <i class="bi-person-square fs-4">+</i>
                </span>
-                {% include "perfilacesso_incluir.html" %}
+                {% include "perfilmanutentor_editar.html" %}
             </a>
         </div>
 
-
-    </div>
-
     <div class="row">
-        <div class="col-6">
+        <div class="col-4">
+
             <table class="table">
                 <thead>
                 <tr>
-                    <th scope="col">NOME</th>
+                    <th scope="col">PERFIL</th>
                     <th scope="col">ATIVO</th>
-                    <th scope="col">TOTAL DE USUÁRIOS</th>
                     <th scope="col"></th>
                 </tr>
                 </thead>
 
                 <tbody id="myTable">
-                {% for perfil in perfisacesso %}
+                {% for perfil in perfismanutentor %}
                 <tr>
-                    <td>{{ perfil['perfilacesso'].nome }}</td>
+                    <td>{{ perfil.perfilmanutentor.nome }}</td>
 
-                    {% if perfil['perfilacesso'].ativo == True %}
+                    {% if perfil.ativo == True %}
                     <td>
-                        <a href="{{ url_for('usuario.perfilacesso_ativar', perfilacesso_id=perfil['perfilacesso'].id) }}">
+                        <a href="{{ url_for('usuario.perfilmanutentor_ativar', perfilmanutentorusuario_id=perfil.id, usuario_id=usuario_id) }}">
                             <span data-tooltip="Desativar">
                                 <i class="bi-hand-thumbs-up fs-6"></i>
                             </span>
                         </a>
                     </td>
-
                     {% else %}
                     <td>
-                        <a href="{{ url_for('usuario.perfilacesso_ativar', perfilacesso_id=perfil['perfilacesso'].id) }}">
+                        <a href="{{ url_for('usuario.perfilmanutentor_ativar', perfilmanutentorusuario_id=perfil.id, usuario_id=usuario_id) }}">
                             <span data-tooltip="Ativar">
                                 <i class="bi-hand-thumbs-down fs-6"></i>
                             </span>
                         </a>
                     </td>
-
                     {% endif %}
-                    <td>{{ perfil['total'] }}</td>
-
-                    <td>
-                        <a href="{{ url_for('usuario.perfilacesso_editar', perfilacesso_id=perfil['perfilacesso'].id) }}">
-                            <span data-tooltip="Informações">
-                                <i class="bi-caret-right fs-6"></i>
-                            </span>
-                        </a>
-                    </td>
-
                 </tr>
                 {% endfor %}
                 </tbody>
             </table>
+
         </div>
     </div>
 
 </div>
 
 </body>
-
-<script src="/static/js/filtro_coluna.js" type="text/javascript"></script>
 
 {% endblock %}

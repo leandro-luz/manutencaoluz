@@ -10,6 +10,7 @@ sistema_blueprint = Blueprint(
 
 
 @sistema_blueprint.route('/')
+@login_required
 def index():
     return render_template('sistema_home.html')
 

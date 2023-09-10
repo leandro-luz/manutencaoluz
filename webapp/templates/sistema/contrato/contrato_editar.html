@@ -2,25 +2,32 @@
 {% block body %}
 <body>
 
- <a href="{{ url_for('contrato.contrato_listar') }}">
-    <span data-tooltip="">
-        <i class="bi-backspace fs-6">VOLTAR</i>
+<a href="{{ url_for('contrato.contrato_listar') }}">
+    <span data-tooltip="VOLTAR">
+        <i class="bi-backspace fs-6"></i>
     </span>
- </a>
+</a>
 
-<form action="{{ url_for('contrato.contrato_editar', contrato_id=contrato.id) }}" method="POST">
-    {{form.csrf_token}}
-
-    <h2>EDITAR CONTRATO</h2>
-    {{form.nome.label}} {{form.nome(size=50)}}
-    <input type="submit" value="Atualizar"/><br><br><br>
-</form>
 
 <div class="container">
 
+    <div class="row">
+        <div class="col-10">
+            <h2>EDITAR CONTRATO</h2>
+        </div>
+        <div class="col-6">
+            <form action="{{ url_for('contrato.contrato_editar', contrato_id=contrato.id) }}" method="POST">
+                {{form.csrf_token}}
+                {{form.nome.label}} {{form.nome(size=50)}}
+                <input type="submit" value="Atualizar"/><br><br><br>
+            </form>
+        </div>
+    </div>
+
+
     <a>
-        <span data-bs-target="#modal" data-bs-toggle="modal">
-            <i class="bi-plus-square fs-6"> Incluir Tela</i>
+        <span data-bs-target="#modal" data-bs-toggle="modal"data-tooltip="INCLUIR TELA">
+            <i class="bi-window fs-4">+</i>
         </span>
         {% include "telacontrato_editar.html" %}
     </a>
@@ -57,8 +64,8 @@
             </table>
 
         </div>
-        <div class="col-4">
 
+        <div class="col-4">
             <table class="table">
                 <thead>
                 <tr>

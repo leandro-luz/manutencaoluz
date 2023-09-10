@@ -56,6 +56,8 @@ def contrato_editar(contrato_id: int):
             # Lista de empresas vinculadas ao contrato
             empresas = Empresa.query.filter_by(contrato_id=contrato.id).all()
 
+
+            # LISTA DAS TELAS PARA O CONTRATO
             # busca a lista das telas do contrato
             telas_liberadas = Telacontrato.query.filter_by(contrato_id=contrato_id).all()
 
@@ -71,7 +73,7 @@ def contrato_editar(contrato_id: int):
 
             # Lista de telas permitidas sem repetições
 
-            form_telacontrato.tela.choices = [(tela.id, tela.nome) for tela in telascontrato if
+            form_telacontrato.tela.choices = [(0, '')] + [(tela.id, tela.nome) for tela in telascontrato if
                                               tela.id not in {tl.id for tl in telasexistentes}]
 
         else:
@@ -97,7 +99,7 @@ def contrato_editar(contrato_id: int):
             else:
                 flash("Contrato cadastrado", category="success")
             # retorna após o cadastro ou atualização
-            return redirect(url_for("contrato.contrato_editar", contrato_id=contrato_id))
+            return redirect(url_for("contrato.contrato_listar"))
         else:
             flash("Contrato não cadastrado/atualizado", category="danger")
     else:
@@ -178,19 +180,21 @@ def telacontrato_editar(contrato_id: int):
 
     # instância um formulário de telas de planos de assinatura
     form = TelaContratoForm()
-
     contrato = Contrato.query.filter_by(id=contrato_id).one_or_none()
-    print(contrato)
 
     if contrato:
         # instância uma tela do contrato
         telacontrato = Telacontrato()
-        # altera as informaçoes da tela do contrato com base no formulário de entrada
-        telacontrato.alterar_atributos(form, contrato_id)
-        if telacontrato.salvar():
-            flash("Tela do contrato cadastrada", category="success")
+
+        if form.validate_on_submit():
+            # altera as informaçoes da tela do contrato com base no formulário de entrada
+            telacontrato.alterar_atributos(form, contrato_id)
+            if telacontrato.salvar():
+                flash("Tela do contrato cadastrada", category="success")
+            else:
+                flash("Erro ao cadastrar tela no contrato", category="danger")
         else:
-            flash("Erro ao cadastrar tela no contrato", category="danger")
+            flash_errors(form)
     else:
         flash("Contrato não cadastrado", category="danger")
 

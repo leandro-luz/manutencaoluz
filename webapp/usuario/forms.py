@@ -250,15 +250,18 @@ class PerfilAcessoForm(Form):
 
 
 class TelaPerfilForm(Form):
-    tela = SelectField('Telas', choices=[], coerce=int)
+    tela = SelectField('Telas', choices=[], coerce=int, validate_choice=False)
     submit = SubmitField("Cadastrar")
 
     def validate(self, **kwargs):
         check_validate = super(TelaPerfilForm, self).validate()
-        if not check_validate:
+        if check_validate:
+            if self.tela.data == 0:
+                flash("Tela não selecionada", category="danger")
+                return False
+            return True
+        else:
             return False
-
-        return True
 
 
 class PerfilManutentorForm(Form):
@@ -269,6 +272,7 @@ class PerfilManutentorForm(Form):
     def validate(self, **kwargs):
         # if our validators do not pass
         check_validate = super(PerfilManutentorForm, self).validate()
+
         if check_validate:
             if self.perfilmanutentor.data == 0:
                 flash("Perfil não selecionado", category="danger")

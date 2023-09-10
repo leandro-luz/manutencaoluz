@@ -2,8 +2,15 @@
 {% block body %}
 <body>
 
-{% if lib_solicitante %}
+<a href="{{ url_for('sistema.index') }}">
+    <span data-tooltip="VOLTAR">
+        <i class="bi-backspace fs-6"></i>
+    </span>
+</a>
+
 <h2> LISTA DE ORDENS DE SERVIÇOS </h2>
+
+{% if lib_solicitante %}
 <a href="{{ url_for('ordem_servico.ordem_editar', ordem_id=0) }}">
     Adicionar
 </a>

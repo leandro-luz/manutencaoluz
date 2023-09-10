@@ -1,6 +1,12 @@
 {% extends "sistema_base.html" %}
 {% block body %}
 <body>
+<a href="{{ url_for('sistema.index') }}">
+    <span data-tooltip="VOLTAR">
+        <i class="bi-backspace fs-6"></i>
+    </span>
+</a>
+
 
 <h2> LISTA DE EQUIPAMENTOS </h2>
 <a href="{{ url_for('equipamento.equipamento_editar', equipamento_id=0) }}">

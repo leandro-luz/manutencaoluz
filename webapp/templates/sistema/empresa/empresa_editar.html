@@ -1,71 +1,88 @@
 {% extends "sistema_base.html" %}
 {% block body %}
 <body>
-<a href="{{ url_for('empresa.empresa_listar') }}">Voltar</a>
-<form action="{{ url_for('empresa.empresa_editar', empresa_id=empresa.id) }}" method="POST">
-    {{form.csrf_token}}
 
-    {% if empresa.id == 0 %}
-    <h2>Cadastro de Empresa</h2>
-    {% else %}
-    <h2>Empresa</h2>
-    {% endif %}
+<a href="{{ url_for('empresa.empresa_listar') }}">
+    <span data-tooltip="VOLTAR">
+        <i class="bi-backspace fs-6"></i>
+    </span>
+</a>
 
-    {{form.cnpj.label}} {{form.cnpj(size=20)}}
-    <button onclick="pesquisar_cnpj()" type="button"> Validar CNPJ</button>
-    <br>
-    {{form.razao_social.label}} {{form.razao_social(size=100)}}<br>
-    {{form.nome_fantasia.label}} {{form.nome_fantasia(size=100)}}<br>
-    {{form.data_abertura.label}} {{form.data_abertura}}<br>
-    {{form.situacao.label}} {{form.situacao(size=20)}}<br>
-    {{form.porte.label}} {{form.porte(size=20)}}<br>
-    {{form.natureza_juridica.label}} {{form.natureza_juridica(size=100)}}<br>
-    {{form.cnae_principal.label}} {{form.cnae_principal(size=10)}}<br>
-    {{form.cnae_principal_texto.label}} {{form.cnae_principal_texto(size=100)}}<br>
-    {{form.inscricao_estadual.label}} {{form.inscricao_estadual(size=30)}}<br>
-    {{form.inscricao_municipal.label}} {{form.inscricao_municipal(size=30)}}<br>
-    {{form.tipo.label}} {{form.tipo(size=30)}}<br><br>
+<div class="container">
+    <div class="row">
+        <div class="col-10">
+                {% if empresa.id == 0 %}
+                <h2>Cadastro de Empresa</h2>
+                {% else %}
+                <h2>Empresa</h2>
+                {% endif %}
+        </div>
+    </div>
 
-    {{form.cep.label}} {{form.cep(size=20)}}
-    <button onclick="pesquisar_cep()" type="button"> Validar CEP</button>
-    <br>
-    {{form.logradouro.label}} {{form.logradouro(size=50)}}
-    {{form.numero.label}} {{form.numero(size=10)}}<br>
-    {{form.complemento.label}} {{form.complemento(size=50)}}
-    {{form.bairro.label}} {{form.bairro(size=50)}}<br>
-    {{form.municipio.label}} {{form.municipio(size=50)}}
-    {{form.uf.label}} {{form.uf(size=10)}}<br>
-    {{form.latitude.label}} {{form.latitude(size=80)}}<br>
-    {{form.longitude.label}} {{form.longitude(size=80)}}<br>
-    {{form.nome_responsavel.label}} {{form.nome_responsavel(size=50)}}<br>
-    {{form.email.label}} {{form.email(size=50)}}<br>
-    {{form.telefone.label}} {{form.telefone(size=20)}}<br>
-    {{form.ativo.label}} {{form.ativo(size=20)}}<br>
-    {{form.enviar_email.label}} {{form.enviar_email(size=20)}}<br>
-    {{form.contrato.label}} {{form.contrato}}
-    <a href="{{ url_for('contrato.contrato_listar') }}">
-                <span data-tooltip="Atualizar">
-                    <i class="bi-caret-down fs-6"></i>
-                </span>
-    </a> <br>
+    <div class="row">
+        <div class="col-10">
+            <form action="{{ url_for('empresa.empresa_editar', empresa_id=empresa.id) }}" method="POST">
+                {{form.csrf_token}}
 
-    {% if empresa.id == 0 %}
-    <input type="submit" value="Cadastrar"/>
-    {% else %}
-    <input type="submit" value="Atualizar"/>
-    {% endif %}
-</form>
+                {{form.cnpj.label}} {{form.cnpj(size=20)}}
+                 <button onclick="pesquisar_cnpj()" type="button"> Validar CNPJ</button><br>
+                {{form.razao_social.label}} {{form.razao_social(size=100)}}<br>
+                {{form.nome_fantasia.label}} {{form.nome_fantasia(size=100)}}<br>
+                {{form.data_abertura.label}} {{form.data_abertura}}<br>
+                {{form.situacao.label}} {{form.situacao(size=20)}}<br>
+                {{form.porte.label}} {{form.porte(size=20)}}<br>
+                {{form.natureza_juridica.label}} {{form.natureza_juridica(size=100)}}<br>
+                {{form.cnae_principal.label}} {{form.cnae_principal(size=10)}}<br>
+                {{form.cnae_principal_texto.label}} {{form.cnae_principal_texto(size=100)}}<br>
+                {{form.inscricao_estadual.label}} {{form.inscricao_estadual(size=30)}}<br>
+                {{form.inscricao_municipal.label}} {{form.inscricao_municipal(size=30)}}<br>
+                {{form.tipo.label}} {{form.tipo(size=30)}}<br><br>
 
-{% if empresa.id == 0 %}
-<form action="{{ url_for('empresa.cadastrar_lote_empresas') }}" enctype="multipart/form-data" method="POST">
-    {{ form.file.label }} {{ form.file }}
-    <input type="submit" value="Cadastrar_lote"/>
-</form>
+                {{form.cep.label}} {{form.cep(size=20)}}
+                <button onclick="pesquisar_cep()" type="button"> Validar CEP</button>
+                <br>
+                {{form.logradouro.label}} {{form.logradouro(size=50)}}
+                {{form.numero.label}} {{form.numero(size=10)}}<br>
+                {{form.complemento.label}} {{form.complemento(size=50)}}
+                {{form.bairro.label}} {{form.bairro(size=50)}}<br>
+                {{form.municipio.label}} {{form.municipio(size=50)}}
+                {{form.uf.label}} {{form.uf(size=10)}}<br>
+                {{form.latitude.label}} {{form.latitude(size=80)}}<br>
+                {{form.longitude.label}} {{form.longitude(size=80)}}<br>
+                {{form.nome_responsavel.label}} {{form.nome_responsavel(size=50)}}<br>
+                {{form.email.label}} {{form.email(size=50)}}<br>
+                {{form.telefone.label}} {{form.telefone(size=20)}}<br>
+                {{form.ativo.label}} {{form.ativo(size=20)}}<br>
+                {{form.enviar_email.label}} {{form.enviar_email(size=20)}}<br>
+                {{form.contrato.label}} {{form.contrato}}
+                <a href="{{ url_for('contrato.contrato_listar') }}">
+                    <span data-tooltip="Atualizar">
+                        <i class="bi-caret-down fs-6"></i>
+                    </span>
+                </a> <br>
 
-<a href="{{ url_for('empresa.gerar_padrao_empresas') }}">Gerar Arquivo Base</a>
-<br>
-<br>
-{% endif %}
+                {% if empresa.id == 0 %}
+                <input type="submit" value="Cadastrar"/>
+                {% else %}
+                <input type="submit" value="Atualizar"/>
+                {% endif %}
+            </form>
+
+            <br>
+
+            {% if empresa.id == 0 %}
+            <form action="{{ url_for('empresa.cadastrar_lote_empresas') }}" enctype="multipart/form-data" method="POST">
+                {{ form.file.label }} {{ form.file }}
+                <input type="submit" value="Cadastrar_lote"/>
+            </form>
+            <a href="{{ url_for('empresa.gerar_padrao_empresas') }}">Gerar Arquivo Base</a>
+            {% endif %}
+
+        </div>
+    </div>
+
+
+</div>
 
 
 </body>

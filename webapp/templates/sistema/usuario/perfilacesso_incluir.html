@@ -1,0 +1,33 @@
+<!-- Add New Modal -->
+<!-- Modal -->
+<div aria-hidden="true" aria-labelledby="modalLabel" class="modal fade"
+     id="modal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLabel">Cadastro de Perfil Acesso</h5>
+                <button aria-label="Close" class="btn-close"
+                        data-bs-dismiss="modal" type="button">
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('usuario.perfilacesso_editar', perfilacesso_id=0) }}" method="POST">
+                    {{form.csrf_token}}
+
+                    {{form.nome.label}} {{form.nome(size=50)}}<br>
+                    {{form.descricao.label}} {{form.descricao(size=50)}}<br>
+                    <input type="submit" value="Cadastrar"/>
+                </form>
+
+                <form action="{{ url_for('usuario.cadastrar_lote_perfis') }}" enctype="multipart/form-data"
+                      method="POST">
+                    {{ form.file.label }} {{ form.file }}
+                    <input type="submit" value="Cadastrar_Lote"/>
+                </form>
+                <br>
+                <a href="{{ url_for('usuario.gerar_padrao_perfis') }}">Gerar Arquivo Base</a>
+
+            </div>
+        </div>
+    </div>
+</div>

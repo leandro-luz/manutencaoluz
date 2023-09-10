@@ -1,54 +1,70 @@
 {% extends "sistema_base.html" %}
 {% block body %}
 <body>
-<a href="{{ url_for('usuario.usuario_listar') }}">Voltar</a>
-<form action="{{ url_for('usuario.usuario_editar', usuario_id=usuario.id) }}" method="POST">
-    {{form.csrf_token}}
+<a href="{{ url_for('usuario.usuario_listar') }}">
+    <span data-tooltip="VOLTAR">
+        <i class="bi-backspace fs-6"></i>
+    </span>
+</a>
 
 
-    <h2>Cadastro do Usuário</h2>
+<div class="container">
+    <div class="row">
+        <div class="col-9">
+            <h2> CADASTRO DE USUÁRIO </h2>
+        </div>
+    </div>
 
-    {{form.nome.label}} {{form.nome(size=50)}}<br>
-    {{form.email.label}} {{form.email(size=50)}}<br>
+    <div class="row">
+        <div class="col-9">
 
-    {{form.perfilacesso.label}} {{form.perfilacesso}}
-    <a href="{{ url_for('usuario.perfilacesso_listar', usuario_id=usuario.id) }}">
-            <span data-tooltip="Atualizar">
-                <i class="bi-caret-down fs-6"></i>
-            </span>
-    </a> <br>
-
-    {% if ppm %}
-    {{form.perfil_manutentor.label}} {{form.perfil_manutentor}}
-    {% if usuario.id > 0 %}
-    <a href="{{ url_for('usuario.perfilmanutentorusuario_listar', usuario_id=usuario.id) }}">
-                <span data-tooltip="Atualizar">
-                    <i class="bi-caret-down fs-6"></i>
-                </span>
-    </a> <br>
-    {% endif %}
-    {% endif %}
-
-    {{form.ativo.label}} {{form.ativo(size=20)}}<br>
-
-    {% if usuario.id == 0 %}
-    <input type="submit" value="Cadastrar"/>
-    {% else %}
-    <input type="submit" value="Atualizar"/>
-    {% endif %}
-
-</form>
+            <form action="{{ url_for('usuario.usuario_editar', usuario_id=usuario.id) }}" method="POST">
+                {{form.csrf_token}}
 
 
-{% if usuario.id == 0 %}
-<form action="{{ url_for('usuario.cadastrar_lote_usuarios') }}" enctype="multipart/form-data" method="POST">
-    {{ form.file.label }} {{ form.file }}
-    <input type="submit" value="Cadastrar_Lote"/>
-</form>
-<a href="{{ url_for('usuario.gerar_padrao_usuarios') }}">Gerar Arquivo Base</a>
-<br>
-<br>
-{% endif %}
+                {{form.nome.label}} {{form.nome(size=50)}}<br>
+                {{form.email.label}} {{form.email(size=50)}}<br>
+                {{form.perfilacesso.label}} {{form.perfilacesso}}<br>
+
+
+                {% if ppm %}
+                {{form.perfil_manutentor.label}} {{form.perfil_manutentor}}
+                {% if usuario.id > 0 %}
+                <a href="{{ url_for('usuario.perfilmanutentor_listar', usuario_id=usuario.id) }}">
+                    <span data-tooltip="Atualizar">
+                        <i class="bi-caret-down fs-6"></i>
+                    </span>
+                </a> <br>
+                {% endif %}
+                {% endif %}
+
+                {{form.ativo.label}} {{form.ativo(size=20)}}<br><br>
+
+                {% if usuario.id == 0 %}
+                <input type="submit" value="Cadastrar"/>
+                {% else %}
+                <input type="submit" value="Atualizar"/>
+                {% endif %}
+            </form>
+            <br>
+            <div class="row">
+                <div class="col-9">
+                    {% if usuario.id == 0 %}
+                    <form action="{{ url_for('usuario.cadastrar_lote_usuarios') }}" enctype="multipart/form-data"
+                          method="POST">
+                        {{ form.file.label }} {{ form.file }}
+                        <input type="submit" value="Cadastrar_Lote"/>
+                    </form>
+                    <a href="{{ url_for('usuario.gerar_padrao_usuarios') }}">Gerar Arquivo Base</a>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
 
 </body>
 

@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm as Form
 from wtforms import StringField, SelectField, SubmitField, BooleanField, IntegerField
 from wtforms.validators import InputRequired, Length, NumberRange
+from flask_login import current_user
 from flask import flash
 from webapp.contrato.models import Contrato, Telacontrato
 
@@ -21,8 +22,10 @@ class ContratoForm(Form):
         if check_validate:  # checa a validação inicial
             # busca se existe algum contrato com o nome
             if Contrato.query.filter(Contrato.id != self.id.data,
-                                     Contrato.nome == self.nome.data).one_or_none():
-                flash(f'Já existe um Contrato com este nome "{self.nome.data}"', category="danger")
+                                     Contrato.nome == self.nome.data,
+                                     Contrato.empresa_gestora_id == current_user.empresa_id
+                                     ).one_or_none():
+                flash(f'Já existe um contrato com este nome', category="danger")
                 return False
         else:
             flash("Contrato não válidado", category="danger")
@@ -39,16 +42,13 @@ class TelaContratoForm(Form):
     def validate(self, **kwargs):
         """    Função que válida as informações do formulário    """
         check_validate = super(TelaContratoForm, self).validate()  # válida inicialmente as informações
-
-        if not check_validate:
-            # telacontrato = Telacontrato.query.filter_by(contrato_id=self.contrato.data,
-            #                                             tela_id=self.tela.data).one_or_none()
-            # if telacontrato:
-            #     flash("Tela já registrada para este contrato", category="danger")
+        if check_validate:
+            if self.tela.data == 0:
+                flash("Tela não selecionada", category="danger")
+                return False
             return False
-            #     return False
-
-        return True
+        else:
+            return False
 
 
 class TelaForm(Form):
