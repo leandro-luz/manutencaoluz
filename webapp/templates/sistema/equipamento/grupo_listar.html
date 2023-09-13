@@ -1,66 +1,118 @@
 {% extends "sistema_base.html" %}
 {% block body %}
 <body>
-<a href="{{ url_for('equipamento.subgrupo_editar', subgrupo_id=subgrupo_id, equipamento_id=equipamento_id) }}">Voltar</a>
 
-<h2> LISTA DOS GRUPO DE EQUIPAMENTOS </h2>
-<a href="{{ url_for('equipamento.grupo_editar', grupo_id=0, subgrupo_id=subgrupo_id, equipamento_id=equipamento_id) }}">
-    Adicionar
+<a href="{{ url_for('equipamento.equipamento_listar') }}">
+    <span data-tooltip="VOLTAR">
+        <i class="bi-backspace fs-6"></i>
+    </span>
 </a>
 
-<input class="form-control" id="myInput" placeholder="Filtrar.." type="text"><br>
-<button onclick="exportar_lista('grupos.csv', 1)" type="button"> Exportar Lista</button>
 
-<table class="table">
-    <thead>
-    <tr>
-        <th scope="col">NOME</th>
-        <th scope="col">ATIVO</th>
-        <th scope="col">TOTAL DE GRUPO</th>
-        <th scope="col"></th>
-    </tr>
-    </thead>
+<div class="container">
+    <div class="row">
+        <div class="col-10">
+            <h2> LISTA DOS AGRUPAMENTOS </h2>
+        </div>
 
-    <tbody id="myTable">
-    {% for grupo in grupos %}
-    <tr>
-        <td>{{ grupo['grupo'].nome }}</td>
+        <div class="col-4">
+            <input class="form-control" id="myInput" placeholder="Filtrar.." type="text"><br>
+        </div>
 
-        {% if grupo['grupo'].ativo == True %}
-        <td>
-            <a href="{{ url_for('equipamento.grupo_ativar', grupo_id=grupo['grupo'].id,
-            subgrupo_id=subgrupo_id, equipamento_id=equipamento_id) }}">
-                <span data-tooltip="Desativar">
-                   <i class="bi-hand-thumbs-up fs-6"></i>
-                </span>
+        <div class="col-1">
+            <a>
+               <span data-bs-target="#modal" data-bs-toggle="modal" data-tooltip="INCLUIR AGRUPAMENTO">
+                   <i class="bi-bounding-box fs-4">+</i>
+               </span>
             </a>
-        </td>
-        {% else %}
-        <td>
-            <a href="{{ url_for('equipamento.grupo_ativar', grupo_id=grupo['grupo'].id,
-            subgrupo_id=subgrupo_id, equipamento_id=equipamento_id) }}">
-                <span data-tooltip="Ativar">
-                    <i class="bi-hand-thumbs-down fs-6"></i>
-                </span>
-            </a>
-        </td>
-        {% endif %}
-        <td>{{ grupo['total'] }}</td>
+            {% include "grupo_editar.html" %}
+        </div>
 
-        <td>
-            <a href="{{ url_for('equipamento.grupo_editar', grupo_id=grupo['grupo'].id,subgrupo_id=subgrupo_id, equipamento_id=equipamento_id) }}">
-                <span data-tooltip="Informações">
-                    <i class="bi-caret-right fs-6"></i>
-                </span>
-            </a>
-        </td>
-    </tr>
-    {% endfor %}
-    </tbody>
-</table>
+    </div>
+
+    <div class="row">
+        <div class="col-4">
+            <div class="row">
+                <h5>GRUPOS</h5>
+            </div>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">NOME</th>
+                    <th scope="col">TOTAL DE SUBGRUPOS</th>
+                    <th scope="col"></th>
+                    <th scope="col"></th>
+                </tr>
+                </thead>
+
+                <tbody id="tabela_grupo">
+                {% for grupo in grupos %}
+                <tr>
+                    <td>{{ grupo['grupo'].nome }}</td>
+                    <td>{{ grupo['total'] }}</td>
+                    <td>
+                        <a href="#">
+                        <span data-tooltip="Excluir">
+                           <i class="bi-trash fs-6"></i>
+                        </span>
+                        </a>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('equipamento.grupo_listar', grupo_id=grupo['grupo'].id) }}">
+                        <span data-tooltip="Subrupos">
+                            <i class="bi-caret-right fs-6"></i>
+                        </span>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
 
-</body>
+        <div class="col-4">
+            <div class="row">
+
+                {% if grupo %}
+                <h5>SUBGRUPOS >> {{ grupo.nome }}</h5>
+                {% else %}
+                <h5>SUBGRUPOS</h5>
+                {% endif %}
+
+            </div>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">NOME</th>
+                    <th scope="col">TOTAL DE EQUIPAMENTOS</th>
+                    <th scope="col"></th>
+
+                </tr>
+                </thead>
+                <tbody id="tabela_subgrupo">
+                {% for subgrupo in subgrupos %}
+                <tr>
+                    <td>{{ subgrupo['subgrupo'].nome }}</td>
+                    <td>{{ subgrupo['total'] }}</td>
+                    <td>
+                        <a href="#">
+                        <span data-tooltip="Excluir">
+                           <i class="bi-trash fs-6"></i>
+                        </span>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
 <script src="/static/js/exportar_consulta.js" type="text/javascript"></script>
 <script src="/static/js/filtro_coluna.js" type="text/javascript"></script>
+
+
 {% endblock %}

@@ -16,14 +16,14 @@
         </div>
     </div>
 
-        <div class="col-2">
-            <a>
+    <div class="col-2">
+        <a>
                <span data-bs-target="#modal" data-bs-toggle="modal" data-tooltip="INCLUIR PERFIL">
                    <i class="bi-person-square fs-4">+</i>
                </span>
-                {% include "perfilmanutentor_editar.html" %}
-            </a>
-        </div>
+            {% include "perfilmanutentor_editar.html" %}
+        </a>
+    </div>
 
     <div class="row">
         <div class="col-4">
@@ -42,23 +42,15 @@
                 <tr>
                     <td>{{ perfil.perfilmanutentor.nome }}</td>
 
-                    {% if perfil.ativo == True %}
                     <td>
-                        <a href="{{ url_for('usuario.perfilmanutentor_ativar', perfilmanutentorusuario_id=perfil.id, usuario_id=usuario_id) }}">
+                        <a href="{{ url_for('usuario.perfilmanutentor_excluir',
+                        perfilmanutentorusuario_id=perfil.id,
+                        usuario_id=usuario_id) }}">
                             <span data-tooltip="Desativar">
-                                <i class="bi-hand-thumbs-up fs-6"></i>
+                                <i class="bi-trash fs-6"></i>
                             </span>
                         </a>
                     </td>
-                    {% else %}
-                    <td>
-                        <a href="{{ url_for('usuario.perfilmanutentor_ativar', perfilmanutentorusuario_id=perfil.id, usuario_id=usuario_id) }}">
-                            <span data-tooltip="Ativar">
-                                <i class="bi-hand-thumbs-down fs-6"></i>
-                            </span>
-                        </a>
-                    </td>
-                    {% endif %}
                 </tr>
                 {% endfor %}
                 </tbody>

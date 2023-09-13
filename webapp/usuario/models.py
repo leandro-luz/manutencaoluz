@@ -103,7 +103,6 @@ class PerfilManutentorUsuario(db.Model):
     """    Classe relacionamento entre Tela e PerfilAcesso    """
     __tablename__ = 'perfil_manutentor_usuario'
     id = db.Column(db.Integer(), primary_key=True)
-    ativo = db.Column(db.Boolean, nullable=False, default=False)
 
     perfilmanutentor_id = db.Column(db.Integer(), db.ForeignKey("perfil_manutentor.id"), nullable=False)
     usuario_id = db.Column(db.Integer(), db.ForeignKey("usuario.id"), nullable=False)
@@ -126,6 +125,17 @@ class PerfilManutentorUsuario(db.Model):
             return True
         except Exception as e:
             log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
+            db.session.rollback()
+            return False
+
+    def excluir(self) -> bool:
+        """    Função para retirar do banco de dados o objeto"""
+        try:
+            db.session.delete(self)
+            db.session.commit()
+            return True
+        except Exception as e:
+            log.error(f'Erro Deletar objeto no banco de dados: {self.__repr__()}:{e}')
             db.session.rollback()
             return False
 

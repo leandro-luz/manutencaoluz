@@ -794,13 +794,13 @@ def perfilmanutentor_listar(usuario_id):
         return redirect(url_for('usuario.usuario_editar', usuario_id=usuario_id))
     else:
         perfismanutentor_existentes = PerfilManutentorUsuario.query.filter_by(usuario_id=usuario_id).all()
-
         perfis = PerfilManutentor.query.all()
 
         # # Lista de telas permitidas sem repetições
         form = PerfilManutentorForm()
         form.perfilmanutentor.choices = [(0, '')] + [(perfil.id, perfil.nome) for perfil in perfis if
-                                                     perfil.id not in {pm.id for pm in perfismanutentor_existentes}]
+                                                     perfil.id not in {pm.perfilmanutentor.id for pm in
+                                                                       perfismanutentor_existentes}]
 
     return render_template("perfilmanutentor_listar.html", perfismanutentor=perfismanutentor_existentes,
                            usuario_id=usuario_id, form=form)
@@ -839,11 +839,11 @@ def perfilmanutentor_editar(usuario_id):
     return redirect(url_for('usuario.perfilmanutentor_listar', usuario_id=usuario_id))
 
 
-@usuario_blueprint.route('/perfilmanutentor_ativar/<int:usuario_id>/<int:perfilmanutentorusuario_id>')
+@usuario_blueprint.route('/perfilmanutentor_excluir/<int:usuario_id>/<int:perfilmanutentorusuario_id>')
 @login_required
 @has_view('Usuário')
 @has_view('Ordem de Serviço')
-def perfilmanutentor_ativar(usuario_id, perfilmanutentorusuario_id):
+def perfilmanutentor_excluir(usuario_id, perfilmanutentorusuario_id):
     # retorna o usuário com o identificador
     usuario_ = Usuario.query.filter_by(id=usuario_id).one_or_none()
     if usuario_:
@@ -852,11 +852,12 @@ def perfilmanutentor_ativar(usuario_id, perfilmanutentorusuario_id):
         if perfilmanutentorusuario:
             # grava as informações vindas do formulário
             perfilmanutentorusuario.ativar_desativar()
+
             # grava as informações no banco de dados
-            if perfilmanutentorusuario.salvar():
-                flash("Perfil ativado/desativado", category="success")
+            if perfilmanutentorusuario.excluir():
+                flash("Perfil manutentor excluir", category="success")
             else:
-                flash("Perfil não ativado/desativado", category="danger")
+                flash("Erro ao excluir o perfil manutentoro", category="danger")
         else:
             flash("Perfil não cadastrado para este usuário", category="danger")
 

@@ -8,68 +8,109 @@
 </a>
 
 
-<h2> LISTA DE EQUIPAMENTOS </h2>
-<a href="{{ url_for('equipamento.equipamento_editar', equipamento_id=0) }}">
-    Adicionar
-</a>
+<div class="container">
+    <div class="row">
+        <div class="col-10">
+            <h2> LISTA DE EQUIPAMENTOS </h2>
+        </div>
 
-<input class="form-control" id="myInput" placeholder="Filtrar.." type="text"><br>
-<button onclick="exportar_lista('equipamentos.csv', 2)" type="button"> Exportar Lista</button>
+        <div class="col-4">
+            <input class="form-control" id="myInput" placeholder="Filtrar.." type="text"><br>
+        </div>
 
-<table class="table">
-    <thead>
-    <tr>
-        <th scope="col">ID</th>
-        <th scope="col">COD</th>
-        <th scope="col">TAG</th>
-        <th scope="col">DESCRIÇÃO_CURTA</th>
-
-        <th scope="col">SUBGRUPO</th>
-        <th scope="col">GRUPO</th>
-        <th scope="col">ATIVO</th>
-        <th scope="col"></th>
-        <th scope="col"></th>
-    </tr>
-    </thead>
-
-    <tbody id="myTable">
-    {% for equipamento in equipamentos %}
-    <tr>
-        <th scope="row">{{ equipamento.id }}</th>
-        <td>{{ equipamento.cod }}</td>
-        <td>{{ equipamento.tag }}</td>
-        <td>{{ equipamento.descricao_curta }}</td>
-        <td>{{ equipamento.subgrupo.nome }}</td>
-        <td>{{ equipamento.subgrupo.grupo.nome }}</td>
-        {% if equipamento.ativo == True %}
-        <td>
-            <a href="{{ url_for('equipamento.equipamento_ativar', equipamento_id=equipamento.id) }}">
-                <span data-tooltip="Desativar">
-                   <i class="bi-hand-thumbs-up fs-6"></i>
-                </span>
+        <div class="col-1">
+            <a href="{{ url_for('equipamento.equipamento_editar', equipamento_id=0) }}">
+               <span data-bs-target="#modal" data-bs-toggle="modal" data-tooltip="INCLUIR EQUIPAMENTO">
+                   <i class="bi-robot fs-4">+</i>
+               </span>
             </a>
-        </td>
-        {% else %}
-        <td>
-            <a href="{{ url_for('equipamento.equipamento_ativar', equipamento_id=equipamento.id) }}">
-                <span data-tooltip="Ativar">
-                    <i class="bi-hand-thumbs-down fs-6"></i>
-                </span>
-            </a>
-        </td>
-        {% endif %}
-        <td>
-            <a href="{{ url_for('equipamento.equipamento_editar', equipamento_id=equipamento.id) }}">
-                <span data-tooltip="Informações">
-                    <i class="bi-caret-right fs-6"></i>
-                </span>
-            </a>
-        </td>
+        </div>
 
-    </tr>
-    {% endfor %}
-    </tbody>
-</table>
+        <div class="col-1">
+            <a href="{{ url_for('equipamento.localizacao_listar') }}">
+               <span data-bs-target="#modal" data-bs-toggle="modal" data-tooltip="INCLUIR LOCALIZACAO">
+                   <i class="bi-globe2 fs-4">+</i>
+               </span>
+            </a>
+        </div>
+
+        <div class="col-1">
+            <a href="{{ url_for('equipamento.grupo_listar', grupo_id=0) }}">
+               <span data-bs-target="#modal" data-bs-toggle="modal" data-tooltip="INCLUIR AGRUPAMENTO">
+                   <i class="bi-bounding-box fs-4">+</i>
+               </span>
+            </a>
+        </div>
+
+        <div class="col-1">
+            <button onclick="exportar_lista('equipamentos.csv', 1)" type="button">
+                <span data-tooltip="EXPORTAR LISTA">
+                    <i class="bi-download fs-6"></i>
+                </span>
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-10">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">COD</th>
+                    <th scope="col">TAG</th>
+                    <th scope="col">DESCRIÇÃO_CURTA</th>
+                    <th scope="col">GRUPO</th>
+                    <th scope="col">SUBGRUPO</th>
+                    <th scope="col">ATIVO</th>
+                    <th scope="col"></th>
+                    <th scope="col"></th>
+                </tr>
+                </thead>
+
+                <tbody id="myTable">
+                {% for equipamento in equipamentos %}
+                <tr>
+                    <th scope="row">{{ equipamento.id }}</th>
+                    <td>{{ equipamento.cod }}</td>
+                    <td>{{ equipamento.tag }}</td>
+                    <td>{{ equipamento.descricao_curta }}</td>
+                    <td>{{ equipamento.subgrupo.grupo.nome }}</td>
+                    <td>{{ equipamento.subgrupo.nome }}</td>
+                    {% if equipamento.ativo == True %}
+                    <td>
+                        <a href="{{ url_for('equipamento.equipamento_ativar', equipamento_id=equipamento.id) }}">
+                            <span data-tooltip="Desativar">
+                               <i class="bi-hand-thumbs-up fs-6"></i>
+                            </span>
+                        </a>
+                    </td>
+                    {% else %}
+                    <td>
+                        <a href="{{ url_for('equipamento.equipamento_ativar', equipamento_id=equipamento.id) }}">
+                            <span data-tooltip="Ativar">
+                                <i class="bi-hand-thumbs-down fs-6"></i>
+                            </span>
+                        </a>
+                    </td>
+                    {% endif %}
+                    <td>
+                        <a href="{{ url_for('equipamento.equipamento_editar', equipamento_id=equipamento.id) }}">
+                            <span data-tooltip="Informações">
+                                <i class="bi-caret-right fs-6"></i>
+                            </span>
+                        </a>
+                    </td>
+
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+
+        </div>
+    </div>
+</div>
 
 
 </body>

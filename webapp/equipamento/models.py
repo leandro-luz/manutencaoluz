@@ -17,7 +17,6 @@ class Grupo(db.Model):
     __tablename__ = 'grupo'
     id = db.Column(db.Integer(), primary_key=True)
     nome = db.Column(db.String(50), nullable=False, index=True)
-    ativo = db.Column(db.Boolean, nullable=False, default=True)
     empresa_id = db.Column(db.Integer(), db.ForeignKey("empresa.id"), nullable=False)
 
     empresa = db.relationship("Empresa", back_populates="grupo")
@@ -29,14 +28,14 @@ class Grupo(db.Model):
     def alterar_atributos(self, form):
         """    Função para alterar os atributos do objeto    """
         self.nome = form.nome.data.upper()
-        self.ativo = form.ativo.data
         self.empresa_id = current_user.empresa_id
 
-    def ativar_desativar(self):
-        if self.ativo:
-            self.ativo = False
-        else:
-            self.ativo = True
+    #
+    # def ativar_desativar(self):
+    #     if self.ativo:
+    #         self.ativo = False
+    #     else:
+    #         self.ativo = True
 
     def salvar(self) -> bool:
         """    Função para salvar no banco de dados o objeto"""
@@ -46,6 +45,17 @@ class Grupo(db.Model):
             return True
         except Exception as e:
             log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
+            db.session.rollback()
+            return False
+
+    def excluir(self) -> bool:
+        """    Função para retirar do banco de dados o objeto"""
+        try:
+            db.session.delete(self)
+            db.session.commit()
+            return True
+        except Exception as e:
+            log.error(f'Erro Deletar objeto no banco de dados: {self.__repr__()}:{e}')
             db.session.rollback()
             return False
 
@@ -71,7 +81,6 @@ class Subgrupo(db.Model):
     __tablename__ = 'subgrupo'
     id = db.Column(db.Integer(), primary_key=True)
     nome = db.Column(db.String(50), nullable=False, index=True)
-    ativo = db.Column(db.Boolean, nullable=False, default=True)
     grupo_id = db.Column(db.Integer(), db.ForeignKey("grupo.id"), nullable=True)
 
     grupo = db.relationship("Grupo", back_populates="subgrupo")
@@ -80,17 +89,16 @@ class Subgrupo(db.Model):
     def __repr__(self):
         return f'<Subgrupo: {self.id}-{self.nome}>'
 
-    def alterar_atributos(self, form):
+    def alterar_atributos(self, form, grupo_id):
         """    Função para alterar os atributos do objeto    """
         self.nome = form.nome.data.upper()
-        self.ativo = form.ativo.data
-        self.grupo_id = form.grupo.data
+        self.grupo_id = grupo_id
 
-    def ativar_desativar(self):
-        if self.ativo:
-            self.ativo = False
-        else:
-            self.ativo = True
+    # def ativar_desativar(self):
+    #     if self.ativo:
+    #         self.ativo = False
+    #     else:
+    #         self.ativo = True
 
     def salvar(self) -> bool:
         """    Função para salvar no banco de dados o objeto"""
@@ -100,6 +108,17 @@ class Subgrupo(db.Model):
             return True
         except Exception as e:
             log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
+            db.session.rollback()
+            return False
+
+    def excluir(self) -> bool:
+        """    Função para retirar do banco de dados o objeto"""
+        try:
+            db.session.delete(self)
+            db.session.commit()
+            return True
+        except Exception as e:
+            log.error(f'Erro Deletar objeto no banco de dados: {self.__repr__()}:{e}')
             db.session.rollback()
             return False
 
@@ -276,6 +295,17 @@ class Pavimento(db.Model):
             db.session.rollback()
             return False
 
+    def excluir(self) -> bool:
+        """    Função para retirar do banco de dados o objeto"""
+        try:
+            db.session.delete(self)
+            db.session.commit()
+            return True
+        except Exception as e:
+            log.error(f'Erro Deletar objeto no banco de dados: {self.__repr__()}:{e}')
+            db.session.rollback()
+            return False
+
 
 class Setor(db.Model):
     """    Classe de grupo de ativos    """
@@ -313,6 +343,17 @@ class Setor(db.Model):
             db.session.rollback()
             return False
 
+    def excluir(self) -> bool:
+        """    Função para retirar do banco de dados o objeto"""
+        try:
+            db.session.delete(self)
+            db.session.commit()
+            return True
+        except Exception as e:
+            log.error(f'Erro Deletar objeto no banco de dados: {self.__repr__()}:{e}')
+            db.session.rollback()
+            return False
+
 
 class Local(db.Model):
     """    Classe de grupo de ativos    """
@@ -347,5 +388,16 @@ class Local(db.Model):
             return True
         except Exception as e:
             log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
+            db.session.rollback()
+            return False
+
+    def excluir(self) -> bool:
+        """    Função para retirar do banco de dados o objeto"""
+        try:
+            db.session.delete(self)
+            db.session.commit()
+            return True
+        except Exception as e:
+            log.error(f'Erro Deletar objeto no banco de dados: {self.__repr__()}:{e}')
             db.session.rollback()
             return False

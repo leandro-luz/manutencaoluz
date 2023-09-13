@@ -132,15 +132,6 @@ class EquipamentoForm(Form):
             if self.subgrupo.data == 0:
                 flash("Subgrupo não informado", category="danger")
                 return False
-            if self.setor.data == 0:
-                flash("Setor não informado", category="danger")
-                return False
-            if self.local.data == 0:
-                flash("Local não informado", category="danger")
-                return False
-            if self.pavimento.data == 0:
-                flash("Pavimento não informado", category="danger")
-                return False
 
             if Equipamento.query.filter(
                     Equipamento.id != self.id.data,
@@ -207,109 +198,112 @@ class EquipamentoForm(Form):
         return False
 
 
-class PavimentoForm(Form):
+class LocalizacaoForm(Form):
     id = IntegerField('id')
     nome = StringField('Nome', validators=[InputRequired(), Length(max=50)],
-                       render_kw={"placeholder": "Digite o nome do pavimento"})
+                       render_kw={"placeholder": "Digite o nome"})
     sigla = StringField('Sigla', validators=[InputRequired(), Length(max=5)],
-                        render_kw={"placeholder": "Digite a sigla do pavimento"})
-    submit = SubmitField("Salvar")
+                        render_kw={"placeholder": "Digite a sigla"})
+    tipo = SelectField('Tipo', choices=[], coerce=int, validate_choice=False, )
 
-    file = FileField('Escolha um arquivo para o cadastro de pavimentos em Lote (4MB):', validators=[Optional()],
-                     render_kw={"placeholder": "Selecione o arquivo"})
+    submit = SubmitField("Salvar")
 
     def validate(self, **kwargs):
         # # if our validators do not pass
-        check_validate = super(PavimentoForm, self).validate()
+        check_validate = super(LocalizacaoForm, self).validate()
+
         if check_validate:
-            if Pavimento.query.filter(
-                    Pavimento.id != self.id.data,
-                    Pavimento.nome == self.nome.data,
-                    Pavimento.empresa_id == current_user.empresa_id
-            ).one_or_none():
-                flash("Já existe um pavimento com este nome", category="danger")
+
+            if self.tipo.data == 0:
+                flash("Tipo de localização não selecionado", category="danger")
                 return False
-            elif Pavimento.query.filter(
-                    Pavimento.id != self.id.data,
-                    Pavimento.sigla == self.sigla.data,
-                    Pavimento.empresa_id == current_user.empresa_id
-            ).one_or_none():
-                flash("Já existe um pavimento com esta sigla", category="danger")
-                return False
-            else:
-                return True
+
+            # Se o tipo selecionador por Setor
+            if self.tipo.data == 1:
+                if Setor.query.filter(
+                        Setor.nome == self.nome.data,
+                        Setor.empresa_id == current_user.empresa_id
+                ).one_or_none():
+                    flash("Já existe um setor com este nome", category="danger")
+                    return False
+                elif Setor.query.filter(
+                        Setor.sigla == self.sigla.data,
+                        Setor.empresa_id == current_user.empresa_id
+                ).one_or_none():
+                    flash("Já existe um setor com esta sigla", category="danger")
+                    return False
+
+            # Se o tipo selecionador por Local
+            if self.tipo.data == 2:
+                if Local.query.filter(
+                        Local.nome == self.nome.data,
+                        Local.empresa_id == current_user.empresa_id
+                ).one_or_none():
+                    flash("Já existe um local com este nome para este setor", category="danger")
+                    return False
+
+                if Local.query.filter(
+                        Local.sigla == self.sigla.data,
+                        Local.empresa_id == current_user.empresa_id
+                ).one_or_none():
+                    flash("Já existe este um local com esta sigla", category="danger")
+                    return False
+
+            # Se o tipo selecionador por Pavimento
+            if self.tipo.data == 3:
+                if Pavimento.query.filter(
+                        Pavimento.nome == self.nome.data,
+                        Pavimento.empresa_id == current_user.empresa_id
+                ).one_or_none():
+                    flash("Já existe um pavimento com este nome", category="danger")
+                    return False
+                elif Pavimento.query.filter(
+                        Pavimento.sigla == self.sigla.data,
+                        Pavimento.empresa_id == current_user.empresa_id
+                ).one_or_none():
+                    flash("Já existe um pavimento com esta sigla", category="danger")
+                    return False
+
+            return True
 
         return False
 
 
-class SetorForm(Form):
+class AgrupamentoForm(Form):
     id = IntegerField('id')
     nome = StringField('Nome', validators=[InputRequired(), Length(max=50)],
-                       render_kw={"placeholder": "Digite o nome do setor"})
-    sigla = StringField('Sigla', validators=[InputRequired(), Length(max=5)],
-                        render_kw={"placeholder": "Digite a sigla do setor"})
-
+                       render_kw={"placeholder": "Digite o nome"})
+    tipo = SelectField('Tipo', choices=[], coerce=int, validate_choice=False, )
     submit = SubmitField("Salvar")
-
-    file = FileField('Escolha um arquivo para o cadastro de setores em Lote (4MB):', validators=[Optional()],
-                     render_kw={"placeholder": "Selecione o arquivo"})
 
     def validate(self, **kwargs):
         # # if our validators do not pass
-        check_validate = super(SetorForm, self).validate()
+        check_validate = super(AgrupamentoForm, self).validate()
+
         if check_validate:
-            if Setor.query.filter(
-                    Setor.id != self.id.data,
-                    Setor.nome == self.nome.data,
-                    Setor.empresa_id == current_user.empresa_id
-            ).one_or_none():
-                flash("Já existe um setor com este nome", category="danger")
-                return False
-            elif Setor.query.filter(
-                    Setor.id != self.id.data,
-                    Setor.sigla == self.sigla.data,
-                    Setor.empresa_id == current_user.empresa_id
-            ).one_or_none():
-                flash("Já existe um setor com esta sigla", category="danger")
-                return False
-            else:
-                return True
-        return False
-
-
-class LocalForm(Form):
-    id = IntegerField('id')
-    nome = StringField('Nome', validators=[InputRequired(), Length(max=50)],
-                       render_kw={"placeholder": "Digite o nome do local"})
-    sigla = StringField('Sigla', validators=[InputRequired(), Length(max=5)],
-                        render_kw={"placeholder": "Digite a sigla do local"})
-
-    submit = SubmitField("Salvar")
-
-    file = FileField('Escolha um arquivo para o cadastro de locais em Lote (4MB):', validators=[Optional()],
-                     render_kw={"placeholder": "Selecione o arquivo"})
-
-    def validate(self, **kwargs):
-        # # if our validators do not pass
-        check_validate = super(LocalForm, self).validate()
-        if check_validate:
-
-            if Local.query.filter(
-                    Local.id != self.id.data,
-                    Local.nome == self.nome.data,
-                    Local.empresa_id == current_user.empresa_id
-            ).one_or_none():
-                flash("Já existe um local com este nome para este setor", category="danger")
+            if self.tipo.data == 0:
+                flash("Tipo de agrupamento não selecionado", category="danger")
                 return False
 
-            if Local.query.filter(
-                    Local.id != self.id.data,
-                    Local.sigla == self.sigla.data,
-                    Local.empresa_id == current_user.empresa_id
-            ).one_or_none():
+            # Se o tipo selecionador por Grupo
+            if self.tipo.data == 1:
+                if Grupo.query.filter(
+                        Grupo.nome == self.nome.data,
+                        Setor.empresa_id == current_user.empresa_id
+                ).one_or_none():
+                    flash("Já existe um grupo com este nome", category="danger")
+                    return False
 
-                flash("Já existe este um local com esta sigla", category="danger")
-                return False
-            else:
-                return True
-        return False
+            # Se o tipo selecionador por Subgrupo
+            if self.tipo.data == 2:
+                if Subgrupo.query.filter(
+                        Subgrupo.nome == self.nome.data,
+                        Subgrupo.grupo_id == Grupo.id,
+                        Grupo.empresa_id == current_user.empresa_id
+                ).one_or_none():
+                    flash("Já existe um subgrupo com este nome para este grupo", category="danger")
+                    return False
+
+            return True
+        else:
+            return False

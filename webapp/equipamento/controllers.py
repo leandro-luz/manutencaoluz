@@ -4,7 +4,9 @@ from flask import render_template, Blueprint, redirect, url_for, flash, jsonify
 from flask_login import current_user, login_required
 from webapp.empresa.models import Empresa
 from .models import Equipamento, Grupo, Subgrupo, Pavimento, Setor, Local
-from .forms import EquipamentoForm, GrupoForm, SubgrupoForm, PavimentoForm, LocalForm, SetorForm
+from .forms import EquipamentoForm, GrupoForm, SubgrupoForm, LocalizacaoForm, AgrupamentoForm
+
+()
 from webapp.usuario import has_view
 from webapp.utils.files import arquivo_padrao
 from webapp.utils.erros import flash_errors
@@ -145,7 +147,7 @@ def gerar_padrao_equipamentos():
     return redirect(url_for("equipamento.equipamento_listar"))
 
 
-@equipamento_blueprint.route('/cadastrar_lote_equipamentos>', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/cadastrar_lote_equipamentos/', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
 def cadastrar_lote_equipamentos():
@@ -245,67 +247,117 @@ def cadastrar_lote_equipamentos():
     return redirect(url_for("equipamento.equipamento_listar"))
 
 
-@equipamento_blueprint.route('/grupo_listar/<int:subgrupo_id>/<int:equipamento_id>', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/grupo_listar/<int:grupo_id>/', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def grupo_listar(subgrupo_id, equipamento_id):
-    grupos = Grupo.query.filter(
-        Grupo.empresa_id == Empresa.id,
-        Empresa.id == current_user.empresa_id).order_by(
-        Grupo.nome)
+def grupo_listar(grupo_id):
+    # lista de grupos existentes
 
+    form = AgrupamentoForm()
+    form.tipo.choices = ((0, ''), (1, 'Grupo'), (2, 'Subgrupo'))
+
+    grupos = Grupo.query.filter(
+        Grupo.empresa_id == current_user.empresa_id).order_by(Grupo.nome).all()
+    # lista de grupos com seus quantitativos de subgrupos vinculados
     lista_grupos = [{'grupo': grupo, 'total': Subgrupo.query.filter(Subgrupo.grupo_id == grupo.id).count()}
                     for grupo in grupos]
 
-    return render_template('grupo_listar.html', grupos=lista_grupos, subgrupo_id=subgrupo_id,
-                           equipamento_id=equipamento_id)
+    # lista vazia de subgrupos
+    lista_subgrupos = []
+    grupo = []
+
+    if grupo_id > 0:
+        # verifica se o grupo existe para a empresa
+        grupo = Grupo.query.filter_by(id=grupo_id, empresa_id=current_user.empresa_id).one_or_none()
+        if grupo:
+            # lista de subgrupos
+            subgrupos = Subgrupo.query.filter(
+                Subgrupo.grupo_id == Grupo.id,
+                Grupo.id == grupo_id,
+                Grupo.empresa_id == current_user.empresa_id).order_by(Subgrupo.nome).all()
+            # lista de subgrupos com o seus quantitativos de empresas vinculadas
+            lista_subgrupos = [{'subgrupo': subgrupo,
+                                'total': Equipamento.query.filter(Equipamento.subgrupo_id == subgrupo.id).count()}
+                               for subgrupo in subgrupos]
+        else:
+            flash("Grupo não cadastrado", category="danger")
+
+    return render_template('grupo_listar.html', grupo=grupo, grupos=lista_grupos, subgrupos=lista_subgrupos, form=form,
+                           grupo_id=grupo_id)
 
 
-@equipamento_blueprint.route('/grupo_editar/<int:grupo_id>/<int:subgrupo_id>/<int:equipamento_id>',
-                             methods=['GET', 'POST'])
+@equipamento_blueprint.route('/grupo_editar/<int:grupo_id>/', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def grupo_editar(grupo_id, subgrupo_id, equipamento_id):
-    subgrupos = []
-    if grupo_id > 0:
-        # Atualizar
-        # localiza a empresa do grupo
-        grupo = Grupo.query.filter(
-            current_user.empresa_id == Empresa.id,
-            Empresa.id == Grupo.empresa_id,
-            Grupo.id == grupo_id
-        ).one_or_none()
+def grupo_editar(grupo_id):
+    form = AgrupamentoForm()
 
-        # verifica se o grupo existe e se pertence a empresa do usuario logado
-        if grupo:
-            form = GrupoForm(obj=grupo)
-            subgrupos = Subgrupo.query.filter_by(grupo_id=grupo.id).all()
-        else:
-            flash("Grupo não localizado", category="danger")
-            return redirect(url_for("equipamento.grupo_listar", subgrupo_id=subgrupo_id, equipamento_id=equipamento_id))
-    else:
-        # Cadastrar
-        grupo = Grupo()
-        grupo.id = 0
-        form = GrupoForm()
-
-    # Validação
     if form.validate_on_submit():
-        grupo.alterar_atributos(form)
-        if grupo.salvar():
-            # Mensagens
-            if grupo_id > 0:
-                flash("Grupo atualizado", category="success")
-            else:
-                flash("Grupo cadastrado", category="success")
 
-            return redirect(url_for("equipamento.grupo_listar", subgrupo_id=subgrupo_id, equipamento_id=equipamento_id))
-        else:
-            flash("Grupo não cadastrado/atualizado", category="danger")
+        # se tipo for grupo
+        if form.tipo.data == 1:
+            grupo = Grupo()
+            grupo.alterar_atributos(form)
+            grupo.salvar()
+            flash("Grupo cadastrado com sucesso", category="success")
+        # se tipo for subgrupo
+        if form.tipo.data == 2:
+            if grupo_id > 0:
+                grupo = Grupo.query.filter_by(id=grupo_id, empresa_id=current_user.empresa_id).one_or_none()
+                if grupo:
+                    subgrupo = Subgrupo()
+                    subgrupo.alterar_atributos(form, grupo_id)
+                    subgrupo.salvar()
+                    flash("Subgrupo cadastrado sucesso", category="success")
+                else:
+                    flash("Grupo não cadastrado", category="danger")
+            else:
+                flash("Grupo não selecionado previamente", category="danger")
     else:
         flash_errors(form)
-    return render_template("grupo_editar.html", form=form, grupo=grupo, subgrupo_id=subgrupo_id,
-                           equipamento_id=equipamento_id, subgrupos=subgrupos)
+
+    return redirect(url_for("equipamento.grupo_listar", grupo_id=grupo_id))
+
+    # subgrupos = []
+    # if grupo_id > 0:
+    #     # Atualizar
+    #     # localiza a empresa do grupo
+    #     grupo = Grupo.query.filter(
+    #         current_user.empresa_id == Empresa.id,
+    #         Empresa.id == Grupo.empresa_id,
+    #         Grupo.id == grupo_id
+    #     ).one_or_none()
+    #
+    #     # verifica se o grupo existe e se pertence a empresa do usuario logado
+    #     if grupo:
+    #         form = GrupoForm(obj=grupo)
+    #         subgrupos = Subgrupo.query.filter_by(grupo_id=grupo.id).all()
+    #     else:
+    #         flash("Grupo não localizado", category="danger")
+    #         return redirect(url_for("equipamento.grupo_listar", subgrupo_id=subgrupo_id, equipamento_id=equipamento_id))
+    # else:
+    #     # Cadastrar
+    #     grupo = Grupo()
+    #     grupo.id = 0
+    #     form = GrupoForm()
+    #
+    # # Validação
+    # if form.validate_on_submit():
+    #     grupo.alterar_atributos(form)
+    #     if grupo.salvar():
+    #         # Mensagens
+    #         if grupo_id > 0:
+    #             flash("Grupo atualizado", category="success")
+    #         else:
+    #             flash("Grupo cadastrado", category="success")
+    #
+    #         return redirect(url_for("equipamento.grupo_listar", subgrupo_id=subgrupo_id, equipamento_id=equipamento_id))
+    #     else:
+    #         flash("Grupo não cadastrado/atualizado", category="danger")
+    # else:
+    #     flash_errors(form)
+    # return render_template("grupo_editar.html", form=form, grupo=grupo, subgrupo_id=subgrupo_id,
+    #                        equipamento_id=equipamento_id, subgrupos=subgrupos)
 
 
 @equipamento_blueprint.route('/grupo_ativar/<int:grupo_id>/<int:subgrupo_id>/<int:equipamento_id>',
@@ -614,157 +666,95 @@ def cadastrar_lote_subgrupos(equipamento_id):
     return redirect(url_for('equipamento.subgrupo_listar', equipamento_id=equipamento_id))
 
 
-@equipamento_blueprint.route('/pavimento_listar/<int:equipamento_id>', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/localizacao_listar/', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def pavimento_listar(equipamento_id):
-    """Retorna a lista de pavimentos"""
+def localizacao_listar():
+    setores = Setor.query.filter_by(empresa_id=current_user.empresa_id).order_by(Setor.nome)
+    locais = Local.query.filter_by(empresa_id=current_user.empresa_id).order_by(Local.nome)
     pavimentos = Pavimento.query.filter_by(empresa_id=current_user.empresa_id).order_by(Pavimento.nome)
 
-    return render_template('pavimento_listar.html', pavimentos=pavimentos, equipamento_id=equipamento_id)
+    form = LocalizacaoForm()
+    form.tipo.choices = ((0, ''), (1, 'Setor'), (2, 'Local'), (3, 'Pavimento'))
+    return render_template("localizacao_listar.html", setores=setores, locais=locais, pavimentos=pavimentos,
+                           form=form)
 
 
-@equipamento_blueprint.route('/pavimento_editar/<int:pavimento_id>/<int:equipamento_id>',
-                             methods=['GET', 'POST'])
+@equipamento_blueprint.route('/localizacao_editar/', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def pavimento_editar(pavimento_id, equipamento_id):
-    if pavimento_id > 0:
-        # Atualizar
-        # localiza o pavimento
-        pavimento = Pavimento.query.filter_by(id=pavimento_id).one_or_none()
-        # verifica se o pavimento existe
-        if pavimento:
-            form = PavimentoForm(obj=pavimento)
-        else:
-            flash("Pavimento não localizado", category="danger")
-            return redirect(url_for("equipamento.equipamento_editar"))
-    else:
-        # Cadastrar
-        pavimento = Pavimento()
-        pavimento.id = 0
-        form = PavimentoForm()
+def localizacao_editar():
+    form = LocalizacaoForm()
 
-    # Validação
     if form.validate_on_submit():
-        pavimento.alterar_atributos(form)
-        if pavimento.salvar():
-            # Mensagens
-            if pavimento_id > 0:
-                flash("Pavimento atualizado", category="success")
-            else:
-                flash("Pavimento cadastrado", category="success")
-
-            return redirect(
-                url_for("equipamento.pavimento_listar", equipamento_id=equipamento_id))
+        if form.tipo.data == 1:
+            nome = 'setor'
+            setor = Setor()
+            setor.alterar_atributos(form)
+            setor.salvar()
+        elif form.tipo.data == 2:
+            nome = 'local'
+            local = Local()
+            local.alterar_atributos(form)
+            local.salvar()
+        elif form.tipo.data == 3:
+            nome = 'pavimento'
+            pavimento = Pavimento()
+            pavimento.alterar_atributos(form)
+            pavimento.salvar()
         else:
-            flash("Pavimento não cadastrado/atualizado", category="danger")
-    else:
-        flash_errors(form)
-    return render_template("pavimento_editar.html", form=form, pavimento=pavimento, equipamento_id=equipamento_id)
-
-
-@equipamento_blueprint.route('/local_listar/<int:equipamento_id>', methods=['GET', 'POST'])
-@login_required
-@has_view('Equipamento')
-def local_listar(equipamento_id):
-    """Retorna a lista de locais"""
-    locais = Local.query.filter_by(empresa_id=current_user.empresa_id).order_by(Local.nome)
-
-    return render_template('local_listar.html', locais=locais, equipamento_id=equipamento_id)
-
-
-@equipamento_blueprint.route('/local_editar/<int:local_id>/<int:equipamento_id>', methods=['GET', 'POST'])
-@login_required
-@has_view('Equipamento')
-def local_editar(local_id, equipamento_id):
-    if local_id > 0:
-        # Atualizar
-        # localiza o local
-        local = Local.query.filter_by(id=local_id).one_or_none()
-        # verifica se o local existe
-        if local:
-            form = LocalForm(obj=local)
-
-        else:
-            flash("Local não localizado", category="danger")
-            return redirect(url_for("equipamento.local_listar", equipamento_id=equipamento_id))
-    else:
-        # Cadastrar
-        local = Local()
-        local.id = 0
-        form = LocalForm()
-
-    # Validação
-    if form.validate_on_submit():
-        local.alterar_atributos(form)
-
-        if local.salvar():
-            # Mensagens
-            if local_id > 0:
-                flash("Local atualizado", category="success")
-            else:
-                flash("Local cadastrado", category="success")
-
-            return redirect(
-                url_for("equipamento.local_listar", equipamento_id=equipamento_id))
-
-        else:
-            flash("Local não cadastrado/atualizado", category="danger")
+            flash("Erro ao inserir pavimento", category="danger")
+            return redirect(url_for('equipamento.localizacao_listar'))
+        flash(f"Inserido o {nome} com sucesso", category="success")
     else:
         flash_errors(form)
 
-    return render_template('local_editar.html', form=form, local=local, equipamento_id=equipamento_id)
+    return redirect(url_for('equipamento.localizacao_listar'))
 
 
-@equipamento_blueprint.route('/setor_listar/<int:equipamento_id>', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/setor_excluir/<int:setor_id>', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def setor_listar(equipamento_id):
-    """Retorna a lista dos setores"""
-    setores = Setor.query.filter_by(empresa_id=current_user.empresa_id).order_by(Setor.nome)
+def setor_excluir(setor_id):
+    setor = Setor.query.filter_by(id=setor_id, empresa_id=current_user.empresa_id).one_or_none()
 
-    return render_template('setor_listar.html', setores=setores, equipamento_id=equipamento_id)
+    if setor:
+        if setor.excluir():
+            flash("Setor excluído", category="success")
+        else:
+            flash("Erro ao excluír o setor", category="danger")
+    else:
+        flash("Setor não cadastrado/atualizado", category="danger")
+    return redirect(url_for("equipamento.localizacao_listar"))
 
 
-@equipamento_blueprint.route('/setor_editar/<int:setor_id>/<int:equipamento_id>',
-                             methods=['GET', 'POST'])
+@equipamento_blueprint.route('/local_excluir/<int:local_id>', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def setor_editar(setor_id, equipamento_id):
-    if setor_id > 0:
-        # Atualizar
-        # localiza o setor
-        setor = Setor.query.filter_by(id=setor_id).one_or_none()
-        # verifica se o setor existe
-        if setor:
-            form = SetorForm(obj=setor)
+def local_excluir(local_id):
+    local = Local.query.filter_by(id=local_id, empresa_id=current_user.empresa_id).one_or_none()
+
+    if local:
+        if local.excluir():
+            flash("Local excluído", category="success")
         else:
-            flash("Setor não localizado", category="danger")
-            return redirect(url_for("equipamento.setor_listar", equipamento_id=equipamento_id))
+            flash("Erro ao local o setor", category="danger")
     else:
-        # Cadastrar
-        setor = Setor()
-        setor.id = 0
-        form = SetorForm()
+        flash("Local não cadastrado/atualizado", category="danger")
+    return redirect(url_for("equipamento.localizacao_listar"))
 
-        # Validação
-    if form.validate_on_submit():
-        setor.alterar_atributos(form)
 
-        if setor.salvar():
-            # Mensagens
-            if setor_id > 0:
-                flash("Setor atualizado", category="success")
-            else:
-                flash("Setor cadastrado", category="success")
+@equipamento_blueprint.route('/pavimento_excluir/<int:pavimento_id>', methods=['GET', 'POST'])
+@login_required
+@has_view('Equipamento')
+def pavimento_excluir(pavimento_id):
+    pavimento = Pavimento.query.filter_by(id=pavimento_id, empresa_id=current_user.empresa_id).one_or_none()
 
-            return redirect(
-                url_for("equipamento.setor_listar", equipamento_id=equipamento_id))
-
+    if pavimento:
+        if pavimento.excluir():
+            flash("Pavimento excluído", category="success")
         else:
-            flash("Setor não cadastrado/atualizado", category="danger")
+            flash("Erro ao setor o setor", category="danger")
     else:
-        flash_errors(form)
-
-    return render_template('setor_editar.html', form=form, setor=setor, equipamento_id=equipamento_id)
+        flash("Pavimento não cadastrado/atualizado", category="danger")
+    return redirect(url_for("equipamento.localizacao_listar"))
