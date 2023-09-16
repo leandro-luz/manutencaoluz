@@ -12,13 +12,13 @@
 <div class="container">
 
     <div class="row">
-         <div class="col-10">
+        <div class="col-10">
             <h2> CONTRATOS </h2>
         </div>
     </div>
 
     <div class="row">
-         <div class="col-4">
+        <div class="col-4">
             <input class="form-control" id="myInput" placeholder="Filtrar.." type="text"><br>
         </div>
         <div class="col-2">
@@ -40,6 +40,7 @@
                 <tr>
                     <th scope="col">NOME</th>
                     <th scope="col">ATIVO</th>
+                    <th scope="col">TOTAL TELAS</th>
                     <th scope="col">TOTAL EMPRESAS</th>
                     <th scope="col"></th>
                 </tr>
@@ -67,7 +68,7 @@
                         </a>
                     </td>
                     {% endif %}
-
+                    <td>{{ contrato['telas'] }}</td>
                     <td>{{ contrato['total'] }}</td>
 
                     <td>

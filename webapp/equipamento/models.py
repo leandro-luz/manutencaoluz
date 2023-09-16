@@ -9,7 +9,6 @@ log = logging.getLogger(__name__)
 
 class Grupo(db.Model):
     """    Classe de grupo de ativos    """
-
     nome_doc = 'padrão_grupo'
     # titulos para cadastro
     titulos_doc = {'Nome*': 'nome'}
@@ -29,13 +28,6 @@ class Grupo(db.Model):
         """    Função para alterar os atributos do objeto    """
         self.nome = form.nome.data.upper()
         self.empresa_id = current_user.empresa_id
-
-    #
-    # def ativar_desativar(self):
-    #     if self.ativo:
-    #         self.ativo = False
-    #     else:
-    #         self.ativo = True
 
     def salvar(self) -> bool:
         """    Função para salvar no banco de dados o objeto"""
@@ -61,6 +53,7 @@ class Grupo(db.Model):
 
     @staticmethod
     def salvar_lote(lote):
+        """Função para salvar em lote"""
         try:
             db.session.add_all(lote)
             db.session.commit()
@@ -94,12 +87,6 @@ class Subgrupo(db.Model):
         self.nome = form.nome.data.upper()
         self.grupo_id = grupo_id
 
-    # def ativar_desativar(self):
-    #     if self.ativo:
-    #         self.ativo = False
-    #     else:
-    #         self.ativo = True
-
     def salvar(self) -> bool:
         """    Função para salvar no banco de dados o objeto"""
         try:
@@ -124,6 +111,7 @@ class Subgrupo(db.Model):
 
     @staticmethod
     def salvar_lote(lote):
+        """Função para salvar em lote"""
         try:
             db.session.add_all(lote)
             db.session.commit()
@@ -219,7 +207,7 @@ class Equipamento(db.Model):
         self.custo_aquisicao = form.custo_aquisicao.data
         self.depreciacao = form.depreciacao.data
         self.tag = form.tag.data.upper()
-        self.patrimonio = form.patrimonio.data
+        self.patrimonio = form.patrimonio.data.upper()
         self.latitude = form.latitude.data
         self.longitude = form.longitude.data
         self.centro_custo = form.centro_custo.data.upper()
@@ -230,6 +218,7 @@ class Equipamento(db.Model):
         self.pavimento_id = form.pavimento.data
 
     def ativar_desativar(self):
+        """Função para ativar e desativar """
         if self.ativo:
             self.alterar_ativo(False)
         else:
@@ -248,6 +237,7 @@ class Equipamento(db.Model):
 
     @staticmethod
     def salvar_lote(lote):
+        """Função para salvar o lote"""
         try:
             db.session.add_all(lote)
             db.session.commit()

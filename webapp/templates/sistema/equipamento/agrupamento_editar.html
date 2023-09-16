@@ -11,7 +11,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form action="{{ url_for('equipamento.grupo_editar', grupo_id=grupo_id) }}" method="POST">
+                <form action="{{ url_for('equipamento.agrupamento_editar', grupo_id=grupo_id) }}" method="POST">
                     {{form.csrf_token}}
 
                     {{form.tipo.label}} {{form.tipo}}<br>

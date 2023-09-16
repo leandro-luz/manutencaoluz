@@ -116,7 +116,8 @@ class EquipamentoForm(Form):
     local = SelectField('Local', choices=[], coerce=int)
     pavimento = SelectField('Pavimento', choices=[], coerce=int)
 
-    subgrupo = SelectField('Subgrupo de equipamentos', choices=[], coerce=int)
+    grupo = SelectField('Grupo', choices=[], coerce=int)
+    subgrupo = SelectField('Subgrupo', choices=[], coerce=int)
 
     # title = StringField('Nome do arquivo',  validators=[Optional(), Length(50)])
     file = FileField('Escolha um arquivo para o cadastro de equipamentos em Lote (4MB):', validators=[Optional()],

@@ -329,8 +329,7 @@ def usuario_editar(usuario_id):
 
     form.perfil_manutentor.choices = [(0, '')] + [(pm.id, pm.perfilmanutentor.nome) for pm in
                                                   PerfilManutentorUsuario.query.filter(
-                                                      PerfilManutentorUsuario.usuario_id == usuario_id,
-                                                      PerfilManutentorUsuario.ativo == True
+                                                      PerfilManutentorUsuario.usuario_id == usuario_id
                                                   ).all()]
 
     # --------- VALIDAÇÕES
@@ -500,9 +499,11 @@ def cadastrar_lote_usuarios():
 @login_required
 @has_view('Usuário')
 def perfilacesso_listar():
-    lista_perfis = [{'perfilacesso': perfilacesso, 'total': Usuario.query.filter(Usuario.empresa_id == Empresa.id,
-                                                                                 Usuario.perfilacesso_id == perfilacesso.id,
-                                                                                 Empresa.id == current_user.empresa_id).count()}
+    lista_perfis = [{'perfilacesso': perfilacesso,
+                     'total': Usuario.query.filter(Usuario.empresa_id == Empresa.id,
+                                                   Usuario.perfilacesso_id == perfilacesso.id,
+                                                   Empresa.id == current_user.empresa_id).count(),
+                     'telas': TelaPerfilAcesso.query.filter_by(perfilacesso_id=perfilacesso.id).count()}
                     for perfilacesso in PerfilAcesso.query.filter_by(empresa_id=current_user.empresa_id). \
                         filter(PerfilAcesso.nome.notlike("%adminluz%")).order_by(PerfilAcesso.nome).all()]
 
@@ -850,8 +851,6 @@ def perfilmanutentor_excluir(usuario_id, perfilmanutentorusuario_id):
         # Busca o perfil, e verifica se o mesmo existe
         perfilmanutentorusuario = PerfilManutentorUsuario.query.filter_by(id=perfilmanutentorusuario_id).one_or_none()
         if perfilmanutentorusuario:
-            # grava as informações vindas do formulário
-            perfilmanutentorusuario.ativar_desativar()
 
             # grava as informações no banco de dados
             if perfilmanutentorusuario.excluir():

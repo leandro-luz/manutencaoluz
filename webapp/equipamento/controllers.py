@@ -37,6 +37,9 @@ def equipamento_listar():
 @login_required
 @has_view('Equipamento')
 def equipamento_editar(equipamento_id):
+    grupo_id = 0
+    subgrupo_id = 0
+
     if equipamento_id > 0:
         # Atualizar
         # localiza a empresa do equipamento
@@ -51,15 +54,18 @@ def equipamento_editar(equipamento_id):
         # verifica se o equipamento existe e se pertence a empresa do usuário
         if equipamento:
             form = EquipamentoForm(obj=equipamento)
+            grupo_id = equipamento.subgrupo.grupo_id
+            subgrupo_id = equipamento.subgrupo_id
             # Atualizar ou Ler dados
             if form.subgrupo.data:
+                g_d = form.grupo.data
                 sg_d = form.subgrupo.data
                 st_d = form.setor.data
                 lo_d = form.local.data
                 pv_d = form.pavimento.data
 
-
             else:
+                g_d = equipamento.subgrupo.grupo_id
                 sg_d = equipamento.subgrupo_id
                 st_d = equipamento.setor_id
                 lo_d = equipamento.local_id
@@ -72,12 +78,18 @@ def equipamento_editar(equipamento_id):
         equipamento = Equipamento()
         equipamento.id = 0
         form = EquipamentoForm()
+        g_d = form.grupo.data
         sg_d = form.subgrupo.data
         st_d = form.setor.data
         lo_d = form.local.data
         pv_d = form.pavimento.data
 
     # Listas
+    grupos = Grupo.query.filter(
+        Grupo.empresa_id == Empresa.id,
+        Empresa.id == current_user.empresa_id).order_by(
+        Grupo.nome)
+
     subgrupos = Subgrupo.query.filter(
         Subgrupo.grupo_id == Grupo.id,
         Grupo.empresa_id == Empresa.id,
@@ -97,8 +109,10 @@ def equipamento_editar(equipamento_id):
     form.setor.choices = [(0, '')] + [(st.id, st.nome) for st in setores]
     form.local.choices = [(0, '')] + [(lo.id, lo.nome) for lo in locais]
     form.pavimento.choices = [(0, '')] + [(pv.id, pv.nome) for pv in pavimentos]
+    form.grupo.choices = [(0, '')] + [(g.id, g.nome) for g in grupos]
     form.subgrupo.choices = [(0, '')] + [(sg.id, sg.nome) for sg in subgrupos]
 
+    form.grupo.data = g_d
     form.subgrupo.data = sg_d
     form.setor.data = st_d
     form.local.data = lo_d
@@ -118,7 +132,8 @@ def equipamento_editar(equipamento_id):
             flash("Equipamento não cadastrado/atualizado", category="danger")
     else:
         flash_errors(form)
-    return render_template("equipamento_editar.html", form=form, equipamento=equipamento)
+    return render_template("equipamento_editar.html", form=form, equipamento=equipamento, grupo_id=grupo_id,
+                           subgrupo_id=subgrupo_id)
 
 
 @equipamento_blueprint.route('/equipamento_ativar/<int:equipamento_id>', methods=['GET', 'POST'])
@@ -247,10 +262,10 @@ def cadastrar_lote_equipamentos():
     return redirect(url_for("equipamento.equipamento_listar"))
 
 
-@equipamento_blueprint.route('/grupo_listar/<int:grupo_id>/', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/agrupamento_listar/<int:grupo_id>/<int:subgrupo_id>/', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def grupo_listar(grupo_id):
+def agrupamento_listar(grupo_id, subgrupo_id):
     # lista de grupos existentes
 
     form = AgrupamentoForm()
@@ -265,6 +280,8 @@ def grupo_listar(grupo_id):
     # lista vazia de subgrupos
     lista_subgrupos = []
     grupo = []
+    subgrupo = []
+    equipamentos = []
 
     if grupo_id > 0:
         # verifica se o grupo existe para a empresa
@@ -279,17 +296,28 @@ def grupo_listar(grupo_id):
             lista_subgrupos = [{'subgrupo': subgrupo,
                                 'total': Equipamento.query.filter(Equipamento.subgrupo_id == subgrupo.id).count()}
                                for subgrupo in subgrupos]
-        else:
-            flash("Grupo não cadastrado", category="danger")
 
-    return render_template('grupo_listar.html', grupo=grupo, grupos=lista_grupos, subgrupos=lista_subgrupos, form=form,
-                           grupo_id=grupo_id)
+        if subgrupo_id > 0:
+            # verifica se o subgrupo existe para a empresa
+            subgrupo = Subgrupo.query.filter(
+                Subgrupo.id == subgrupo_id,
+                Subgrupo.grupo_id == Grupo.id,
+                Grupo.empresa_id == current_user.empresa_id).one_or_none()
+
+            if subgrupo:
+                # lista de equipamentos
+                equipamentos = Equipamento.query.filter_by(subgrupo_id=subgrupo_id).order_by(
+                    Equipamento.descricao_curta).all()
+
+    return render_template('agrupamento_listar.html', grupo=grupo, subgrupo=subgrupo, grupos=lista_grupos,
+                           subgrupos=lista_subgrupos, equipamentos=equipamentos, form=form, grupo_id=grupo_id,
+                           subgrupo_id=subgrupo_id)
 
 
-@equipamento_blueprint.route('/grupo_editar/<int:grupo_id>/', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/agrupamento_editar/<int:grupo_id>/', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def grupo_editar(grupo_id):
+def agrupamento_editar(grupo_id):
     form = AgrupamentoForm()
 
     if form.validate_on_submit():
@@ -316,70 +344,51 @@ def grupo_editar(grupo_id):
     else:
         flash_errors(form)
 
-    return redirect(url_for("equipamento.grupo_listar", grupo_id=grupo_id))
-
-    # subgrupos = []
-    # if grupo_id > 0:
-    #     # Atualizar
-    #     # localiza a empresa do grupo
-    #     grupo = Grupo.query.filter(
-    #         current_user.empresa_id == Empresa.id,
-    #         Empresa.id == Grupo.empresa_id,
-    #         Grupo.id == grupo_id
-    #     ).one_or_none()
-    #
-    #     # verifica se o grupo existe e se pertence a empresa do usuario logado
-    #     if grupo:
-    #         form = GrupoForm(obj=grupo)
-    #         subgrupos = Subgrupo.query.filter_by(grupo_id=grupo.id).all()
-    #     else:
-    #         flash("Grupo não localizado", category="danger")
-    #         return redirect(url_for("equipamento.grupo_listar", subgrupo_id=subgrupo_id, equipamento_id=equipamento_id))
-    # else:
-    #     # Cadastrar
-    #     grupo = Grupo()
-    #     grupo.id = 0
-    #     form = GrupoForm()
-    #
-    # # Validação
-    # if form.validate_on_submit():
-    #     grupo.alterar_atributos(form)
-    #     if grupo.salvar():
-    #         # Mensagens
-    #         if grupo_id > 0:
-    #             flash("Grupo atualizado", category="success")
-    #         else:
-    #             flash("Grupo cadastrado", category="success")
-    #
-    #         return redirect(url_for("equipamento.grupo_listar", subgrupo_id=subgrupo_id, equipamento_id=equipamento_id))
-    #     else:
-    #         flash("Grupo não cadastrado/atualizado", category="danger")
-    # else:
-    #     flash_errors(form)
-    # return render_template("grupo_editar.html", form=form, grupo=grupo, subgrupo_id=subgrupo_id,
-    #                        equipamento_id=equipamento_id, subgrupos=subgrupos)
+    return redirect(url_for("equipamento.agrupamento_listar", grupo_id=grupo_id))
 
 
-@equipamento_blueprint.route('/grupo_ativar/<int:grupo_id>/<int:subgrupo_id>/<int:equipamento_id>',
-                             methods=['GET', 'POST'])
+@equipamento_blueprint.route('/grupo_excluir/<int:grupo_id>/<int:subgrupo_id>', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def grupo_ativar(grupo_id, subgrupo_id, equipamento_id):
-    """    Função que ativa/desativa um grupo    """
-    # instância um grupo com base no identificador
-    grupo = Grupo.query.filter_by(id=grupo_id).one_or_none()
-    # se o grupo existir
+def grupo_excluir(grupo_id, subgrupo_id):
+    # verificar se o grupo existe
+    grupo = Grupo.query.filter_by(id=grupo_id, empresa_id=current_user.empresa_id).one_or_none()
     if grupo:
-        # ativa/inativa o grupo
-        grupo.ativar_desativar()
-        # salva no banco de dados a alteração
-        if grupo.salvar():
-            flash("Grupo ativado/desativado com sucesso", category="success")
+        # realizar a contagem de subgrupos vinculados
+        # se for >0 não permite a exclusão
+        if Subgrupo.query.filter_by(grupo_id=grupo_id).count() == 0:
+            if grupo.excluir():
+                flash("Grupo excluído com sucesso", category="success")
+            else:
+                flash("Erro ao excluir o grupo", category="danger")
         else:
-            flash("Grupo não foi ativado/desativado", category="danger")
-    else:
-        flash("Grupo não registrado", category="danger")
-    return redirect(url_for('equipamento.grupo_listar', subgrupo_id=subgrupo_id, equipamento_id=equipamento_id))
+            flash("Não permitido excluir, pois existe subgrupo vinculado", category="danger")
+
+    return redirect(url_for("equipamento.agrupamento_listar", grupo_id=grupo_id, subgrupo_id=subgrupo_id))
+
+
+@equipamento_blueprint.route('/subgrupo_excluir/<int:grupo_id>/<int:subgrupo_id>', methods=['GET', 'POST'])
+@login_required
+@has_view('Equipamento')
+def subgrupo_excluir(grupo_id, subgrupo_id):
+    # verifica se o subgrupo existe
+    subgrupo = Subgrupo.query.filter(
+        Subgrupo.id == subgrupo_id,
+        Subgrupo.grupo_id == Grupo.id,
+        Grupo.empresa_id == current_user.empresa_id).one_or_none()
+
+    if subgrupo:
+        # realizar a contagem de empresas vinculadas
+        # se for > 0 não permite a exclusão
+        if Equipamento.query.filter_by(subgrupo_id=subgrupo_id).count() == 0:
+            if subgrupo.excluir():
+                flash("Subgrupo excluído com sucesso", category="success")
+            else:
+                flash("Erro ao excluir o subgrupo", category="danger")
+        else:
+            flash("Não permitido excluir, pois existe equipamento vinculado", category="danger")
+
+    return redirect(url_for("equipamento.agrupamento_listar", grupo_id=grupo_id, subgrupo_id=subgrupo_id))
 
 
 @equipamento_blueprint.route('/gerar_padrao_grupos/<int:subgrupo_id>/<int:equipamento_id>', methods=['GET', 'POST'])
@@ -468,44 +477,6 @@ def cadastrar_lote_grupos(subgrupo_id, equipamento_id):
             flash("Não foi gerado o arquivo de grupos rejeitados", category="danger")
 
     return redirect(url_for('equipamento.grupo_listar', subgrupo_id=subgrupo_id, equipamento_id=equipamento_id))
-
-
-@equipamento_blueprint.route('/subgrupo_ativar/<int:subgrupo_id>/<int:equipamento_id>', methods=['GET', 'POST'])
-@login_required
-@has_view('Equipamento')
-def subgrupo_ativar(subgrupo_id, equipamento_id):
-    """    Função que ativa/desativa um subgrupo    """
-    # instância um subgrupo com base no identificador
-    subgrupo = Subgrupo.query.filter_by(id=subgrupo_id).one_or_none()
-    # se o subgrupo existir
-    if subgrupo:
-        # ativa/inativa o subgrupo
-        subgrupo.ativar_desativar()
-        # salva no banco de dados a alteração
-        if subgrupo.salvar():
-            flash("Subgrupo ativado/desativado com sucesso", category="success")
-        else:
-            flash("Subgrupo não foi ativado/desativado", category="danger")
-    else:
-        flash("Subgrupo não registrado", category="danger")
-    return redirect(url_for("equipamento.subgrupo_listar", equipamento_id=equipamento_id))
-
-
-@equipamento_blueprint.route('/subgrupo_listar/<int:equipamento_id>', methods=['GET', 'POST'])
-@login_required
-@has_view('Equipamento')
-def subgrupo_listar(equipamento_id):
-    subgrupos = Subgrupo.query.filter(
-        Subgrupo.grupo_id == Grupo.id,
-        Grupo.empresa_id == Empresa.id,
-        Empresa.id == current_user.empresa_id).order_by(
-        Subgrupo.nome)
-
-    lista_subgrupos = [{'subgrupo': subgrupo,
-                        'total': Equipamento.query.filter(Equipamento.subgrupo_id == subgrupo.id).count()}
-                       for subgrupo in subgrupos]
-
-    return render_template('subgrupo_listar.html', subgrupos=lista_subgrupos, equipamento_id=equipamento_id)
 
 
 @equipamento_blueprint.route('/subgrupo_editar/<int:subgrupo_id>/<int:equipamento_id>', methods=['GET', 'POST'])

@@ -466,7 +466,8 @@ tipo_situacao_ordem_lista = [
     {'nome': 'CANCELADA', 'sigla': 'CANC'},
     {'nome': 'CONCLUÍDA', 'sigla': 'CONC'},
     {'nome': 'AGUARDANDO FISCALIZAÇÃO', 'sigla': 'AGFI'},
-    {'nome': 'ENCERRADA', 'sigla': 'ENCE'},
+    {'nome': 'REPROVADA', 'sigla': 'REPR'},
+    {'nome': 'APROVADA', 'sigla': 'ENCE'},
 ]
 
 situacao_tipo_ordem_perfil_manutentor_lista = [
@@ -494,7 +495,9 @@ fluxo_ordem_lista = [
     {'de': 'PARA', 'para': 'AGEX'},
     {'de': 'CANC', 'para': 'AGFI'},
     {'de': 'CONC', 'para': 'AGFI'},
+    {'de': 'AGFI', 'para': 'REPR'},
     {'de': 'AGFI', 'para': 'ENCE'},
+    {'de': 'REPR', 'para': 'AGAP'},
 ]
 
 tipo_status_ordem_lista = [

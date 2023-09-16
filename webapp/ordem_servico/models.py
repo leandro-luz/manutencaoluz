@@ -1,8 +1,8 @@
 import datetime
 import logging
 from webapp import db
-from webapp.plano_manutencao.models import Atividade, ListaAtividade
-from webapp.usuario.models import PerfilManutentorUsuario, PerfilManutentor
+from webapp.plano_manutencao.models import ListaAtividade
+from webapp.usuario.models import PerfilManutentorUsuario
 from sqlalchemy import func
 from flask_login import current_user
 from flask import flash
@@ -124,6 +124,7 @@ class TramitacaoOrdem(db.Model):
             return False
 
     def alterar_atributos(self, ordem_id, tipo_situacao_id):
+        """Função para alterar os atributos"""
         self.ordemservico_id = ordem_id
         self.tiposituacaoordem_id = tipo_situacao_id
         self.usuario_id = current_user.id
@@ -256,15 +257,14 @@ class OrdemServico(db.Model):
         """Função para retornar o número para a proxima OS"""
         return db.session.query(func.max(OrdemServico.codigo)).first()[0] + 1
 
-    def verificar_ordem_perfil_manutentor(self):
+    @staticmethod
+    def verificar_ordem_perfil_manutentor():
         resultado = False
 
-        if OrdemServico.query.filter(
-                OrdemServico.id == self.id,
-                OrdemServico.tiposituacaoordem_id == TipoSituacaoOrdemPerfilManutentor.tiposituacaoordem_id,
+        if TipoSituacaoOrdemPerfilManutentor.query.filter(
                 TipoSituacaoOrdemPerfilManutentor.perfilmanutentor_id == PerfilManutentorUsuario.perfilmanutentor_id,
-                PerfilManutentorUsuario.ativo == True,
-                PerfilManutentorUsuario.usuario_id == current_user.id).one_or_none():
+                PerfilManutentorUsuario.usuario_id == current_user.id,
+                TipoSituacaoOrdemPerfilManutentor.tiposituacaoordem_id == OrdemServico.tiposituacaoordem_id).count() > 0:
             resultado = True
 
         return resultado

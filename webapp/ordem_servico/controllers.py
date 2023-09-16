@@ -38,11 +38,11 @@ def ordem_listar():
         Grupo.empresa_id == Empresa.id,
         Empresa.id == current_user.empresa_id
     )
+
     # Lista de ordens filtrada pelo tipo de perfil_manutentor do usuario
     ordens_by_perfil = OrdemServico.query.filter(
         OrdemServico.tiposituacaoordem_id == TipoSituacaoOrdemPerfilManutentor.tiposituacaoordem_id,
         TipoSituacaoOrdemPerfilManutentor.perfilmanutentor_id == PerfilManutentorUsuario.perfilmanutentor_id,
-        PerfilManutentorUsuario.ativo == True,
         PerfilManutentorUsuario.usuario_id == current_user.id
     )
 
@@ -51,7 +51,19 @@ def ordem_listar():
     # ordenação pelo código
     ordens = sorted(ordens_p, key=lambda ordem: ordem.codigo, reverse=True)
 
-    return render_template('ordem_servico_listar.html', ordens=ordens, lib_solicitante=lib_solicitante)
+    form = OrdemServicoForm()
+    form.tipo.choices = [(0, '')] + [(tipo.id, tipo.nome)
+                                     for tipo in TipoOrdem.query.filter_by(plano=False)]
+    equipamentos = Equipamento.query.filter(
+        Equipamento.subgrupo_id == Subgrupo.id,
+        Subgrupo.grupo_id == Grupo.id,
+        Grupo.empresa_id == Empresa.id,
+        Empresa.id == current_user.empresa_id).order_by(
+        Equipamento.descricao_curta).order_by(
+        Equipamento.descricao_curta.desc())
+    form.equipamento.choices = [(0, '')] + [(eq.id, eq.descricao_curta) for eq in equipamentos]
+
+    return render_template('ordem_servico_listar.html', ordens=ordens, lib_solicitante=lib_solicitante, form=form)
 
 
 @ordem_servico_blueprint.route('/ordem_editar/<int:ordem_id>', methods=['GET', 'POST'])
@@ -124,6 +136,7 @@ def ordem_editar(ordem_id):
             listaatividade_id = ordem.listaatividade_id
 
     else:
+
         if not Usuario.verifica_perfil_manutentor('SOLICITANTE'):
             flash("Usuário não permitido criar nova Ordem de Serviço", category="danger")
             return redirect(url_for("ordem_servico.ordem_listar"))
@@ -134,7 +147,6 @@ def ordem_editar(ordem_id):
             form = OrdemServicoForm()
             form_tramitacao = TramitacaoForm()
             form_atividade = AtividadeForm()
-
             new = True
 
             eq_d = form.equipamento.data
@@ -164,13 +176,15 @@ def ordem_editar(ordem_id):
 
     # Validação
     if form.validate_on_submit():
+
         ordem.alterar_atributos(form, new)
         # Verificando se o usuário pode executar esta atividade
-        if ordem.verificar_ordem_perfil_manutentor():
+        if OrdemServico.verificar_ordem_perfil_manutentor():
             if ordem.salvar():
                 # Mensagens
                 if ordem_id > 0:
                     flash("Ordem de Serviço Atualizado", category="success")
+
                 else:
                     TramitacaoOrdem.insere_tramitacao(form.descricao.data, situacao, "ABERTURA DA ORDEM DE SERVIÇO")
 

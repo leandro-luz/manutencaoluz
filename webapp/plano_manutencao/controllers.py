@@ -21,8 +21,7 @@ plano_manutencao_blueprint = Blueprint(
 )
 
 
-@plano_manutencao_blueprint.route('/listaatividade_preenchida/<int:ordem_id>',
-                                  methods=['GET', 'POST'])
+@plano_manutencao_blueprint.route('/listaatividade_preenchida/<int:ordem_id>', methods=['GET', 'POST'])
 @login_required
 @has_view('Plano de Manutenção')
 def listaatividade_preenchida(ordem_id):
@@ -367,6 +366,7 @@ def plano_editar(plano_id):
                 .order_by(Atividade.posicao.asc()).all()
 
             form_atividade = AtividadeForm()
+            form_atividade.posicao.data = len(atividades) + 1
             form_atividade.valorbinario_id.choices = [(0, '')] + [(tb.id, tb.nome) for tb in TipoBinario.query.all()]
             form_atividade.tipoparametro_id.choices = [(0, '')] + [(tp.id, tp.nome) for tp in TipoParametro.query.all()]
 
@@ -386,6 +386,7 @@ def plano_editar(plano_id):
         to_d = form.tipoordem.data
 
         form_atividade = AtividadeForm()
+
     # Listas
     form.tipoordem.choices = [(0, '')] + [(to.id, to.nome) for to in TipoOrdem.query.filter_by(plano=True)]
     form.tipodata.choices = [(tp.id, tp.nome) for tp in TipoData.query.all()]

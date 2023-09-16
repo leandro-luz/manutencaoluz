@@ -46,7 +46,7 @@ class TelaContratoForm(Form):
             if self.tela.data == 0:
                 flash("Tela não selecionada", category="danger")
                 return False
-            return False
+            return True
         else:
             return False
 

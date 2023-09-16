@@ -21,7 +21,9 @@ contrato_blueprint = Blueprint(
 def contrato_listar() -> str:
     """    Função que retorna uma lista de planos    """
     # Montagem do dicionario com os contratos e as quantidade de empresas vinculadas
-    lista_contratos = [{'contrato': contrato, 'total': Empresa.query.filter(Empresa.contrato_id == contrato.id).count()}
+    lista_contratos = [{'contrato': contrato,
+                        'total': Empresa.query.filter(Empresa.contrato_id == contrato.id).count(),
+                        'telas': Telacontrato.contagem_telas_ativas(contrato.id)}
                        for contrato in
                        Contrato.query.filter(Contrato.empresa_gestora_id == current_user.empresa_id).order_by(
                            Contrato.nome.asc())]
@@ -56,7 +58,6 @@ def contrato_editar(contrato_id: int):
             # Lista de empresas vinculadas ao contrato
             empresas = Empresa.query.filter_by(contrato_id=contrato.id).all()
 
-
             # LISTA DAS TELAS PARA O CONTRATO
             # busca a lista das telas do contrato
             telas_liberadas = Telacontrato.query.filter_by(contrato_id=contrato_id).all()
@@ -74,7 +75,7 @@ def contrato_editar(contrato_id: int):
             # Lista de telas permitidas sem repetições
 
             form_telacontrato.tela.choices = [(0, '')] + [(tela.id, tela.nome) for tela in telascontrato if
-                                              tela.id not in {tl.id for tl in telasexistentes}]
+                                                          tela.id not in {tl.id for tl in telasexistentes}]
 
         else:
             flash("Contrato não localizado", category="danger")
@@ -85,7 +86,6 @@ def contrato_editar(contrato_id: int):
         contrato = Contrato()  # instancia um novo contrato
         contrato.id = 0  # atribui 0 para o id deste novo contrato
         form = ContratoForm()  # instância um novo formulário
-
 
     # --------- VALIDAÇÕES E AÇÕES
     # válida as informações do formulário
@@ -185,7 +185,6 @@ def telacontrato_editar(contrato_id: int):
     if contrato:
         # instância uma tela do contrato
         telacontrato = Telacontrato()
-
         if form.validate_on_submit():
             # altera as informaçoes da tela do contrato com base no formulário de entrada
             telacontrato.alterar_atributos(form, contrato_id)

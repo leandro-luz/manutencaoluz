@@ -26,9 +26,9 @@ class Interessado(db.Model):
 
     def alterar_atributos(self, form) -> None:
         """    Função que alterar os atributos do objeto    """
-        self.nome_fantasia = form.nome_fantasia.data
+        self.nome_fantasia = form.nome_fantasia.data.upper()
         self.cnpj = form.cnpj.data
-        self.email = form.email.data
+        self.email = form.email.data.upper()
         self.telefone = form.telefone.data
         self.data_solicitacao = datetime.datetime.now()
 
@@ -153,6 +153,7 @@ class Empresa(db.Model):
             self.data_cadastro = datetime.datetime.now()
 
     def alterar_atributos(self, form, empresa_id, tipoempresa_id, new=False) -> None:
+        """Função para alterar os atributos"""
         self.alterar_atributos_externo(form, empresa_id, tipoempresa_id, new)
         self.razao_social = form.razao_social.data.upper()
         self.data_abertura = form.data_abertura.data
@@ -186,6 +187,7 @@ class Empresa(db.Model):
             return False
 
     def importar_interessado(self, interessado: [Interessado]) -> None:
+        """Função para importar as informações do interessado"""
         self.nome_fantasia = interessado.nome_fantasia.upper()
         self.cnpj = interessado.cnpj
         self.email = interessado.email.upper()
@@ -193,6 +195,7 @@ class Empresa(db.Model):
 
     @staticmethod
     def validar_cnpj(cnpj: str) -> bool:
+        """Função para validar o cnpj"""
         length_cnpj = 14
 
         # deixado somente os números do cnpj

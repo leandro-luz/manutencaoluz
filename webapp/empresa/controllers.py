@@ -163,8 +163,7 @@ def new_admin(empresa: [Empresa], enviar_email):
                                                      contrato_id=empresa.contrato_id).all()
         for telacontrato in telascontrato:
             # cadastro de perfisacesso para o administrador
-            telaperfilacesso = TelaPerfilAcesso(perfilacesso_id=perfilacesso.id, tela_id=telacontrato.tela_id,
-                                                ativo=True)
+            telaperfilacesso = TelaPerfilAcesso(perfilacesso_id=perfilacesso.id, tela_id=telacontrato.tela_id)
             if not telaperfilacesso.salvar():
                 flash("Erro ao salvar a tela no perfil", category="danger")
                 break

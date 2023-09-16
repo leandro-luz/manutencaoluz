@@ -8,59 +8,89 @@
     </span>
 </a>
 
-<h2> LISTA DE ORDENS DE SERVIÇOS </h2>
 
-{% if lib_solicitante %}
-<a href="{{ url_for('ordem_servico.ordem_editar', ordem_id=0) }}">
-    Adicionar
-</a>
-{% endif %}
+<div class="container">
+    <div class="row">
+        <div class="col-10">
+            <h2> LISTA DE ORDENS DE SERVIÇOS </h2>
+        </div>
 
-<input class="form-control" id="myInput" placeholder="Filtrar.." type="text"><br>
-<button onclick="exportar_lista('ordens_serviços.csv', 1)" type="button"> Exportar Lista</button>
+        <div class="col-4">
+            <input class="form-control" id="myInput" placeholder="Filtrar.." type="text"><br>
+        </div>
 
-<table class="table">
-    <thead>
-    <tr>
-        <th scope="col">CÓDIGO</th>
-        <th scope="col">DESCRIÇÃO</th>
-        <th scope="col">EQUIPAMENTO</th>
-        <th scope="col">TIPO</th>
-        <th scope="col">SITUAÇÃO</th>
-        <th scope="col">STATUS</th>
-        <th scope="col">DATA ABERTURA</th>
-        <th scope="col">DATA PREVISTA</th>
-        <th scope="col">DATA FECHAMENTO</th>
-        <th></th>
-    </tr>
-    </thead>
-
-    <tbody id="myTable">
-    {% for ordem in ordens %}
-    <tr>
-        <th scope="row">{{ ordem.codigo }}</th>
-        <td>{{ ordem.descricao }}</td>
-        <td>{{ ordem.equipamento.descricao_curta }}</td>
-        <td>{{ ordem.tipoordem.sigla }}</td>
-        <td>{{ ordem.tiposituacaoordem.sigla }}</td>
-        <td>{{ ordem.tipostatusordem.sigla }}</td>
-        <td>{{ ordem.data_abertura }}</td>
-        <td>{{ ordem.data_prevista }}</td>
-        <td>{{ ordem.data_fechamento }}</td>
-        <td>
-            <a href="{{ url_for('ordem_servico.ordem_editar', ordem_id=ordem.id) }}">
-                <span data-tooltip="Informações">
-                    <i class="bi-caret-right fs-6"></i>
-                </span>
+        {% if lib_solicitante %}
+        <div class="col-1">
+            <a>
+               <span data-bs-target="#modal" data-bs-toggle="modal" data-tooltip="INCLUIR ORDEM DE SERVIÇO">
+                   <i class="bi-wrench-adjustable-circle fs-4">+</i>
+               </span>
             </a>
-        </td>
+            {% include "ordem_servico_incluir.html" %}
+        </div>
+        {% endif %}
 
-    </tr>
-    {% endfor %}
-    </tbody>
-</table>
+        <div class="col-1">
+            <button onclick="exportar_lista('ordens_serviços.csv', 1)" type="button">
+                <span data-tooltip="EXPORTAR LISTA">
+                    <i class="bi-download fs-6"></i>
+                </span>
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-10">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">CÓDIGO</th>
+                    <th scope="col">DESCRIÇÃO</th>
+                    <th scope="col">EQUIPAMENTO</th>
+                    <th scope="col">TIPO</th>
+                    <th scope="col">SITUAÇÃO</th>
+                    <th scope="col">STATUS</th>
+                    <th scope="col">DATA ABERTURA</th>
+                    <th scope="col">DATA PREVISTA</th>
+                    <th scope="col">DATA FECHAMENTO</th>
+                    <th></th>
+                </tr>
+                </thead>
+
+                <tbody id="myTable">
+
+                {% for ordem in ordens %}
+                <tr>
+                    <th scope="row">{{ ordem.codigo }}</th>
+                    <td>{{ ordem.descricao }}</td>
+                    <td>{{ ordem.equipamento.descricao_curta }}</td>
+                    <td>{{ ordem.tipoordem.sigla }}</td>
+                    <td>{{ ordem.tiposituacaoordem.sigla }}</td>
+                    <td>{{ ordem.tipostatusordem.sigla }}</td>
+                    <td>{{ ordem.data_abertura }}</td>
+                    <td>{{ ordem.data_prevista }}</td>
+                    <td>{{ ordem.data_fechamento }}</td>
+                    <td>
+                        <a href="{{ url_for('ordem_servico.ordem_editar', ordem_id=ordem.id) }}">
+                            <span data-tooltip="Informações">
+                                <i class="bi-caret-right fs-6"></i>
+                            </span>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+
+</div>
 
 </body>
+
 <script src="/static/js/exportar_consulta.js" type="text/javascript"></script>
 <script src="/static/js/filtro_coluna.js" type="text/javascript"></script>
 

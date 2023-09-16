@@ -42,11 +42,6 @@ class Periodicidade(db.Model):
     unidade = db.relationship("Unidade", back_populates="periodicidade")
     planomanutencao = db.relationship("PlanoManutencao", back_populates="periodicidade")
 
-    def __init__(self, nome, tempo, unidade_id) -> None:
-        self.nome = nome
-        self.tempo = tempo
-        self.unidade_id = unidade_id
-
     def __repr__(self):
         return f'<Periodicidade: {self.id}-{self.nome}>'
 
@@ -84,6 +79,7 @@ class ListaAtividade(db.Model):
         self.nome = self.data.strftime("%Y%m%d%H%M%S")
 
     def alterar_observacao(self, observacao):
+        """Função para alterar o campo observação"""
         self.observacao = observacao
         self.salvar()
 
@@ -286,6 +282,7 @@ class PlanoManutencao(db.Model):
         self.ativo = ativo
 
     def ativar_desativar(self):
+        """Função para ativar e desativar """
         if self.ativo:
             self.alterar_ativo(False)
         else:
@@ -305,6 +302,7 @@ class PlanoManutencao(db.Model):
 
     @staticmethod
     def salvar_lote(lote):
+        """Função para salvar em lote"""
         try:
             db.session.add_all(lote)
             db.session.commit()

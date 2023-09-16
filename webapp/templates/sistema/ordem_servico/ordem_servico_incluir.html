@@ -1,0 +1,27 @@
+<!-- Add New Modal -->
+<!-- Modal -->
+<div aria-hidden="true" aria-labelledby="modalLabel" class="modal fade"
+     id="modal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLabel">Cadastro de Ordem de Serviço</h5>
+                <button aria-label="Close" class="btn-close"
+                        data-bs-dismiss="modal" type="button">
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('ordem_servico.ordem_editar', ordem_id=0) }}" method="POST">
+                    {{form.csrf_token}}
+
+                    {{form.descricao.label}} {{form.descricao(size=80)}}<br>
+                    {{form.tipo.label}} {{form.tipo}}<br>
+                    {{form.equipamento.label}} {{form.equipamento}}<br>
+                    <input type="submit" value="Cadastrar"/>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>

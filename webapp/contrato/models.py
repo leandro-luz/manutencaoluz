@@ -25,11 +25,13 @@ class Contrato(db.Model):
         return f'<Contrato: {self.id}-{self.nome}>'
 
     def alterar_atributos(self, form) -> None:
+        """ Função para alterar os atributos """
         self.nome = form.nome.data.upper()
         self.ativo = form.ativo.data
         self.empresa_gestora_id = current_user.empresa_id
 
     def ativar_desativar(self):
+        """Função para ativar e desativar"""
         if self.ativo:
             self.ativo = False
         else:
@@ -71,7 +73,7 @@ class Tela(db.Model):
 
     def alterar_atributos(self, form) -> None:
         """    Altera os valores dos atributos da tela     """
-        self.nome = form.nome.data
+        self.nome = form.nome.data.upper()
         self.icon = form.icon.data
         self.url = form.url.data
         self.posicao = form.posicao.data
@@ -108,13 +110,6 @@ class Telacontrato(db.Model):
         self.contrato_id = contrato_id
         self.tela_id = form.tela.data
 
-    # def ativar_desativar(self) -> None:
-    #     """    Altera em ativo e inativo a tela do contrato de assinatura    """
-    #     if self.ativo:
-    #         self.ativo = False
-    #     else:
-    #         self.ativo = True
-
     def salvar(self) -> bool:
         """    Função para salvar no banco de dados o objeto"""
         try:
@@ -139,7 +134,7 @@ class Telacontrato(db.Model):
 
     @staticmethod
     def contagem_telas_ativas(contrato_id):
-        return Telacontrato.query.filter_by(ativo=True, contrato_id=contrato_id).count()
+        return Telacontrato.query.filter_by(contrato_id=contrato_id).count()
 
     @staticmethod
     def verifica_empresas_vinculadas(contrato_id):

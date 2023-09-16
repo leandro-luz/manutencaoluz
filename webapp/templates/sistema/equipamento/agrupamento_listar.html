@@ -25,7 +25,7 @@
                    <i class="bi-bounding-box fs-4">+</i>
                </span>
             </a>
-            {% include "grupo_editar.html" %}
+            {% include "agrupamento_editar.html" %}
         </div>
 
     </div>
@@ -51,14 +51,14 @@
                     <td>{{ grupo['grupo'].nome }}</td>
                     <td>{{ grupo['total'] }}</td>
                     <td>
-                        <a href="#">
+                        <a href="{{ url_for('equipamento.grupo_excluir', grupo_id=grupo['grupo'].id, subgrupo_id=subgrupo_id) }}">
                         <span data-tooltip="Excluir">
                            <i class="bi-trash fs-6"></i>
                         </span>
                         </a>
                     </td>
                     <td>
-                        <a href="{{ url_for('equipamento.grupo_listar', grupo_id=grupo['grupo'].id) }}">
+                        <a href="{{ url_for('equipamento.agrupamento_listar', grupo_id=grupo['grupo'].id, subgrupo_id=subgrupo_id) }}">
                         <span data-tooltip="Subrupos">
                             <i class="bi-caret-right fs-6"></i>
                         </span>
@@ -87,6 +87,7 @@
                     <th scope="col">NOME</th>
                     <th scope="col">TOTAL DE EQUIPAMENTOS</th>
                     <th scope="col"></th>
+                    <th scope="col"></th>
 
                 </tr>
                 </thead>
@@ -96,17 +97,67 @@
                     <td>{{ subgrupo['subgrupo'].nome }}</td>
                     <td>{{ subgrupo['total'] }}</td>
                     <td>
-                        <a href="#">
+                        <a href="{{ url_for('equipamento.subgrupo_excluir', grupo_id=grupo_id,
+                         subgrupo_id=subgrupo['subgrupo'].id) }}">
                         <span data-tooltip="Excluir">
                            <i class="bi-trash fs-6"></i>
                         </span>
                         </a>
                     </td>
+
+                    <td>
+                        <a href="{{ url_for('equipamento.agrupamento_listar', grupo_id=grupo_id, subgrupo_id=subgrupo['subgrupo'].id) }}">
+                        <span data-tooltip="Equipamentos">
+                            <i class="bi-caret-right fs-6"></i>
+                        </span>
+                        </a>
+                    </td>
+
+
                 </tr>
                 {% endfor %}
                 </tbody>
             </table>
         </div>
+
+
+        <div class="col-4">
+            <div class="row">
+
+                {% if subgrupo %}
+                <h5>EQUIPAMENTOS >> {{ subgrupo.nome }}</h5>
+                {% else %}
+                <h5>EQUIPAMENTOS</h5>
+                {% endif %}
+
+            </div>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">DESCRIÇÃO CURTA</th>
+                    <th scope="col"></th>
+                </tr>
+                </thead>
+                <tbody id="tabela_equipamento">
+                {% for equipamento in equipamentos %}
+                <tr>
+                    <td>{{ equipamento.descricao_curta }}</td>
+
+                    <td>
+                        <a href="{{ url_for('equipamento.equipamento_editar', equipamento_id=equipamento.id) }}">
+                            <span data-tooltip="Informações">
+                                <i class="bi-caret-right fs-6"></i>
+                            </span>
+                        </a>
+                    </td>
+                </tr>
+
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+
     </div>
 </div>
 

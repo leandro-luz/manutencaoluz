@@ -40,6 +40,7 @@ class PerfilAcesso(db.Model):
         return f'<PerfilAcesso: {self.id}-{self.nome}>'
 
     def ativar_desativar(self):
+        """Função para ativar e desativar"""
         if self.ativo:
             self.ativo = False
         else:
@@ -114,6 +115,7 @@ class PerfilManutentorUsuario(db.Model):
         return f'<PerfilManutentorUsuario: {self.id}-{self.perfilmanutentor_id}-{self.usuario_id}>'
 
     def alterar_atributos(self, form, usuario_id):
+        """Função para alterar os atributos"""
         self.perfilmanutentor_id = form.perfilmanutentor.data
         self.usuario_id = usuario_id
 
@@ -162,26 +164,33 @@ class Senha(db.Model):
         return f'<Senha: {self.id}-{self.senha}>'
 
     def verificar_senha(self, senha):
+        """Função para verificar a senha"""
         # return bcrypt.check_password_hash(self.senha, senha)
         return self.senha == senha
 
     def alterar_senha_temporaria(self, temporario: bool) -> None:
+        """Função para alterar a senha temporária"""
         self.senha_temporaria = temporario
 
     def alterar_senha(self, senha) -> None:
+        """Função para alterar a senha"""
         # self.senha = bcrypt.generate_password_hash(senha)
         self.senha = senha
 
     def alterar_expiravel(self, senha_expira: bool) -> None:
+        """Função para alterar se é expiravel a senha"""
         self.senha_expira = senha_expira
 
     def alterar_data_expiracao(self):
+        """Função para alterar a data de expiração"""
         self.data_expiracao = datetime.datetime.now() + datetime.timedelta(90)
 
     def alterar_contador_accesso_temporario(self):
+        """Função para incrementar o contador de acesso"""
         self.contador_acesso_temporario += 1
 
     def alterar_atributos(self, form):
+        """Função para alterar os atributos"""
         # self.senha = bcrypt.generate_password_hash(senha)
         self.alterar_senha(form.senha.data)
         self.alterar_senha_temporaria(False)
@@ -200,6 +209,7 @@ class Senha(db.Model):
             return False
 
     def verificar_data_expiracao(self) -> bool:
+        """Função para verificar se a data está expirada"""
         limite = datetime.timedelta(30)
         valor = self.data_expiracao - datetime.datetime.now()
 
@@ -274,6 +284,7 @@ class Usuario(db.Model):
 
     @staticmethod
     def salvar_lote(lote):
+        """Função para salvar em lote"""
         try:
             db.session.add_all(lote)
             db.session.commit()
@@ -285,9 +296,7 @@ class Usuario(db.Model):
 
     # # @cache.memoize(60)
     def tela_permitida(self, nome: str) -> bool:
-        """
-        Verifica se a tela está cadastrada para o perfil e se está ativo
-        """
+        """Função que verifica se a tela está cadastrada para o perfil e se está ativo """
         for telacontrato in TelaPerfilAcesso.query.filter_by(perfilacesso_id=self.perfilacesso_id).all():
             tela = Tela.query.filter_by(id=telacontrato.tela_id).one_or_none()
             if tela.nome == nome:
@@ -295,12 +304,15 @@ class Usuario(db.Model):
         return False
 
     def get_id(self):
+        """Função que retorno o id do usuário"""
         return self.id
 
     def alterar_email(self, email):
+        """Função que altera o atributo email"""
         self.email = email.upper()
 
     def set_active(self, ativo):
+        """Função que ativo o usuario"""
         self.ativo = ativo
 
     def ping(self):
@@ -310,6 +322,7 @@ class Usuario(db.Model):
 
     @property
     def is_authenticated(self):
+        """Função que verifica se o usuario está autenticado"""
         if isinstance(self, AnonymousUserMixin):
             return False
         else:
@@ -317,16 +330,19 @@ class Usuario(db.Model):
 
     @property
     def is_active(self):
+        """Função que verifica se o usuario está ativo"""
         return self.ativo
 
     @property
     def is_anonymous(self):
+        """Verifica se o usuário é anonimo"""
         if isinstance(self, AnonymousUserMixin):
             return True
         else:
             return False
 
     def create_token(self, expiration=60):
+        """Função que cria um token"""
         token = jwt.encode(
             {"id": self.id,
              "email": self.email,
@@ -337,6 +353,7 @@ class Usuario(db.Model):
         return token
 
     def alterar_atributos(self, form, empresa_id, new=False):
+        """Função que altera o atributos"""
         self.nome = form.nome.data.upper()
         self.email = form.email.data.upper()
         self.empresa_id = empresa_id
@@ -370,7 +387,6 @@ class Usuario(db.Model):
         if PerfilManutentor.query.filter(
                 PerfilManutentor.nome == perfil_nome,
                 PerfilManutentorUsuario.perfilmanutentor_id == PerfilManutentor.id,
-                PerfilManutentorUsuario.ativo == True,
                 Usuario.id == PerfilManutentorUsuario.usuario_id,
                 Usuario.id == current_user.id
         ).one_or_none():
@@ -442,10 +458,12 @@ class TelaPerfilAcesso(db.Model):
             return False
 
     def alterar_atributos(self, form, perfilacesso_id):
+        """Função para alterar os atributos"""
         self.perfilacesso_id = perfilacesso_id
         self.tela_id = form.tela.data
 
     def ativar_desativar(self):
+        """Função para ativar e desativar"""
         if self.ativo:
             self.ativo = False
         else:
@@ -459,11 +477,13 @@ class TelaPerfilAcesso(db.Model):
 
     @staticmethod
     def retornar_name_tela(id_):
+        """Função que retorna o nome da tela"""
         tela = Tela.query.filter_by(id=id_).first()
         return tela.get_name()
 
     @staticmethod
     def alterar_perfil(ativo: bool, *args):
+        """Função que alterar o perfil acesso"""
         [[[TelaPerfilAcesso.save_change(ativo, item) for item in posicao] for posicao in id_] for id_ in args]
 
     @staticmethod

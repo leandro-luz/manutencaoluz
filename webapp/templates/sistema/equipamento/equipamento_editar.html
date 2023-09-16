@@ -24,9 +24,11 @@
                       method="POST">
                     {{form.csrf_token}}
 
-
+                    Agrupamento:
+                    {{form.grupo.label}} {{form.grupo}}
                     {{form.subgrupo.label}} {{form.subgrupo}}
-                    <a href="{{ url_for('equipamento.subgrupo_listar', equipamento_id=equipamento.id) }}">
+                    <a href="{{ url_for('equipamento.agrupamento_listar',
+                    grupo_id=grupo_id, subgrupo_id=subgrupo_id) }}">
                         <span data-tooltip="Atualizar">
                             <i class="bi-caret-down fs-6"></i>
                         </span>

@@ -1,90 +1,112 @@
 {% extends "sistema_base.html" %}
 {% block body %}
 <body>
-<a href="{{ url_for('ordem_servico.ordem_listar') }}">Voltar</a>
-<form action="{{ url_for('ordem_servico.ordem_editar', ordem_id=ordem.id) }}" method="POST">
-    {{form.csrf_token}}
 
-    {% if ordem.id == 0 %}
-    <h2>Cadastro de Ordens de Serviços</h2>
-    {{form.descricao.label}} {{form.descricao(size=80)}}<br>
-    {{form.tipo.label}} {{form.tipo}}<br>
-    {{form.equipamento.label}} {{form.equipamento}}<br>
-    <input type="submit" value="Cadastrar"/>
-
-    {% else %}
-    <h2>Ordem de Serviço</h2>
-    Código: {{ ordem.codigo }}<br>
-    Descrição: {{ ordem.descricao }}<br>
-    Tipo de Ordem: {{ ordem.tipoordem.nome}}<br>
-    Equipamento: {{ ordem.equipamento.descricao_curta}}<br>
-    Localização: {{ ordem.equipamento.setor.nome }} /
-    {{ ordem.equipamento.local.nome }} /
-    {{ ordem.equipamento.pavimento.nome }}<br>
-    Solicitante: {{ ordem.usuario.nome }}<br>
-    Data Abertura: {{ ordem.data_abertura }}<br>
-    Data Prevista: {{ ordem.data_prevista }}<br>
-    Data Fechamento: {{ ordem.data_fechamento }}<br>
-    Status Atual: {{ ordem.tiposituacaoordem.nome }}<br>
-    {% endif %}
-
-</form>
-<br>
-
-
-{% if lib_executante and ordem.tiposituacaoordem.sigla == "AGEX" %}
-<button class="btn btn-info" data-bs-target="#modal_atividade_preencher"
-        data-bs-toggle="modal" type="button">
-    ATIVIDADES
-</button>
-{% include "atividade_preencher.html" %}
-{% endif %}
-
-{% if ordem.tiposituacaoordem.sigla != "AGEX" %}
-{% if lib_aprovador or lib_fiscalizador %}
-{% for nova_t in novas_tramitacoes %}
-{% if not nova_t.sigla == 'CONC' %}
-<a href="{{ url_for('ordem_servico.tramitacao', ordem_id=ordem.id, tipo_situacao_id=nova_t.id) }}">
-    <button class="btn btn-info"> {{ nova_t.nome }}</button>
+<a href="{{ url_for('ordem_servico.ordem_listar') }}">
+    <span data-tooltip="VOLTAR">
+        <i class="bi-backspace fs-6"></i>
+    </span>
 </a>
-{% endif %}
-{% endfor %}
-{% endif %}
-{% endif %}
 
-{% if ordem.tiposituacaoordem.sigla == "CONC" or ordem.tiposituacaoordem.sigla == "FISC" %}
-<a href="{{ url_for('plano_manutencao.listaatividade_preenchida', ordem_id=ordem.id) }}">
-    <button class="btn btn-secondary">ATIVIDADES PREENCHIDAS</button>
-</a>
-{% endif %}
-<br><br>
 
-<h6>TRAMITAÇÕES</h6>
-<input class="form-control" id="myInput" placeholder="Filtrar.." type="text"><br>
-<table class="table">
-    <thead>
-    <tr>
-        <th scope="col">SITUAÇÃO</th>
-        <th scope="col">DATA</th>
-        <th scope="col">USUÁRIO</th>
-        <th scope="col">OBSERVAÇÃO</th>
+<div class="container">
+    <div class="row">
+        <div class="col-10">
+            <h2>ORDEM DE SERVIÇO</h2>
+        </div>
+    </div>
 
-    </tr>
-    </thead>
+    <div class="row">
+        <div class="col-10">
+            <form action="{{ url_for('ordem_servico.ordem_editar', ordem_id=ordem.id) }}" method="POST">
+                {{form.csrf_token}}
 
-    <tbody id="myTable">
-    {% for tramitacao in tramitacoes %}
-    <tr>
-        <th scope="row">{{ tramitacao.tiposituacaoordem.sigla }}</th>
-        <td>{{ tramitacao.data }}</td>
-        <td>{{ tramitacao.usuario.nome }}</td>
-        <td>{{ tramitacao.observacao }}</td>
-    </tr>
-    {% endfor %}
-    </tbody>
-</table>
-<br><br>
+                Código: {{ ordem.codigo }}<br>
+                Descrição: {{ ordem.descricao }}<br>
+                Tipo de Ordem: {{ ordem.tipoordem.nome}}<br>
+                Equipamento: {{ ordem.equipamento.descricao_curta}}<br>
+                Localização: {{ ordem.equipamento.setor.nome }} /
+                {{ ordem.equipamento.local.nome }} /
+                {{ ordem.equipamento.pavimento.nome }}<br>
+                Solicitante: {{ ordem.usuario.nome }}<br>
+                Data Abertura: {{ ordem.data_abertura }}<br>
+                Data Prevista: {{ ordem.data_prevista }}<br>
+                Data Fechamento: {{ ordem.data_fechamento }}<br>
+                Status Atual: {{ ordem.tiposituacaoordem.nome }}<br><br>
+            </form>
 
+            {% if lib_executante and ordem.tiposituacaoordem.sigla == "AGEX" %}
+            <button class="btn btn-info" data-bs-target="#modal_atividade_preencher"
+                    data-bs-toggle="modal" type="button">
+                ATIVIDADES
+            </button>
+            {% include "atividade_preencher.html" %}
+            {% endif %}
+
+
+            {% if ordem.tiposituacaoordem.sigla != "AGEX" %}
+            {% if lib_aprovador or lib_fiscalizador %}
+            {% for nova_t in novas_tramitacoes %}
+            {% if not nova_t.sigla == 'CONC' %}
+            <a href="{{ url_for('ordem_servico.tramitacao', ordem_id=ordem.id, tipo_situacao_id=nova_t.id) }}">
+                <button class="btn btn-info"> {{ nova_t.nome }}</button>
+            </a>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            {% endif %}
+
+            {% if ordem.tiposituacaoordem.sigla == "CONC" or ordem.tiposituacaoordem.sigla == "FISC" %}
+            <a href="{{ url_for('plano_manutencao.listaatividade_preenchida', ordem_id=ordem.id) }}">
+                <button class="btn btn-secondary">ATIVIDADES PREENCHIDAS</button>
+            </a>
+            {% endif %}
+            <br><br>
+
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-10">
+
+
+            <div class="col-4">
+                <h6>TRAMITAÇÕES</h6>
+            </div>
+
+            <div class="col-4">
+                <input class="form-control" id="myInput" placeholder="Filtrar.." type="text"><br>
+            </div>
+
+
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">SITUAÇÃO</th>
+                    <th scope="col">DATA</th>
+                    <th scope="col">USUÁRIO</th>
+                    <th scope="col">OBSERVAÇÃO</th>
+
+                </tr>
+                </thead>
+
+                <tbody id="myTable">
+                {% for tramitacao in tramitacoes %}
+                <tr>
+                    <th scope="row">{{ tramitacao.tiposituacaoordem.sigla }}</th>
+                    <td>{{ tramitacao.data }}</td>
+                    <td>{{ tramitacao.usuario.nome }}</td>
+                    <td>{{ tramitacao.observacao }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <br><br>
+
+        </div>
+    </div>
+
+</div>
 
 </body>
 

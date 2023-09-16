@@ -15,8 +15,9 @@
                 <form action="{{ url_for('plano_manutencao.listaatividade_editar',ordem_id=ordem.id,
                listaatividade_id=listaatividade_id, tramitacao_sigla='CONC') }}"
                       id="form_atividade" method="POST" onsubmit="return coletar_valores_atividade();">
-
                     {{form_atividade.csrf_token}}
+
+                    {% if atividades %}
                     <table class="table">
                         <thead>
                         <tr>
@@ -45,6 +46,7 @@
 
                         </tbody>
                     </table>
+                    {% endif %}
 
                     <h6>OBSERVAÇÕES:</h6>
                     {{form_listaatividade.observacao}}
@@ -56,10 +58,11 @@
                 <br>
                 {% for nova_t in novas_tramitacoes %}
                 {% if not nova_t.sigla == 'CONC' %}
-                <a href="{{ url_for('ordem_servico.tramitacao', ordem_id=ordem.id, tipo_situacao_id=nova_t.id) }}">
-                    <button class="btn btn-info" onclick="coletar_valores_atividade()"> {{ nova_t.sigla }}</button>
-                </a>
-
+                <form action="{{ url_for('ordem_servico.tramitacao', ordem_id=ordem.id, tipo_situacao_id=nova_t.id) }}"
+                      id="form_atividade_2" method="POST" onsubmit="return coletar_valores_atividade();">
+                    <button class="btn btn-info" type="submit">{{ nova_t.nome }}</button>
+                    <br>
+                </form>
 
                 {% endif %}
                 {% endfor %}
