@@ -5,7 +5,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalLabel">Lista de Atividades</h5>
+                <h5 class="modal-title" id="modalLabel">{{ordem.tiposituacaoordem.texto_atual}}</h5>
                 <button aria-label="Close" class="btn-close"
                         data-bs-dismiss="modal" type="button">
                 </button>
@@ -16,8 +16,10 @@
                listaatividade_id=listaatividade_id, tramitacao_sigla='CONC') }}"
                       id="form_atividade" method="POST" onsubmit="return coletar_valores_atividade();">
                     {{form_atividade.csrf_token}}
+                    {{form_listaatividade.csrf_token}}
 
-                    {% if atividades %}
+
+                    {% if atividades%}
                     <table class="table">
                         <thead>
                         <tr>
@@ -48,24 +50,53 @@
                     </table>
                     {% endif %}
 
-                    <h6>OBSERVAÇÕES:</h6>
-                    {{form_listaatividade.observacao}}
-                    <br><br>
+                    {% if ordem.tiposituacaoordem.sigla == 'AGEX'%}
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th scope="col"><h6>TRAMITAÇÃO:</h6></th>
+                            <th scope="col"><h6>OBSERVAÇÕES:</h6></th>
+                        </tr>
+                        </thead>
 
-                    <input id="valores" name="valores" type="hidden" value="">
-                    <button class="btn btn-info" type="submit">Concluída</button>
-                </form>
-                <br>
-                {% for nova_t in novas_tramitacoes %}
-                {% if not nova_t.sigla == 'CONC' %}
-                <form action="{{ url_for('ordem_servico.tramitacao', ordem_id=ordem.id, tipo_situacao_id=nova_t.id) }}"
-                      id="form_atividade_2" method="POST" onsubmit="return coletar_valores_atividade();">
-                    <button class="btn btn-info" type="submit">{{ nova_t.nome }}</button>
-                    <br>
+                        <tbody id="myTable2">
+                        <tr>
+                            <td>
+                                <input id="valores" name="valores" type="hidden" value="">
+                                <button class="btn btn-info" type="submit">CONCLUIR</button>
+                            </td>
+                            <td> {{form_listaatividade.observacao}}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    {% endif %}
                 </form>
 
-                {% endif %}
-                {% endfor %}
+
+                <table class="table">
+
+                    <tbody id="myTable3">
+                    {% for nova_t in novas_tramitacoes %}
+                    {% if not nova_t.sigla == 'CONC' %}
+                    <tr>
+                        <form action="{{ url_for('ordem_servico.tramitacao', ordem_id=ordem.id,
+                    tipo_situacao_id=nova_t.id) }}"
+                              id="form_atividade_2" method="POST" onsubmit="return coletar_valores_atividade(true);">
+                            {{form_listaatividade.csrf_token}}
+
+                            <td>
+                                <button class="btn btn-info" type="submit">{{ nova_t.nome }}</button>
+                            </td>
+
+                            <td> {{form_listaatividade.observacao}}</td>
+
+                        </form>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                    </tbody>
+                </table>
+
 
             </div>
         </div>

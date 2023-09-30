@@ -32,6 +32,8 @@ class TipoSituacaoOrdem(db.Model):
     id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
     nome = db.Column(db.String(50), nullable=False, index=True)
     sigla = db.Column(db.String(5), nullable=False, index=True)
+    texto_atual = db.Column(db.String(20), nullable=False)
+    texto_futuro = db.Column(db.String(20), nullable=False)
 
     ordemservico = db.relationship("OrdemServico", back_populates="tiposituacaoordem")
     tramitacaoordem = db.relationship("TramitacaoOrdem", back_populates="tiposituacaoordem")
@@ -103,7 +105,7 @@ class TramitacaoOrdem(db.Model):
     tiposituacaoordem_id = db.Column(db.Integer(), db.ForeignKey("tipo_situacao_ordem.id"), nullable=False)
 
     data = db.Column(db.DateTime(), nullable=False)
-    observacao = db.Column(db.String(200), nullable=False)
+    observacao = db.Column(db.String(200), nullable=True)
 
     tiposituacaoordem = db.relationship("TipoSituacaoOrdem", back_populates="tramitacaoordem")
     ordemservico = db.relationship("OrdemServico", back_populates="tramitacaoordem")
@@ -128,7 +130,6 @@ class TramitacaoOrdem(db.Model):
         self.ordemservico_id = ordem_id
         self.tiposituacaoordem_id = tipo_situacao_id
         self.usuario_id = current_user.id
-        self.observacao = "teste..."
         self.data = datetime.datetime.now()
 
         # Criando o objeto OrdemServiço
@@ -140,24 +141,35 @@ class TramitacaoOrdem(db.Model):
         situacao = TipoSituacaoOrdem.query.filter_by(id=tipo_situacao_id).one_or_none()
 
         # Alterando o status do ordem
-        if situacao.sigla == "CONC":
-            status = TipoStatusOrdem.query.filter_by(sigla='CONC').one_or_none()
-            ordem.tipostatusordem_id = status.id
-        if situacao.sigla == "CANC":
-            status = TipoStatusOrdem.query.filter_by(sigla='CANC').one_or_none()
+        if situacao.sigla in ["CONC", "CANC", "REPR"]:
+            sigla = situacao.sigla
+            if situacao.sigla == "REPR":
+                sigla = "PEND"
+                ordem.reservico = True
+
+            status = TipoStatusOrdem.query.filter_by(sigla=sigla).one_or_none()
             ordem.tipostatusordem_id = status.id
 
+        # Gera um incremento no tempo para que as tramitações fiquem na ordem
+        if situacao.sigla in ["AGAP", "AGFI", "ENCE"]:
+            self.data = datetime.datetime.now() + datetime.timedelta(seconds=1)
+
         # Verifica estara aguardando fiscalização dará por encerrada
-        if situacao.sigla == "AGFI":
+        if situacao.sigla == "ENCE":
             # Caso seja, colocará a data de fechamento da OrdemServico
             ordem.data_fechamento = datetime.datetime.now()
-            # Gera um incremento no tempo para que as tramitações fiquem na ordem
-            self.data = datetime.datetime.now() + datetime.timedelta(seconds=1)
 
         if ordem.salvar():
             flash("Ordem de Serviço Atualizada", category="success")
         else:
-            flash("Ordem de Serviço não Atualizada", category="success")
+            flash("Erro ao atualizar a Ordem de Serviço", category="success")
+
+    def alterar_observacao(self, form_listaatividade, tiposituacao: [TipoSituacaoOrdem]):
+        """Função que altera o campo observação da tramitação"""
+        if tiposituacao.sigla in ["AGSE", "AGMT", "PARA", "CANC", "REPR"]:
+            self.observacao = form_listaatividade.observacao.data.upper()
+        else:
+            self.observacao = tiposituacao.nome
 
     @staticmethod
     def insere_tramitacao(descricao, situacao, texto):
@@ -188,6 +200,7 @@ class OrdemServico(db.Model):
     tipoordem_id = db.Column(db.Integer(), db.ForeignKey("tipo_ordem.id"), nullable=False)
     planomanutencao_id = db.Column(db.Integer(), nullable=True)
     listaatividade_id = db.Column(db.Integer(), db.ForeignKey("lista_atividade.id"), nullable=True)
+    reservico = db.Column(db.Boolean, default=False)
 
     equipamento = db.relationship("Equipamento", back_populates="ordemservico")
     tiposituacaoordem = db.relationship("TipoSituacaoOrdem", back_populates="ordemservico")

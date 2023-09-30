@@ -176,7 +176,8 @@ def listaatividade_editar(ordem_id, listaatividade_id, tramitacao_sigla):
     ordem = OrdemServico.query.filter_by(id=ordem_id).one_or_none()
     if ordem:
 
-        # verifica se a ordem não é proviniente de um plano
+        # verifica se a ordem não é proveniente de um plano
+        observacao = form_listaatividade.observacao.data
         if not ordem.tipoordem.plano:
             #   cria uma listaatividade nova
             listaatividade = ListaAtividade()
@@ -191,7 +192,7 @@ def listaatividade_editar(ordem_id, listaatividade_id, tramitacao_sigla):
                         flash("Erro ao atualizar a ordem de serviço", category="danger")
 
                     # Salvar as informações do campo observação
-                    listaatividade.alterar_observacao(form_listaatividade.observacao.data)
+                    listaatividade.alterar_observacao(observacao)
                     if not listaatividade.salvar():
                         flash("Erro ao salvar nova lista de atividades", category="danger")
 

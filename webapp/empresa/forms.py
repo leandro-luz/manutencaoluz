@@ -7,6 +7,7 @@ from wtforms.validators import InputRequired, Length, Email, NumberRange, Option
 from webapp.contrato.models import Contrato
 from webapp.empresa.models import Interessado, Empresa
 from datetime import datetime
+from flask_login import current_user
 
 
 def cnpj_validate(form, field):
@@ -74,25 +75,29 @@ class EmpresaForm(Form):
         empresa = Empresa.query.filter_by(id=self.id.data).one_or_none()
 
         if check_validate:
-            # verifica se existe empresa com o mesmo razao_social, ignorando a empresa repassada(se <> 0)
-            if empresa:
-                empresa = Empresa.query.filter(Empresa.id != empresa.id,
-                                               Empresa.razao_social == self.razao_social.data).one_or_none()
-            else:
-                empresa = Empresa.query.filter(Empresa.razao_social == self.razao_social.data).one_or_none()
-
-            if empresa:
-                flash("Já existe uma empresa com este razao_social", category="danger")
-                return False
+            # # verifica se existe empresa com o mesmo razao_social, ignorando a empresa repassada(se <> 0)
+            # if empresa:
+            #     empresa = Empresa.query.filter(Empresa.id != empresa.id,
+            #                                    Empresa.razao_social == self.razao_social.data,
+            #                                    Empresa.empresa_gestora_id == current_user.empresa_id).one_or_none()
+            # else:
+            #     empresa = Empresa.query.filter(Empresa.razao_social == self.razao_social.data).one_or_none()
+            #
+            # if empresa:
+            #     flash("Já existe uma empresa com este razao_social", category="danger")
+            #     return False
 
             # verifica se existe empresa com o mesmo cnpj, ignorando a empresa repassada(se <> 0)
             if empresa:
-                empresa = Empresa.query.filter(Empresa.id != empresa.id, Empresa.cnpj == self.cnpj.data).one_or_none()
+                empresa = Empresa.query.filter(Empresa.id != empresa.id,
+                                               Empresa.cnpj == self.cnpj.data,
+                                               Empresa.empresa_gestora_id == current_user.empresa_id).one_or_none()
             else:
-                empresa = Empresa.query.filter(Empresa.razao_social == self.cnpj.data).one_or_none()
+                empresa = Empresa.query.filter(Empresa.razao_social == self.cnpj.data,
+                                               Empresa.empresa_gestora_id == current_user.empresa_id).one_or_none()
 
             if empresa:
-                flash("Já existe uma empresa com este cnpj", category="danger")
+                flash("Já existe uma empresa com este cnpj ", category="danger")
                 return False
 
             # Verifica se o cnpj está válido
@@ -101,15 +106,15 @@ class EmpresaForm(Form):
                 return False
 
             # verifica se existe empresa com o mesmo endereço eletrônico, ignorando a empresa repassada(se <> 0)
-            if empresa:
-                empresa = Empresa.query.filter(Empresa.id != empresa.id,
-                                               Empresa.email == self.email.data).one_or_none()
-            else:
-                empresa = Empresa.query.filter(Empresa.razao_social == self.email.data).one_or_none()
-
-            if empresa:
-                flash("Já existe uma empresa vinculada a este email", category="danger")
-                return False
+            # if empresa:
+            #     empresa = Empresa.query.filter(Empresa.id != empresa.id,
+            #                                    Empresa.email == self.email.data).one_or_none()
+            # else:
+            #     empresa = Empresa.query.filter(Empresa.razao_social == self.email.data).one_or_none()
+            #
+            # if empresa:
+            #     flash("Já existe uma empresa vinculada a este email", category="danger")
+            #     return False
 
             if self.contrato.data == 0:
                 flash("Não informado o contrato para a empresa", category="danger")

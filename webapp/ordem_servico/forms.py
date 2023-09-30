@@ -3,7 +3,7 @@ from wtforms import IntegerField, StringField, DateField, BooleanField, TextArea
     FileField
 from wtforms.validators import InputRequired, Length, Optional
 from flask import flash
-
+from flask_login import current_user
 
 class OrdemServicoForm(Form):
     descricao = StringField('Descrição', validators=[InputRequired(), Length(max=50)],

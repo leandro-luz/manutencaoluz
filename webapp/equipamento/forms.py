@@ -4,7 +4,7 @@ from wtforms import IntegerField, StringField, DateField, BooleanField, \
 from wtforms.validators import InputRequired, Length, Optional
 from webapp.equipamento.models import *
 from flask import flash
-
+from flask_login import current_user
 
 class GrupoForm(Form):
     nome = StringField('Nome', validators=[InputRequired(), Length(max=50)],

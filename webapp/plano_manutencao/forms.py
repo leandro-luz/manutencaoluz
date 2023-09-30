@@ -5,7 +5,7 @@ from wtforms import IntegerField, StringField, DateField, BooleanField, SubmitFi
     DecimalField, TextAreaField
 from wtforms.validators import InputRequired, Length, Optional, NumberRange
 from flask import flash
-
+from flask_login import current_user
 
 class PlanoForm(Form):
     nome = StringField('Nome', validators=[InputRequired(), Length(max=50)],

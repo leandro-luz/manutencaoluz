@@ -1,41 +1,65 @@
 {% extends "sistema_base.html" %}
 {% block body %}
 <body>
-<a href="{{ url_for('ordem_servico.ordem_editar', ordem_id=ordem_id) }}">Voltar</a>
-<h5>ATIVIDADES</h5>
+<a href="{{ url_for('ordem_servico.ordem_editar', ordem_id=ordem_id ) }}">
+    <span data-tooltip="VOLTAR">
+        <i class="bi-backspace fs-6"></i>
+    </span>
+</a>
 
-<table class="table">
-    <thead>
-    <tr>
-        <th scope="col">ITEM</th>
-        <th scope="col">DESCRIÇÃO</th>
-        <th scope="col">VALOR</th>
-    </tr>
-    </thead>
-    <tbody id="myTable">
 
-    {% for atividade in atividades %}
-    <tr>
-        <td> {{atividade.posicao}}</td>
-        <td> {{atividade.descricao}}</td>
-        {% if atividade.tipoparametro.nome == 'BINÁRIO' %}
-        <td> {{atividade.tipobinario.nome}}</td>
-        {% elif atividade.tipoparametro.nome == 'INTEIRO' %}
-        <td> {{atividade.valorinteiro}}</td>
-        {% elif atividade.tipoparametro.nome == 'DECIMAL' %}
-        <td> {{atividade.valordecimal}}</td>
-        {% elif atividade.tipoparametro.nome == 'TEXTO' %}
-        <td> {{atividade.valortexto}}</td>
-        {% endif %}
-    </tr>
-    {% endfor %}
+<div class="container">
+    <div class="row">
+        <div class="col-10">
+            <h2>ATIVIDADES</h2>
+        </div>
+    </div>
 
-    </tbody>
-</table>
-<h6>OBSERVAÇÕES:</h6>
-{{listaatividade.observacao}}
-<br><br>
+    <div class="row">
+        <div class="col-10">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">ITEM</th>
+                    <th scope="col">DESCRIÇÃO</th>
+                    <th scope="col">VALOR</th>
+                </tr>
+                </thead>
+                <tbody id="myTable">
 
+                {% for atividade in atividades %}
+                <tr>
+                    <td> {{atividade.posicao}}</td>
+                    <td> {{atividade.descricao}}</td>
+                    {% if atividade.tipoparametro.nome == 'BINÁRIO' %}
+                    <td> {{atividade.tipobinario.nome}}</td>
+                    {% elif atividade.tipoparametro.nome == 'INTEIRO' %}
+                    <td> {{atividade.valorinteiro}}</td>
+                    {% elif atividade.tipoparametro.nome == 'DECIMAL' %}
+                    <td> {{atividade.valordecimal}}</td>
+                    {% elif atividade.tipoparametro.nome == 'TEXTO' %}
+                    <td> {{atividade.valortexto}}</td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-10">
+
+            <div class="col-4">
+                <h6>OBSERVAÇÕES</h6>
+                {{listaatividade.observacao}}
+            </div>
+        </div>
+    </div>
+
+</div>
 
 
 </body>

@@ -131,7 +131,7 @@ class Empresa(db.Model):
     supplier = db.relationship("Supplier", back_populates="empresa")
 
     def __repr__(self) -> str:
-        return f'<Empresa: {self.id}-{self.nome_fantasia}>'
+        return f'<Empresa: {self.id}-{self.cnpj}-{self.nome_fantasia}-{self.razao_social}-{self.empresa_gestora_id}>'
 
     def alterar_atributos_externo(self, form, empresa_id, tipoempresa_id, new=False) -> None:
         """    Alterações dos atributos da empresa     """

@@ -458,16 +458,16 @@ atividades_lista = [
 ]
 
 tipo_situacao_ordem_lista = [
-    {'nome': 'AGUARDANDO APROVAÇÃO', 'sigla': 'AGAP'},
-    {'nome': 'AGUARDANDO EXECUÇÃO', 'sigla': 'AGEX'},
-    {'nome': 'AGUARDANDO SERVIÇO EXTERNO', 'sigla': 'AGSE'},
-    {'nome': 'AGUARDANDO MATERIAL', 'sigla': 'AGMT'},
-    {'nome': 'PARALIZADA', 'sigla': 'PARA'},
-    {'nome': 'CANCELADA', 'sigla': 'CANC'},
-    {'nome': 'CONCLUÍDA', 'sigla': 'CONC'},
-    {'nome': 'AGUARDANDO FISCALIZAÇÃO', 'sigla': 'AGFI'},
-    {'nome': 'REPROVADA', 'sigla': 'REPR'},
-    {'nome': 'APROVADA', 'sigla': 'ENCE'},
+    {'sigla': 'AGAP', 'nome': 'AGUARDANDO APROVAÇÃO', 'atual': 'TRAMITAR', 'futuro': 'TRAMITAR'},
+    {'sigla': 'AGEX', 'nome': 'AGUARDANDO EXECUÇÃO', 'atual': 'EXECUTAR', 'futuro': 'LIBERAR EXECUÇÃO'},
+    {'sigla': 'AGSE', 'nome': 'AGUARDANDO SERVIÇO EXTERNO', 'atual': 'TRAMITAÇÃO', 'futuro': 'LIBERAR EXECUÇÃO'},
+    {'sigla': 'AGMT', 'nome': 'AGUARDANDO MATERIAL', 'atual': 'TRAMITAÇÃO', 'futuro': 'LIBERAR EXECUÇÃO'},
+    {'sigla': 'PARA', 'nome': 'PARALIZADA', 'atual': 'TRAMITAÇÃO', 'futuro': 'LIBERAR EXECUÇÃO'},
+    {'sigla': 'CANC', 'nome': 'CANCELADA', 'atual': 'TRAMITAÇÃO', 'futuro': 'LIBERAR EXECUÇÃO'},
+    {'sigla': 'CONC', 'nome': 'CONCLUÍDA', 'atual': 'TRAMITAÇÃO', 'futuro': 'LIBERAR EXECUÇÃO'},
+    {'sigla': 'AGFI', 'nome': 'AGUARDANDO FISCALIZAÇÃO', 'atual': 'FISCALIZAR', 'futuro': 'LIBERAR EXECUÇÃO'},
+    {'sigla': 'REPR', 'nome': 'REPROVADA', 'atual': 'TRAMITAÇÃO', 'futuro': 'LIBERAR EXECUÇÃO'},
+    {'sigla': 'ENCE', 'nome': 'APROVADA', 'atual': 'TRAMITAÇÃO', 'futuro': 'LIBERAR EXECUÇÃO'},
 ]
 
 situacao_tipo_ordem_perfil_manutentor_lista = [
@@ -483,7 +483,6 @@ situacao_tipo_ordem_perfil_manutentor_lista = [
 ]
 
 fluxo_ordem_lista = [
-
     {'de': 'AGAP', 'para': 'AGEX'},
     {'de': 'AGAP', 'para': 'CANC'},
     {'de': 'AGEX', 'para': 'CONC'},

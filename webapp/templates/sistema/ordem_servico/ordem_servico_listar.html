@@ -50,6 +50,7 @@
                     <th scope="col">TIPO</th>
                     <th scope="col">SITUAÇÃO</th>
                     <th scope="col">STATUS</th>
+                    <th scope="col">RESERVIÇO</th>
                     <th scope="col">DATA ABERTURA</th>
                     <th scope="col">DATA PREVISTA</th>
                     <th scope="col">DATA FECHAMENTO</th>
@@ -67,6 +68,17 @@
                     <td>{{ ordem.tipoordem.sigla }}</td>
                     <td>{{ ordem.tiposituacaoordem.sigla }}</td>
                     <td>{{ ordem.tipostatusordem.sigla }}</td>
+
+                    {% if ordem.reservico %}
+                    <td>
+                        <i class="bi-emoji-frown-fill fs-6"></i>
+                    </td>
+                    {% else %}
+                    <td>
+                        <i class="bi-emoji-smile fs-6"></i>
+                    </td>
+                    {% endif %}
+
                     <td>{{ ordem.data_abertura }}</td>
                     <td>{{ ordem.data_prevista }}</td>
                     <td>{{ ordem.data_fechamento }}</td>

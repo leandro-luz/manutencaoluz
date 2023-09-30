@@ -878,7 +878,9 @@ def criar_tipo_situacao_ordem(lista: List[dict]) -> List[TipoSituacaoOrdem]:
     situacoes_ordem_existentes = set(so.nome for so in TipoSituacaoOrdem.query.all())
     # Criando uma lista de novas situações de ordens para serem adicionados
     novas_situacoes_ordem = [TipoSituacaoOrdem(nome=item['nome'],
-                                               sigla=item['sigla'])
+                                               sigla=item['sigla'],
+                                               texto_atual=item['atual'],
+                                               texto_futuro=item['futuro'])
                              for item in lista if item['nome'] not in situacoes_ordem_existentes]
 
     try:

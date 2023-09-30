@@ -32,14 +32,26 @@ def empresa_listar() -> str:
     """    Retorna a lista de empresas vinculada a empresa do usuario     """
     empresas = Empresa.query.filter_by(empresa_gestora_id=current_user.empresa_id)  # retorna uma lista com base no _
 
-    form_login = LoginForm()
+    return render_template('empresa_listar.html', empresas=empresas)
 
-    # lista_empresas = [(empresa.empresa_gestora_id, empresa.id) for empresa in empresas]
-    # empresas_nome = [(empresa.nome_fantasia) for empresa in empresas]
-    # print(lista_empresas, empresas_nome)
-    # gerar_grafo(lista_empresas, empresas_nome)
-    # grafo=''
-    return render_template('empresa_listar.html', form_login=form_login, empresas=empresas)
+
+@empresa_blueprint.route('/empresa_cliente', methods=['GET', 'POST'])
+@login_required
+@has_view('Empresa')
+def empresa_cliente() -> str:
+    """    Retorna a lista de empresas vinculada a empresa do usuario     """
+    empresa = Empresa.query.filter_by(id=1).one_or_none()
+    empresas = {empresa.nome_fantasia: lista_clientes(current_user.empresa_id)}
+
+    return render_template('empresa_cliente.html', empresas=empresas)
+
+
+def lista_clientes(id):
+    clientes = Empresa.query.filter(
+        Empresa.id != 1,
+        Empresa.empresa_gestora_id == id).all()
+
+    return [{cliente.nome_fantasia: lista_clientes(cliente.id)} for cliente in clientes]
 
 
 @empresa_blueprint.route('/empresa_ativar/<int:empresa_id>', methods=['GET', 'POST'])
@@ -51,7 +63,7 @@ def empresa_ativar(empresa_id):
     if empresa:  # se a empresa existir
         ativo = empresa.ativo
 
-        # caso a empresa naõ esteja ativa
+        # caso a empresa não esteja ativa
         if not ativo:
             # caso o contrato não esteja ativo
             if not empresa.contrato.ativo:
@@ -124,7 +136,8 @@ def empresa_editar(empresa_id):
         empresa.alterar_atributos(form, current_user.empresa_id, tipoempresa.id, new)
         if empresa.salvar():
             if new:
-                empresa = Empresa.query.filter_by(nome_fantasia=form.nome_fantasia.data).one_or_none()
+                empresa = Empresa.query.filter(Empresa.cnpj == form.cnpj.data,
+                                               Empresa.empresa_gestora_id == current_user.empresa_id).one_or_none()
                 new_admin(empresa, form.enviar_email.data)
             # --------- MENSAGENS
             if empresa_id > 0:

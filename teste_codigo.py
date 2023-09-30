@@ -174,6 +174,20 @@ from datetime import datetime
 # print(data_ajustada)
 
 
-string = "valorbinario_id: 1;valorinteiro: 12;valordecimal: 32.65;valortexto: %C3%87LKJASDF;valorbinario_id: 2;valorinteiro: -12"
-
-
+# string = "valorbinario_id: 1;valorinteiro: 12;valordecimal: 32.65;valortexto: %C3%87LKJASDF;valorbinario_id: 2;valorinteiro: -12"
+#
+# #
+# data = [1, 2, 3, 4, 5]
+# split_order = dict()
+#
+#
+# def split(data):
+#   if len(data) == 0:
+#       return data #trivial case, we have no element therefore we return empty list
+#   else: #if we have elements
+#       first_value = data[0] #we take the first value
+#       data = {first_value : split(data[1:])} #data[1:] will return a list with every value but the first value
+#       return data #this is called after the last recursion is called
+#
+#
+# print(split(data))

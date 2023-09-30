@@ -12,11 +12,11 @@
             </div>
             <div class="modal-body">
                 <form action="{{ url_for('ordem_servico.ordem_editar', ordem_id=0) }}" method="POST">
-                    {{form.csrf_token}}
+                    {{form_ordem.csrf_token}}
 
-                    {{form.descricao.label}} {{form.descricao(size=80)}}<br>
-                    {{form.tipo.label}} {{form.tipo}}<br>
-                    {{form.equipamento.label}} {{form.equipamento}}<br>
+                    {{form_ordem.descricao.label}} {{form_ordem.descricao(size=80)}}<br>
+                    {{form_ordem.tipo.label}} {{form_ordem.tipo}}<br>
+                    {{form_ordem.equipamento.label}} {{form_ordem.equipamento}}<br>
                     <input type="submit" value="Cadastrar"/>
 
                 </form>

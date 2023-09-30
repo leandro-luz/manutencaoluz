@@ -19,7 +19,7 @@
     <div class="row">
         <div class="col-10">
             <form action="{{ url_for('ordem_servico.ordem_editar', ordem_id=ordem.id) }}" method="POST">
-                {{form.csrf_token}}
+                {{form_ordem.csrf_token}}
 
                 Código: {{ ordem.codigo }}<br>
                 Descrição: {{ ordem.descricao }}<br>
@@ -32,31 +32,41 @@
                 Data Abertura: {{ ordem.data_abertura }}<br>
                 Data Prevista: {{ ordem.data_prevista }}<br>
                 Data Fechamento: {{ ordem.data_fechamento }}<br>
-                Status Atual: {{ ordem.tiposituacaoordem.nome }}<br><br>
+                Status: {{ ordem.tipostatusordem.nome }}<br>
+                Tramitação Atual: {{ ordem.tiposituacaoordem.nome }}<br><br>
             </form>
 
-            {% if lib_executante and ordem.tiposituacaoordem.sigla == "AGEX" %}
+            {% if ordem.tiposituacaoordem.sigla != "ENCE" and
+            ordem.tiposituacaoordem.sigla != "AGSE" and
+            ordem.tiposituacaoordem.sigla != "AGMT" and
+            ordem.tiposituacaoordem.sigla != "PARA" and
+            ordem.tiposituacaoordem.sigla != "REPR" %}
             <button class="btn btn-info" data-bs-target="#modal_atividade_preencher"
                     data-bs-toggle="modal" type="button">
-                ATIVIDADES
+                {{ordem.tiposituacaoordem.texto_atual}}
             </button>
             {% include "atividade_preencher.html" %}
             {% endif %}
 
 
-            {% if ordem.tiposituacaoordem.sigla != "AGEX" %}
+            {% if ordem.tiposituacaoordem.sigla == "AGSE" or
+            ordem.tiposituacaoordem.sigla == "AGMT" or
+            ordem.tiposituacaoordem.sigla == "PARA" or
+            ordem.tiposituacaoordem.sigla == "REPR" %}
             {% if lib_aprovador or lib_fiscalizador %}
             {% for nova_t in novas_tramitacoes %}
-            {% if not nova_t.sigla == 'CONC' %}
+
             <a href="{{ url_for('ordem_servico.tramitacao', ordem_id=ordem.id, tipo_situacao_id=nova_t.id) }}">
-                <button class="btn btn-info"> {{ nova_t.nome }}</button>
+                <button class="btn btn-info"> {{ nova_t.texto_futuro }}</button>
             </a>
-            {% endif %}
             {% endfor %}
             {% endif %}
             {% endif %}
 
-            {% if ordem.tiposituacaoordem.sigla == "CONC" or ordem.tiposituacaoordem.sigla == "FISC" %}
+
+            {% if ordem.tiposituacaoordem.sigla == "CONC" or
+            ordem.tiposituacaoordem.sigla == "AGFI" or
+            ordem.tiposituacaoordem.sigla == "ENCE" %}
             <a href="{{ url_for('plano_manutencao.listaatividade_preenchida', ordem_id=ordem.id) }}">
                 <button class="btn btn-secondary">ATIVIDADES PREENCHIDAS</button>
             </a>

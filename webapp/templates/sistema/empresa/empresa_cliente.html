@@ -1,0 +1,57 @@
+{% extends "sistema_base.html" %}
+{% block body %}
+
+<body>
+<a href="{{ url_for('empresa.empresa_listar') }}">
+    <span data-tooltip="VOLTAR">
+        <i class="bi-backspace fs-6"></i>
+    </span>
+</a>
+
+
+<div id="container">
+
+</div>
+
+
+</body>
+
+
+<script type="text/javascript">
+
+      const countries = {
+          "Europe": {
+            "France": {},
+            "Spain": {}
+          },
+          "America": {
+            "North": {
+              "USA": {},
+              "Canada": {}
+            },
+            "South": {
+              "Brazil": {},
+              "Argentina": {}
+            }
+          }
+        };
+
+function createTree(container, data) {
+  const ul = container.appendChild(document.createElement('ul'));
+  for (const [key, val] of Object.entries(data)) {
+    const li = ul.appendChild(document.createElement('li'));
+    li.textContent = key;
+    if (Object.keys(val).length) {
+      createTree(li, val);
+    }
+  }
+}
+
+createTree(document.getElementById('container'), countries);
+
+
+
+
+</script>
+
+{% endblock %}
