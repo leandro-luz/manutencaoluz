@@ -40,7 +40,7 @@ class EmpresaForm(Form):
     uf = StringField('UF', validators=[InputRequired()], render_kw={"placeholder": "Digite o UF"})
 
     latitude = StringField('Latitude', validators=[Optional()], render_kw={"placeholder": "Digite a latitude"})
-    longitude = StringField('longitude', validators=[Optional()], render_kw={"placeholder": "Digite a longitude"})
+    longitude = StringField('Longitude', validators=[Optional()], render_kw={"placeholder": "Digite a longitude"})
 
     ativo = BooleanField('Ativo')
 

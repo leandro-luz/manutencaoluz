@@ -172,8 +172,7 @@ def new_admin(empresa: [Empresa], enviar_email):
             break
 
         # busca a lista de telas liberadas para a empresa
-        telascontrato = Telacontrato.query.filter_by(ativo=True,
-                                                     contrato_id=empresa.contrato_id).all()
+        telascontrato = Telacontrato.query.filter_by(contrato_id=empresa.contrato_id).all()
         for telacontrato in telascontrato:
             # cadastro de perfisacesso para o administrador
             telaperfilacesso = TelaPerfilAcesso(perfilacesso_id=perfilacesso.id, tela_id=telacontrato.tela_id)

@@ -21,7 +21,7 @@ telas_lista = [
     {'posicao': 3, 'nome': 'Empresa', 'icon': 'bi-house-door', 'url': 'empresa.empresa_listar'},
     {'posicao': 4, 'nome': 'Usuário', 'icon': 'bi-people', 'url': 'usuario.usuario_listar'},
     {'posicao': 5, 'nome': 'Equipamento', 'icon': 'bi-robot', 'url': 'equipamento.equipamento_listar'},
-    {'posicao': 6, 'nome': 'Plano de Manutenção', 'icon': 'bi-clipboard', 'url': 'plano_manutencao.plano_listar'},
+    {'posicao': 6, 'nome': 'Plano de Manutenção', 'icon': 'bi-clipboard', 'url': 'pl        ano_manutencao.plano_listar'},
     {'posicao': 7, 'nome': 'Ordem de Serviço', 'icon': 'bi-wrench-adjustable-circle',
      'url': 'ordem_servico.ordem_listar'},
     {'posicao': 8, 'nome': 'Almoxarifado', 'icon': 'bi-box-seam', 'url': 'sistema.almoxarifado'},
