@@ -1,12 +1,11 @@
 import numpy as np
 import pandas as pd
-from flask import render_template, Blueprint, redirect, url_for, flash, jsonify
+from flask import render_template, Blueprint, redirect, url_for, flash, Response
 from flask_login import current_user, login_required
 from webapp.empresa.models import Empresa
-from .models import Equipamento, Grupo, Subgrupo, Pavimento, Setor, Local
+from .models import Equipamento, Grupo, Subgrupo, Pavimento, Setor, Local, Area, Volume, Vazao, Comprimento, Peso, \
+    Potencia, TensaoEletrica
 from .forms import EquipamentoForm, GrupoForm, SubgrupoForm, LocalizacaoForm, AgrupamentoForm
-
-()
 from webapp.usuario import has_view
 from webapp.utils.files import arquivo_padrao
 from webapp.utils.erros import flash_errors
@@ -29,7 +28,7 @@ def equipamento_listar():
         Subgrupo.grupo_id == Grupo.id,
         Grupo.empresa_id == Empresa.id,
         Empresa.id == current_user.empresa_id).order_by(
-        Equipamento.descricao_curta)
+        Equipamento.cod)
     return render_template('equipamento_listar.html', equipamentos=equipamentos)
 
 
@@ -39,10 +38,13 @@ def equipamento_listar():
 def equipamento_editar(equipamento_id):
     grupo_id = 0
     subgrupo_id = 0
+    new = True
 
     if equipamento_id > 0:
         # Atualizar
         # localiza a empresa do equipamento
+        new = False
+
         equipamento = Equipamento.query.filter(
             current_user.empresa_id == Empresa.id,
             Empresa.id == Grupo.empresa_id,
@@ -63,6 +65,15 @@ def equipamento_editar(equipamento_id):
                 st_d = form.setor.data
                 lo_d = form.local.data
                 pv_d = form.pavimento.data
+                ar_d = form.und_area.data
+                vo_d = form.und_volume.data
+                va_d = form.und_vazao.data
+                la_d = form.und_largura.data
+                al_d = form.und_altura.data
+                co_d = form.und_comprimento.data
+                pe_d = form.und_peso.data
+                po_d = form.und_potencia.data
+                te_d = form.und_tensao.data
 
             else:
                 g_d = equipamento.subgrupo.grupo_id
@@ -70,6 +81,16 @@ def equipamento_editar(equipamento_id):
                 st_d = equipamento.setor_id
                 lo_d = equipamento.local_id
                 pv_d = equipamento.pavimento_id
+                ar_d = equipamento.und_area_id
+                vo_d = equipamento.und_volume_id
+                va_d = equipamento.und_vazao_id
+                la_d = equipamento.und_largura_id
+                al_d = equipamento.und_altura_id
+                co_d = equipamento.und_comprimento_id
+                pe_d = equipamento.und_peso_id
+                po_d = equipamento.und_potencia_id
+                te_d = equipamento.und_tensao_id
+
         else:
             flash("Equipamento não localizado", category="danger")
             return redirect(url_for("equipamento.equipamento_listar"))
@@ -83,6 +104,15 @@ def equipamento_editar(equipamento_id):
         st_d = form.setor.data
         lo_d = form.local.data
         pv_d = form.pavimento.data
+        ar_d = form.und_area.data
+        vo_d = form.und_volume.data
+        va_d = form.und_vazao.data
+        al_d = form.und_altura.data
+        la_d = form.und_largura.data
+        co_d = form.und_comprimento.data
+        pe_d = form.und_peso.data
+        po_d = form.und_potencia.data
+        te_d = form.und_tensao.data
 
     # Listas
     grupos = Grupo.query.filter(
@@ -111,16 +141,34 @@ def equipamento_editar(equipamento_id):
     form.pavimento.choices = [(0, '')] + [(pv.id, pv.nome) for pv in pavimentos]
     form.grupo.choices = [(0, '')] + [(g.id, g.nome) for g in grupos]
     form.subgrupo.choices = [(0, '')] + [(sg.id, sg.nome) for sg in subgrupos]
+    form.und_area.choices = [(0, '')] + [(ar.id, ar.unidade) for ar in Area.query.all()]
+    form.und_vazao.choices = [(0, '')] + [(va.id, va.unidade) for va in Vazao.query.all()]
+    form.und_volume.choices = [(0, '')] + [(vol.id, vol.unidade) for vol in Volume.query.all()]
+    form.und_altura.choices = [(0, '')] + [(co.id, co.unidade) for co in Comprimento.query.all()]
+    form.und_largura.choices = [(0, '')] + [(co.id, co.unidade) for co in Comprimento.query.all()]
+    form.und_comprimento.choices = [(0, '')] + [(co.id, co.unidade) for co in Comprimento.query.all()]
+    form.und_peso.choices = [(0, '')] + [(pe.id, pe.unidade) for pe in Peso.query.all()]
+    form.und_potencia.choices = [(0, '')] + [(po.id, po.unidade) for po in Potencia.query.all()]
+    form.und_tensao.choices = [(0, '')] + [(te.id, te.unidade) for te in TensaoEletrica.query.all()]
 
     form.grupo.data = g_d
     form.subgrupo.data = sg_d
     form.setor.data = st_d
     form.local.data = lo_d
     form.pavimento.data = pv_d
+    form.und_vazao.data = va_d
+    form.und_volume.data = vo_d
+    form.und_area.data = ar_d
+    form.und_altura.data = al_d
+    form.und_largura.data = la_d
+    form.und_comprimento.data = co_d
+    form.und_peso.data = pe_d
+    form.und_potencia.data = po_d
+    form.und_tensao.data = te_d
 
     # Validação
     if form.validate_on_submit():
-        equipamento.alterar_atributos(form)
+        equipamento.alterar_atributos(form, new)
         if equipamento.salvar():
             # Mensagens
             if equipamento_id > 0:
@@ -344,7 +392,7 @@ def agrupamento_editar(grupo_id):
     else:
         flash_errors(form)
 
-    return redirect(url_for("equipamento.agrupamento_listar", grupo_id=grupo_id))
+    return redirect(url_for("equipamento.agrupamento_listar", grupo_id=grupo_id, subgrupo_id=0))
 
 
 @equipamento_blueprint.route('/grupo_excluir/<int:grupo_id>/<int:subgrupo_id>', methods=['GET', 'POST'])
@@ -353,6 +401,7 @@ def agrupamento_editar(grupo_id):
 def grupo_excluir(grupo_id, subgrupo_id):
     # verificar se o grupo existe
     grupo = Grupo.query.filter_by(id=grupo_id, empresa_id=current_user.empresa_id).one_or_none()
+
     if grupo:
         # realizar a contagem de subgrupos vinculados
         # se for >0 não permite a exclusão
@@ -395,12 +444,12 @@ def subgrupo_excluir(grupo_id, subgrupo_id):
 @login_required
 @has_view('Equipamento')
 def gerar_padrao_grupos(subgrupo_id, equipamento_id):
-    result, path = arquivo_padrao(nome_arquivo=Grupo.nome_doc, valores=[[x] for x in Grupo.titulos_doc])
-    if result:
-        flash(f'Foi gerado o arquivo padrão no caminho: {path}', category="success")
-    else:
-        flash("Não foi gerado o arquivo padrão", category="danger")
-    return redirect(url_for('equipamento.grupo_listar', subgrupo_id=subgrupo_id, equipamento_id=equipamento_id))
+    resultado, nome, arquivo = arquivo_padrao(nome_arquivo=Grupo.nome_doc, valores=[[x] for x in Grupo.titulos_doc])
+
+    # se não houver erro envia o arquivo
+    if resultado:
+        return Response(arquivo, mimetype="text/csv",
+                        headers={"Content-disposition": f"attachment; filename={nome}"})
 
 
 @equipamento_blueprint.route('/cadastrar_lote_grupos/<int:subgrupo_id>/<int:equipamento_id>>', methods=['GET', 'POST'])

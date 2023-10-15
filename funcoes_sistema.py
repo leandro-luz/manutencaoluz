@@ -4,7 +4,8 @@ from typing import List
 from sqlalchemy.exc import SQLAlchemyError
 from webapp.usuario.models import PerfilAcesso, Senha, Usuario, TelaPerfilAcesso, PerfilManutentor
 from webapp.empresa.models import Interessado, Tipoempresa, Empresa
-from webapp.equipamento.models import Equipamento, Grupo, Subgrupo, Pavimento, Setor, Local
+from webapp.equipamento.models import Equipamento, Grupo, Subgrupo, Pavimento, Setor, Local, Vazao, Volume, Area, Peso, \
+    Comprimento, Potencia, TensaoEletrica
 from webapp.contrato.models import Contrato, Tela, Telacontrato
 from webapp.plano_manutencao.models import TipoData, Unidade, Periodicidade, PlanoManutencao, Atividade, \
     TipoParametro, ListaAtividade, TipoBinario
@@ -543,6 +544,163 @@ def criar_locais(lista: List[dict]) -> List[Local]:
         return []
 
 
+def criar_area(lista: List[dict]) -> List[Area]:
+    # Criando uma lista de novos tipodatas para serem adicionados
+    novas_areas = [Area(unidade=item['unidade'],
+                        descricao=item['descricao'])
+                   for item in lista if item['unidade'] not in {a.unidade: a.id for a in Area.query.all()}]
+
+    try:
+        # Adicionando os novos contratos na sessão e realizando o commit
+        db.session.add_all(novas_areas)
+        db.session.commit()
+        # Registrando o evento no sistema de logs
+        log.info(f'{len(novas_areas)} Areas inseridas com sucesso.')
+        # Retornando a lista de novos contratos adicionados
+        return novas_areas
+    except SQLAlchemyError as e:
+        # Em caso de erro, realizando o rollback da transação e retornando uma lista vazia
+        log.error(f'Erro ao inserir areas: {e}')
+        # Realizando o rollback da transação e retornando uma lista vazia
+        db.session.rollback()
+        return []
+
+
+def criar_volume(lista: List[dict]) -> List[Volume]:
+    # Criando uma lista de novos tipodatas para serem adicionados
+    novos_volumes = [Volume(unidade=item['unidade'],
+                            descricao=item['descricao'])
+                     for item in lista if item['unidade'] not in {a.unidade: a.id for a in Volume.query.all()}]
+
+    try:
+        # Adicionando os novos contratos na sessão e realizando o commit
+        db.session.add_all(novos_volumes)
+        db.session.commit()
+        # Registrando o evento no sistema de logs
+        log.info(f'{len(novos_volumes)} Volumes inseridos com sucesso.')
+        # Retornando a lista de novos contratos adicionados
+        return novos_volumes
+    except SQLAlchemyError as e:
+        # Em caso de erro, realizando o rollback da transação e retornando uma lista vazia
+        log.error(f'Erro ao inserir volumes: {e}')
+        # Realizando o rollback da transação e retornando uma lista vazia
+        db.session.rollback()
+        return []
+
+
+def criar_vazao(lista: List[dict]) -> List[Vazao]:
+    # Criando uma lista de novos tipodatas para serem adicionados
+    novas_vazoes = [Vazao(unidade=item['unidade'],
+                          descricao=item['descricao'])
+                    for item in lista if item['unidade'] not in {a.unidade: a.id for a in Vazao.query.all()}]
+
+    try:
+        # Adicionando os novos contratos na sessão e realizando o commit
+        db.session.add_all(novas_vazoes)
+        db.session.commit()
+        # Registrando o evento no sistema de logs
+        log.info(f'{len(novas_vazoes)} Vazões inseridas com sucesso.')
+        # Retornando a lista de novos contratos adicionados
+        return novas_vazoes
+    except SQLAlchemyError as e:
+        # Em caso de erro, realizando o rollback da transação e retornando uma lista vazia
+        log.error(f'Erro ao inserir vazões: {e}')
+        # Realizando o rollback da transação e retornando uma lista vazia
+        db.session.rollback()
+        return []
+
+
+def criar_peso(lista: List[dict]) -> List[Peso]:
+    # Criando uma lista de novos tipodatas para serem adicionados
+    novo_pesos = [Peso(unidade=item['unidade'],
+                       descricao=item['descricao'])
+                  for item in lista if item['unidade'] not in {a.unidade: a.id for a in Peso.query.all()}]
+
+    try:
+        # Adicionando os novos contratos na sessão e realizando o commit
+        db.session.add_all(novo_pesos)
+        db.session.commit()
+        # Registrando o evento no sistema de logs
+        log.info(f'{len(novo_pesos)} Pesos inseridos com sucesso.')
+        # Retornando a lista de novos contratos adicionados
+        return novo_pesos
+    except SQLAlchemyError as e:
+        # Em caso de erro, realizando o rollback da transação e retornando uma lista vazia
+        log.error(f'Erro ao inserir pesos: {e}')
+        # Realizando o rollback da transação e retornando uma lista vazia
+        db.session.rollback()
+        return []
+
+
+def criar_comprimento(lista: List[dict]) -> List[Comprimento]:
+    # Criando uma lista de novos tipodatas para serem adicionados
+    novos_comprimentos = [Comprimento(unidade=item['unidade'],
+                                      descricao=item['descricao'])
+                          for item in lista if
+                          item['unidade'] not in {a.unidade: a.id for a in Comprimento.query.all()}]
+
+    try:
+        # Adicionando os novos contratos na sessão e realizando o commit
+        db.session.add_all(novos_comprimentos)
+        db.session.commit()
+        # Registrando o evento no sistema de logs
+        log.info(f'{len(novos_comprimentos)} Comprimentos inseridas com sucesso.')
+        # Retornando a lista de novos contratos adicionados
+        return novos_comprimentos
+    except SQLAlchemyError as e:
+        # Em caso de erro, realizando o rollback da transação e retornando uma lista vazia
+        log.error(f'Erro ao inserir comprimentos: {e}')
+        # Realizando o rollback da transação e retornando uma lista vazia
+        db.session.rollback()
+        return []
+
+
+def criar_potencia(lista: List[dict]) -> List[Potencia]:
+    # Criando uma lista de novos tipodatas para serem adicionados
+    novas_potencias = [Potencia(unidade=item['unidade'],
+                                descricao=item['descricao'])
+                       for item in lista if
+                       item['unidade'] not in {a.unidade: a.id for a in Potencia.query.all()}]
+
+    try:
+        # Adicionando os novos contratos na sessão e realizando o commit
+        db.session.add_all(novas_potencias)
+        db.session.commit()
+        # Registrando o evento no sistema de logs
+        log.info(f'{len(novas_potencias)} Potencia inseridas com sucesso.')
+        # Retornando a lista de novos contratos adicionados
+        return novas_potencias
+    except SQLAlchemyError as e:
+        # Em caso de erro, realizando o rollback da transação e retornando uma lista vazia
+        log.error(f'Erro ao inserir Potencia: {e}')
+        # Realizando o rollback da transação e retornando uma lista vazia
+        db.session.rollback()
+        return []
+
+
+def criar_tensao(lista: List[dict]) -> List[TensaoEletrica]:
+    # Criando uma lista de novos tipodatas para serem adicionados
+    novas_tensoes = [TensaoEletrica(unidade=item['unidade'],
+                                    descricao=item['descricao'])
+                     for item in lista if
+                     item['unidade'] not in {a.unidade: a.id for a in TensaoEletrica.query.all()}]
+
+    try:
+        # Adicionando os novos contratos na sessão e realizando o commit
+        db.session.add_all(novas_tensoes)
+        db.session.commit()
+        # Registrando o evento no sistema de logs
+        log.info(f'{len(novas_tensoes)} TensaoEletrica inseridas com sucesso.')
+        # Retornando a lista de novos contratos adicionados
+        return novas_tensoes
+    except SQLAlchemyError as e:
+        # Em caso de erro, realizando o rollback da transação e retornando uma lista vazia
+        log.error(f'Erro ao inserir TensaoEletrica: {e}')
+        # Realizando o rollback da transação e retornando uma lista vazia
+        db.session.rollback()
+        return []
+
+
 def criar_equipamento(lista: List[dict]) -> List[Equipamento]:
     """
        Cria novos tipos de datas para os planos de manutenção.
@@ -696,7 +854,7 @@ def criar_planosmanutencao(lista: List[dict]) -> List[PlanoManutencao]:
                         tipoordem_id=tipos_ordem[item['tipo_ordem']],
                         listaatividade_id=listas_atividades[item['lista']]
                         if item['lista'] else None)
-        for item in lista if item['codigo'] not in [pm.código for pm in PlanoManutencao.query.all()]]
+        for item in lista if item['codigo'] not in [pm.codigo for pm in PlanoManutencao.query.all()]]
 
     try:
         # Adicionando as novas periodicidades na sessão e realizando o commit

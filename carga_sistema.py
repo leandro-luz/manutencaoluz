@@ -10,10 +10,10 @@ env = os.environ.get('WEBAPP_ENV', 'dev')
 app = create_app('config.%sConfig' % env.capitalize())
 app.app_context().push()
 
-print("Excluindo todas as tabelas")
-db.drop_all()
-print("Criando todas as tabelas")
-db.create_all()
+# print("Excluindo todas as tabelas")
+# db.drop_all()
+# print("Criando todas as tabelas")
+# db.create_all()
 
 telas_lista = [
     {'posicao': 1, 'nome': 'Interessado', 'icon': 'bi-card-list', 'url': 'empresa.interessado_listar'},
@@ -21,7 +21,7 @@ telas_lista = [
     {'posicao': 3, 'nome': 'Empresa', 'icon': 'bi-house-door', 'url': 'empresa.empresa_listar'},
     {'posicao': 4, 'nome': 'Usuário', 'icon': 'bi-people', 'url': 'usuario.usuario_listar'},
     {'posicao': 5, 'nome': 'Equipamento', 'icon': 'bi-robot', 'url': 'equipamento.equipamento_listar'},
-    {'posicao': 6, 'nome': 'Plano de Manutenção', 'icon': 'bi-clipboard', 'url': 'pl        ano_manutencao.plano_listar'},
+    {'posicao': 6, 'nome': 'Plano de Manutenção', 'icon': 'bi-clipboard', 'url': 'plano_manutencao.plano_listar'},
     {'posicao': 7, 'nome': 'Ordem de Serviço', 'icon': 'bi-wrench-adjustable-circle',
      'url': 'ordem_servico.ordem_listar'},
     {'posicao': 8, 'nome': 'Almoxarifado', 'icon': 'bi-box-seam', 'url': 'sistema.almoxarifado'},
@@ -535,6 +535,55 @@ tramitacao_lista = [
      'data': '2023/01/05 08:00:00', 'observacao': 'Encerrada a ordem de serviço'},
 ]
 
+volume_lista = [
+    {'unidade': 'l', 'descricao': 'Litro'},
+    {'unidade': 'ml', 'descricao': 'Mililitro'},
+    {'unidade': 'm³', 'descricao': 'Metro cúbico'},
+    {'unidade': 'km³', 'descricao': 'Kilometro cúbico'},
+]
+
+vazao_lista = [
+    {'unidade': 'L/seg', 'descricao': 'Litros por segundo'},
+    {'unidade': 'L/min', 'descricao': 'Litros por minuto'},
+    {'unidade': 'L/hr', 'descricao': 'Litros por hora'},
+    {'unidade': 'M³/seg', 'descricao': 'Metros cúbicos por segundo'},
+    {'unidade': 'M³/min', 'descricao': 'Metros cúbicos por minuto'},
+    {'unidade': 'M³/hr', 'descricao': 'Metros cúbicos por hora'},
+]
+
+area_lista = [
+    {'unidade': 'cm²', 'descricao': 'Centímetro ao quadrado'},
+    {'unidade': 'm²', 'descricao': 'Metro ao quadrado'},
+    {'unidade': 'km²', 'descricao': 'Kilometro ao quadrado'},
+    {'unidade': 'ha', 'descricao': 'Hectare'},
+]
+
+peso_lista = [
+    {'unidade': 'g', 'descricao': 'Grama'},
+    {'unidade': 'kg', 'descricao': 'Kilograma'},
+    {'unidade': 'ton', 'descricao': 'Tonelada'},
+]
+
+comprimento_lista = [
+    {'unidade': 'mm', 'descricao': 'Milímetro'},
+    {'unidade': 'cm', 'descricao': 'Centímetro'},
+    {'unidade': 'm', 'descricao': 'Metro'},
+    {'unidade': 'km', 'descricao': 'Kilometro'},
+]
+
+potencia_lista = [
+    {'unidade': 'VA', 'descricao': 'Volts-Ampere'},
+    {'unidade': 'kVA', 'descricao': 'Kilo Volts-Ampere'},
+    {'unidade': 'kW', 'descricao': 'Kilo Watts'},
+]
+
+tensao_lista = [
+    {'unidade': 'mV', 'descricao': 'Milívolts'},
+    {'unidade': 'V', 'descricao': 'Volts'},
+    {'unidade': 'kV', 'descricao': 'Kilovolts'},
+
+]
+
 # carregamento para as empresas
 criar_contrato(contratos_lista)
 criar_telas(telas_lista)
@@ -552,7 +601,6 @@ criar_perfis(perfis_lista)
 criar_telasperfil(telasperfil_lista)
 criar_senhas(senha_lista)
 criar_usuarios(usuario_lista)
-
 criar_perfil_manutentor(perfil_manutentor_lista)
 
 # carregamento para os equipamentos
@@ -561,6 +609,14 @@ criar_subgrupo(subgrupo_lista)
 criar_pavimento(pavimento_lista)
 criar_setor(setor_lista)
 criar_locais(locais_lista)
+criar_area(area_lista)
+criar_volume(volume_lista)
+criar_vazao(vazao_lista)
+criar_comprimento(comprimento_lista)
+criar_potencia(potencia_lista)
+criar_tensao(tensao_lista)
+criar_peso(peso_lista)
+
 criar_equipamento(equipamento_lista)
 
 # carregamento para os fornecedores
@@ -572,12 +628,12 @@ criar_periodicidades(periodicidade_lista)
 criar_tipos_parametros(tipo_parametros_lista)
 criar_lista_atividades(lista_atividade_lista)
 criar_tipo_binarios(tipo_binario_lista)
-criar_atividades(atividades_lista)
+# criar_atividades(atividades_lista)
 criar_planosmanutencao(planosmanutencao_lista)
 
 criar_tipo_situacao_ordem(tipo_situacao_ordem_lista)
 criar_tipo_situacao_ordem_perfil_manutentor(situacao_tipo_ordem_perfil_manutentor_lista)
 criar_tipo_status_ordem(tipo_status_ordem_lista)
-criar_fluxo_ordem(fluxo_ordem_lista)
-criar_ordem_servico(ordem_servico_lista)
-criar_tramitacao(tramitacao_lista)
+# criar_fluxo_ordem(fluxo_ordem_lista)
+# criar_ordem_servico(ordem_servico_lista)
+# criar_tramitacao(tramitacao_lista)

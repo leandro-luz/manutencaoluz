@@ -60,8 +60,8 @@
                     <th scope="col">COD</th>
                     <th scope="col">TAG</th>
                     <th scope="col">DESCRIÇÃO_CURTA</th>
-                    <th scope="col">GRUPO</th>
                     <th scope="col">SUBGRUPO</th>
+                    <th scope="col">GRUPO</th>
                     <th scope="col">ATIVO</th>
                     <th scope="col"></th>
                     <th scope="col"></th>
@@ -75,8 +75,8 @@
                     <td>{{ equipamento.cod }}</td>
                     <td>{{ equipamento.tag }}</td>
                     <td>{{ equipamento.descricao_curta }}</td>
-                    <td>{{ equipamento.subgrupo.grupo.nome }}</td>
                     <td>{{ equipamento.subgrupo.nome }}</td>
+                    <td>{{ equipamento.subgrupo.grupo.nome }}</td>
                     {% if equipamento.ativo == True %}
                     <td>
                         <a href="{{ url_for('equipamento.equipamento_ativar', equipamento_id=equipamento.id) }}">

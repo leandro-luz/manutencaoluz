@@ -7,6 +7,7 @@ from wtforms.validators import InputRequired, Length, Optional, NumberRange
 from flask import flash
 from flask_login import current_user
 
+
 class PlanoForm(Form):
     nome = StringField('Nome', validators=[InputRequired(), Length(max=50)],
                        render_kw={"placeholder": "Digite o nome do plano de manutenção"})
@@ -21,7 +22,8 @@ class PlanoForm(Form):
 
     total_tecnico = IntegerField('Total de Técnicos', validators=[InputRequired(), NumberRange(min=1, max=100)],
                                  render_kw={"placeholder": "Digite o total de técnico "})
-    tempo_estimado = IntegerField('Tempo estimado (h)', validators=[InputRequired(), NumberRange(min=1, max=100)],
+    tempo_estimado = DecimalField('Tempo estimado (h)', places=2, rounding=None,
+                                  validators=[InputRequired(), NumberRange(min=1, max=100)],
                                   render_kw={"placeholder": "Digite o tempo estimado "})
 
     file = FileField('Escolha um arquivo para o cadastro de planos de manutenção em Lote (4MB):',
@@ -45,7 +47,8 @@ class PlanoForm(Form):
             elif self.tipoordem.data == 0:
                 flash("Tipo de Ordem de Serviço não informado", category="danger")
                 return False
-            elif datetime.datetime.combine(self.data_inicio.data, datetime.time(0, 0)) < datetime.datetime.now():
+            elif datetime.datetime.combine(self.data_inicio.data,
+                                           datetime.time(0, 0)) < datetime.datetime.now() - datetime.timedelta(days=1):
                 flash("A data de início não pode ser retroativa", category="danger")
                 return False
             else:

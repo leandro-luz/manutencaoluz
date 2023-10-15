@@ -51,7 +51,8 @@
                     <td>{{ grupo['grupo'].nome }}</td>
                     <td>{{ grupo['total'] }}</td>
                     <td>
-                        <a href="{{ url_for('equipamento.grupo_excluir', grupo_id=grupo['grupo'].id, subgrupo_id=subgrupo_id) }}">
+                        <a href="{{ url_for('equipamento.grupo_excluir', grupo_id=grupo['grupo'].id, subgrupo_id=subgrupo_id) }} "
+                           onclick="return deleteItem();">
                         <span data-tooltip="Excluir">
                            <i class="bi-trash fs-6"></i>
                         </span>
@@ -98,7 +99,7 @@
                     <td>{{ subgrupo['total'] }}</td>
                     <td>
                         <a href="{{ url_for('equipamento.subgrupo_excluir', grupo_id=grupo_id,
-                         subgrupo_id=subgrupo['subgrupo'].id) }}">
+                         subgrupo_id=subgrupo['subgrupo'].id) }}" onclick="return deleteItem();">
                         <span data-tooltip="Excluir">
                            <i class="bi-trash fs-6"></i>
                         </span>
@@ -164,6 +165,6 @@
 
 <script src="/static/js/exportar_consulta.js" type="text/javascript"></script>
 <script src="/static/js/filtro_coluna.js" type="text/javascript"></script>
-
+<script src="/static/js/confirmacao_exclusao.js" type="text/javascript"></script>
 
 {% endblock %}

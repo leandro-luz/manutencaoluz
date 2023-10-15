@@ -230,8 +230,8 @@ class PlanoManutencao(db.Model):
     """    Classe de Plano de Manutenção   """
     nome_doc = 'padrão_plano_manutenção'
     # titulos para cadastro
-    titulos_doc = {'Nome*': 'nome', 'Código*': 'codigo', 'Tipo_Ordem*': 'tipoordem_id',
-                   'Tipo_Data_Inicial*': 'tipodata_id', 'Data_Início*': 'data_inicio',
+    titulos_doc = {'Nome*': 'nome', 'Codigo*': 'codigo', 'Tipo_Ordem*': 'tipoordem_id',
+                   'Tipo_Data_Inicial*': 'tipodata_id', 'Data_Inicio*': 'data_inicio',
                    'Periodicidade*': 'periodicidade_id', 'Equipamento_cod*': 'equipamento_id'}
 
     __tablename__ = 'plano_manutencao'
@@ -242,7 +242,7 @@ class PlanoManutencao(db.Model):
     data_inicio = db.Column(db.DateTime(), nullable=False)
     ativo = db.Column(db.Boolean, nullable=False, default=False)
     total_tecnico = db.Column(db.Integer(), nullable=False)
-    tempo_estimado = db.Column(db.Integer(), nullable=False)
+    tempo_estimado =  db.Column(db.Float(), nullable=False)
     revisao = db.Column(db.Integer(), nullable=False, default=0)
 
     tipodata_id = db.Column(db.Integer(), db.ForeignKey("tipo_data.id"), nullable=False)

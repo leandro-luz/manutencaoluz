@@ -76,15 +76,15 @@ class Empresa(db.Model):
     # nome do arquivo para cadastro em lote
     nome_doc = 'padrão_empresas'
     # titulos para cadastro
-    titulos_doc = {'CNPJ*': 'cnpj', 'Razão_Social*': 'razao_social', 'Nome_Fantasia*': 'nome_fantasia',
-                   'Tipo*': 'tipo', 'CEP*': 'cep', 'Logradouro*': 'logradouro', 'Número*': 'numero',
-                   'Bairro*': 'bairro', 'Município*': 'municipio', 'UF*': 'uf',
+    titulos_doc = {'CNPJ*': 'cnpj', 'Razao_Social*': 'razao_social', 'Nome_Fantasia*': 'nome_fantasia',
+                   'Tipo*': 'tipo', 'CEP*': 'cep', 'Logradouro*': 'logradouro', 'Numero*': 'numero',
+                   'Bairro*': 'bairro', 'Municipio*': 'municipio', 'UF*': 'uf',
                    'Email*': 'email', 'Telefone*': 'telefone', 'Contrato*': 'contrato_id',
                    'Data_Abertura': 'data_abertura',
-                   'Situação': 'situacao', 'Porte': 'porte', 'Natureza_Jurídica': 'natureza_juridica',
-                   'CNAE_P_Código': 'cnae_principal', 'CNAE_P_Texto': 'cnae_principal_texto',
-                   'Inscrição_Estadual': 'inscricao_estadual', 'Inscrição_Municipal': 'inscricao_municipal',
-                   'Localização': 'localizacao', 'Complemento': 'complemento', 'Nome_Responsável': 'nome_responsavel',
+                   'Situacao': 'situacao', 'Porte': 'porte', 'Natureza_Juridica': 'natureza_juridica',
+                   'CNAE_P_Codigo': 'cnae_principal', 'CNAE_P_Texto': 'cnae_principal_texto',
+                   'Inscricao_Estadual': 'inscricao_estadual', 'Inscricao_Municipal': 'inscricao_municipal',
+                   'Localizacao': 'localizacao', 'Complemento': 'complemento', 'Nome_Responsavel': 'nome_responsavel',
                    'Ativo': 'ativo'}
 
     __tablename__ = 'empresa'

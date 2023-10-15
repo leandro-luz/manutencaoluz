@@ -23,7 +23,7 @@ class PerfilAcesso(db.Model):
     # nome do arquivo para cadastro em lote
     nome_doc = 'padrão_perfil_acesso'
     # titulos para cadastro
-    titulos_doc = {'Nome*': 'nome', 'Descrição': 'descricao', 'Ativo': 'ativo'}
+    titulos_doc = {'Nome*': 'nome', 'Descricao': 'descricao', 'Ativo': 'ativo'}
 
     __tablename__ = 'perfil_acesso'
     id = db.Column(db.Integer(), primary_key=True)

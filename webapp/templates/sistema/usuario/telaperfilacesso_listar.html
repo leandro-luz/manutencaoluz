@@ -35,7 +35,7 @@
 
         <td>
             <a href="{{ url_for('usuario.telaperfilacesso_excluir', telaperfilacesso_id=telaperfilacesso.id,
-            perfilacesso_id=perfilacesso_id,  usuario_id=usuario_id) }}">
+            perfilacesso_id=perfilacesso_id,  usuario_id=usuario_id) }}" onclick="return deleteItem();">
                 <span data-tooltip="Desativar">
                     <i class="bi-trash fs-6"></i>
                 </span>
@@ -50,4 +50,5 @@
 </body>
 <script src="/static/js/exportar_consulta.js" type="text/javascript"></script>
 <script src="/static/js/filtro_coluna.js" type="text/javascript"></script>
+<script src="/static/js/confirmacao_exclusao.js" type="text/javascript"></script>
 {% endblock %}

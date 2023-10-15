@@ -2,7 +2,7 @@ import datetime
 
 import numpy as np
 import pandas as pd
-from flask import (render_template, Blueprint, redirect, url_for, flash)
+from flask import (render_template, Blueprint, redirect, url_for, flash, Response)
 from flask_login import login_user, logout_user, current_user, login_required
 from webapp.usuario.models import Senha, Usuario, PerfilAcesso, TelaPerfilAcesso, PerfilManutentor, \
     PerfilManutentorUsuario
@@ -372,11 +372,13 @@ def usuario_editar(usuario_id):
 @login_required
 @has_view('Usuário')
 def gerar_padrao_usuarios():
-    result, path = arquivo_padrao(nome_arquivo=Usuario.nome_doc, valores=[[x] for x in Usuario.titulos_doc])
-    if result:
-        flash(f'Foi gerado o arquivo padrão no caminho: {path}', category="success")
-    else:
-        flash("Não foi gerado o arquivo padrão", category="danger")
+    resultado, nome, arquivo = arquivo_padrao(nome_arquivo=Usuario.nome_doc, valores={x for x in Usuario.titulos_doc})
+
+    # se não houver erro envia o arquivo
+    if resultado:
+        return Response(arquivo, mimetype="text/csv",
+                        headers={"Content-disposition": f"attachment; filename={nome}"})
+
     return redirect(url_for("usuario.usuario_listar"))
 
 
@@ -486,11 +488,12 @@ def cadastrar_lote_usuarios():
     # se a lista de rejeitados existir
     if len(rejeitados_texto) > 0:
         # publica ao usuário a lista dos rejeitados
-        result, path = arquivo_padrao(nome_arquivo="Usuários_rejeitados", valores=rejeitados_texto)
-        if result:
-            flash(f'Foi gerado o arquivo de usuários rejeitados no caminho: {path}', category="warning")
-        else:
-            flash("Não foi gerado o arquivo de usuários rejeitados", category="danger")
+        resultado, nome, arquivo = arquivo_padrao(nome_arquivo="Usuários_rejeitados", valores=rejeitados_texto)
+
+        # se não houver erro envia o arquivo
+        if resultado:
+            return Response(arquivo, mimetype="text/csv",
+                            headers={"Content-disposition": f"attachment; filename={nome}"})
 
     return redirect(url_for("usuario.usuario_listar"))
 
@@ -622,11 +625,14 @@ def perfilacesso_ativar(perfilacesso_id):
 @login_required
 @has_view('Usuário')
 def gerar_padrao_perfis():
-    result, path = arquivo_padrao(nome_arquivo=PerfilAcesso.nome_doc, valores=[[x] for x in PerfilAcesso.titulos_doc])
-    if result:
-        flash(f'Foi gerado o arquivo padrão no caminho: {path}', category="success")
-    else:
-        flash("Não foi gerado o arquivo padrão", category="danger")
+    resultado, nome, arquivo = arquivo_padrao(nome_arquivo=PerfilAcesso.nome_doc,
+                                              valores=[[x] for x in PerfilAcesso.titulos_doc])
+
+    # se não houver erro envia o arquivo
+    if resultado:
+        return Response(arquivo, mimetype="text/csv",
+                        headers={"Content-disposition": f"attachment; filename={nome}"})
+
     return redirect(url_for('usuario.perfil_listar'))
 
 
@@ -708,11 +714,12 @@ def cadastrar_lote_perfis():
     # se a lista de rejeitados existir
     if len(rejeitados_texto) > 0:
         # publica ao usuário a lista dos rejeitados
-        result, path = arquivo_padrao(nome_arquivo="Perfis_rejeitados", valores=rejeitados_texto)
-        if result:
-            flash(f'Foi gerado o arquivo de perfis rejeitados no caminho: {path}', category="warning")
-        else:
-            flash("Não foi gerado o arquivo de perfis rejeitados", category="danger")
+        resultado, nome, arquivo = arquivo_padrao(nome_arquivo="Perfis_rejeitados", valores=rejeitados_texto)
+
+        # se não houver erro envia o arquivo
+        if resultado:
+            return Response(arquivo, mimetype="text/csv",
+                            headers={"Content-disposition": f"attachment; filename={nome}"})
 
     return redirect(url_for('usuario.perfil_listar'))
 

@@ -1,7 +1,7 @@
 import config
 from flask import (render_template, Blueprint,
                    redirect, url_for,
-                   flash)
+                   flash, Response)
 from flask_login import current_user, login_required, login_user
 from webapp.empresa.models import Interessado, Tipoempresa, Empresa
 from webapp.empresa.forms import EmpresaForm, EmpresaSimplesForm, RegistroInteressadoForm
@@ -221,12 +221,12 @@ def new_admin(empresa: [Empresa], enviar_email):
 @login_required
 @has_view('Empresa')
 def gerar_padrao_empresas():
-    result, path = arquivo_padrao(nome_arquivo=Empresa.nome_doc, valores=[[x] for x in Empresa.titulos_doc])
-    if result:
-        flash(f'Foi gerado o arquivo padrão no caminho: {path}', category="success")
-    else:
-        flash("Não foi gerado o arquivo padrão", category="danger")
-    return redirect(url_for("empresa.empresa_listar"))
+    # gera o nome e o arquivo para download
+    resultado, nome, arquivo = arquivo_padrao(nome_arquivo=Empresa.nome_doc, valores={x for x in Empresa.titulos_doc})
+    # se não houver erro envia o arquivo
+    if resultado:
+        return Response(arquivo, mimetype="text/csv",
+                        headers={"Content-disposition": f"attachment; filename={nome}"})
 
 
 @empresa_blueprint.route('/cadastrar_lote_empresas>', methods=['GET', 'POST'])
@@ -238,13 +238,22 @@ def cadastrar_lote_empresas():
     # filename = secure_filename(form.file.data.filename)
     filestream = form.file.data
     filestream.seek(0)
-    df = pd.DataFrame(pd.read_csv(filestream, sep=";", names=Empresa.titulos_doc, encoding='latin-1'))
+    df_inicial = pd.DataFrame(pd.read_csv(filestream, sep=";", encoding='latin-1'))
+
+    colunas_importada = df_inicial.columns
+    colunas_base = Empresa.titulos_doc
+
+    # gerando um df novo e populando ele com as colunas que foram preenchidas
+    df = pd.DataFrame(columns=[v for k, v in colunas_base.items()])
+    for col in colunas_importada:
+        df[colunas_base[col]] = df_inicial[col]
+
+    pd.set_option('display.max_columns', None)
 
     # converter os valores Nan para Null
     df = df.replace({np.NAN: None})
-
     # lista dos titulos obrigatórios
-    titulos_obrigatorio = [x for x in Empresa.titulos_doc if x.count('*')]
+    titulos_obrigatorio = [v for k, v in Empresa.titulos_doc.items() if k.count('*')]
     # lista dos equipamentos existentes
     existentes = Empresa.query.filter_by(empresa_gestora_id=current_user.empresa_id).all()
     # tipo de empresa cliente
@@ -255,54 +264,53 @@ def cadastrar_lote_empresas():
     aceitos_cod = []
     aceitos = []
     total = range(df.shape[0])
+
     # percorre por todas as linhas
     for linha in total:
         # verifica se os campo obrigatórios foram preenchidos
         for col_ob in titulos_obrigatorio:
-            # caso não seja
-            if not df.at[linha, col_ob]:
+            # Verifica se foi preenchio
+            if df.at[linha, col_ob] is None:
                 # salva na lista dos rejeitados devido ao não preenchimento obrigatório
                 rejeitados_texto.append(
-                    [df.at[linha, 'CNPJ*'], "rejeitado pelo não preenchimento de algum campo obrigatório"])
-                rejeitados.append(df.at[linha, 'CNPJ*'])
+                    [df.at[linha, 'cnpj'], f"rejeitado pelo nao preenchimento do campo obrigatorio: {col_ob} "])
+                rejeitados.append(df.at[linha, 'cnpj'])
 
         # verifica repetições no BD
         for empresa in existentes:
-            if empresa.cnpj == df.at[linha, 'CNPJ*'].upper():
-                rejeitados.append(df.at[linha, 'CNPJ*'])
+            if empresa.cnpj == df.at[linha, 'cnpj'].upper():
+                rejeitados.append(df.at[linha, 'cnpj'])
                 rejeitados_texto.append(
-                    [df.at[linha, 'CNPJ*'], "rejeitado devido CNPJ já existir no banco de dados"])
-            if empresa.razao_social == df.at[linha, 'Razão_Social*'].upper():
-                rejeitados.append(df.at[linha, 'CNPJ*'])
-                rejeitados_texto.append(
-                    [df.at[linha, 'CNPJ*'], "rejeitado devido RAZÃO SOCIAL já existir no banco de dados"])
-            if empresa.nome_fantasia == df.at[linha, 'Nome_Fantasia*'].upper():
-                rejeitados.append(df.at[linha, 'CNPJ*'])
-                rejeitados_texto.append(
-                    [df.at[linha, 'CNPJ*'], "rejeitado devido NOME FANTASIA já existir no banco de dados"])
-
-        # verificar existência do contrato
-        contrato = Contrato.query.filter_by(nome=df.at[linha, 'Contrato*'].upper()).one_or_none()
-        if not contrato:
-            rejeitados.append(df.at[linha, 'CNPJ*'])
-            rejeitados_texto.append(
-                [df.at[linha, 'CNPJ*'], df.at[linha, 'Contrato*'], "rejeitado devido ao Contrato não existir"])
+                    [df.at[linha, 'cnpj'], "rejeitado devido CNPJ ja existir no banco de dados"])
 
         # verifica repetições na lista atual
-        if df.at[linha, 'CNPJ*'] in aceitos_cod:
-            rejeitados.append(df.at[linha, 'CNPJ*'])
+        if df.at[linha, 'cnpj'] in aceitos_cod:
+            rejeitados.append(df.at[linha, 'cnpj'])
             rejeitados_texto.append(
-                [df.at[linha, 'CNPJ*'], "rejeitado devido a estar repetido"])
+                [df.at[linha, 'cnpj'], "rejeitado devido a estar repetido"])
+            continue
 
         # Verifica se não foi rejeitado
-        if df.at[linha, 'CNPJ*'] not in rejeitados:
-            # altera o valor do subgrupo de nome para id na tabela
-            df.at[linha, 'Contrato*'] = contrato.id
+        if df.at[linha, 'cnpj'] not in rejeitados:
+
+            # verificar existência do contrato
+            contrato = Contrato.query.filter_by(nome=df.at[linha, 'contrato_id'].upper(),
+                                                empresa_gestora_id=current_user.empresa_id).one_or_none()
+
+            if not contrato:
+                rejeitados.append(df.at[linha, 'cnpj'])
+                rejeitados_texto.append(
+                    [df.at[linha, 'cnpj'], df.at[linha, 'contrato_nome'],
+                     "rejeitado devido ao Contrato nao existir"])
+                continue
+            # altera o valor do contrato
+            df.at[linha, 'contrato_id'] = contrato.id
             # cria um equipamento e popula ele
             empresa = Empresa()
+
             for k, v in empresa.titulos_doc.items():
                 # recupere o valor
-                valor = df.at[linha, k]
+                valor = df.at[linha, v]
                 if str(valor).isnumeric() or valor is None:
                     # Salva o atributo se o valor e numerico ou nulo
                     setattr(empresa, v, valor)
@@ -312,7 +320,7 @@ def cadastrar_lote_empresas():
             # setando as empresas como cliente
             empresa.tipoempresa_id = tipoempresa.id
             # insere nas listas dos aceitos
-            aceitos_cod.append(df.at[linha, 'CNPJ*'])
+            aceitos_cod.append(df.at[linha, 'cnpj'])
             # insere o equipamento na lista
             aceitos.append(empresa)
 
@@ -326,13 +334,15 @@ def cadastrar_lote_empresas():
     flash(f"Total de empresas cadastrados: {len(aceitos)}, rejeitados:{len(total) - len(aceitos)}", "success")
 
     # se a lista de rejeitados existir
-    if len(rejeitados_texto) > 0:
+    if len(rejeitados_texto) > 1:
         # publica ao usuário a lista dos rejeitados
-        result, path = arquivo_padrao(nome_arquivo="Empresas_rejeitadas", valores=rejeitados_texto)
-        if result:
-            flash(f'Foi gerado o arquivo de empresas rejeitados no caminho: {path}', category="warning")
-        else:
-            flash("Não foi gerado o arquivo de empresas rejeitados", category="danger")
+        resultado, nome, arquivo = arquivo_padrao(nome_arquivo="Empresas_rejeitadas", valores=rejeitados_texto)
+
+        # se não houver erro envia o arquivo
+        if resultado:
+            return Response(arquivo, mimetype="text/csv",
+                            headers={"Content-disposition": f"attachment; filename={nome}"})
+
     return redirect(url_for('empresa.empresa_listar'))
 
 

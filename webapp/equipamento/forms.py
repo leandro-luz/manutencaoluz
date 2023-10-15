@@ -6,6 +6,7 @@ from webapp.equipamento.models import *
 from flask import flash
 from flask_login import current_user
 
+
 class GrupoForm(Form):
     nome = StringField('Nome', validators=[InputRequired(), Length(max=50)],
                        render_kw={"placeholder": "Digite o nome do grupo"})
@@ -68,6 +69,8 @@ class EquipamentoForm(Form):
     id = IntegerField('Id')
     cod = StringField('Código', validators=[InputRequired(), Length(max=50)],
                       render_kw={"placeholder": "Digite o código"})
+    cod_automatico = BooleanField('Gerar Código Automáticamente?')
+
     descricao_curta = StringField('Descrição Curta', validators=[InputRequired()],
                                   render_kw={"placeholder": "Digite a descrição curta"})
     descricao_longa = StringField('Descrição Longa', render_kw={"placeholder": "Digite a descrição longa"})
@@ -79,16 +82,7 @@ class EquipamentoForm(Form):
                          render_kw={"placeholder": "Digite o modelo "})
     ns = StringField('Número de Série', validators=[Optional()],
                      render_kw={"placeholder": "Digite o número de série"})
-    largura = IntegerField('Largura (mm)', validators=[Optional()],
-                           render_kw={"placeholder": "Digite a largura "})
-    comprimento = IntegerField('Comprimento (mm)', validators=[Optional()],
-                               render_kw={"placeholder": "Digite o comprimento"})
-    altura = IntegerField('Altura (mm)', validators=[Optional()],
-                          render_kw={"placeholder": "Digite a altura"})
-    peso = IntegerField('Peso (kg)', validators=[Optional()],
-                        render_kw={"placeholder": "Digite o peso"})
-    potencia = IntegerField('Potencia (kw)', validators=[Optional()], render_kw={"placeholder": "Digite a potência"})
-    tensao = IntegerField('Tensão (V)', validators=[Optional()], render_kw={"placeholder": "Digite a tensão"})
+
     data_fabricacao = DateField('Ano de Fabricação', validators=[Optional()],
                                 render_kw={"placeholder": "Digite o ano de fabricação"})
     data_aquisicao = DateField('Data de Aquisição', validators=[Optional()],
@@ -99,7 +93,9 @@ class EquipamentoForm(Form):
                                    render_kw={"placeholder": "Digite o custo de aquisição"})
     depreciacao = IntegerField('Depreciação (Anos)', validators=[Optional()],
                                render_kw={"placeholder": "Digite o tempo de depreciação"})
-    tag = StringField('Tag ', validators=[InputRequired()], render_kw={"placeholder": "Digite a tag"})
+    tag = StringField('Tag ', validators=[Optional()], render_kw={"placeholder": "Digite a tag"})
+    tag_automatico = BooleanField('Gerar Tag Automáticamente?')
+
     patrimonio = StringField('Patrimonio', validators=[Optional()],
                              render_kw={"placeholder": "Digite o patrimônio"})
 
@@ -115,6 +111,35 @@ class EquipamentoForm(Form):
     setor = SelectField('Setor', choices=[], coerce=int)
     local = SelectField('Local', choices=[], coerce=int)
     pavimento = SelectField('Pavimento', choices=[], coerce=int)
+
+    vazao_valor = DecimalField('Vazão', places=2, rounding=None, validators=[Optional()],
+                               render_kw={"placeholder": "Digite a vazão"})
+    volume_valor = DecimalField('Volume', places=2, rounding=None, validators=[Optional()],
+                                render_kw={"placeholder": "Digite o volume"})
+    area_valor = DecimalField('Área', places=2, rounding=None, validators=[Optional()],
+                              render_kw={"placeholder": "Digite a área"})
+    largura_valor = DecimalField('Largura', places=2, rounding=None, validators=[Optional()],
+                                 render_kw={"placeholder": "Digite a largura "})
+    comprimento_valor = DecimalField('Comprimento', places=2, rounding=None, validators=[Optional()],
+                                     render_kw={"placeholder": "Digite o comprimento"})
+    altura_valor = DecimalField('Altura', places=2, rounding=None, validators=[Optional()],
+                                render_kw={"placeholder": "Digite a altura"})
+    peso_valor = DecimalField('Peso', places=2, rounding=None, validators=[Optional()],
+                              render_kw={"placeholder": "Digite o peso"})
+    potencia_valor = DecimalField('Potencia', places=2, rounding=None, validators=[Optional()],
+                                  render_kw={"placeholder": "Digite a potência elétrica"})
+    tensao_valor = DecimalField('Tensão', places=2, rounding=None, validators=[Optional()],
+                                render_kw={"placeholder": "Digite a tensão elétrica"})
+
+    und_vazao = SelectField('unidade', choices=[], coerce=int)
+    und_volume = SelectField('unidade', choices=[], coerce=int)
+    und_area = SelectField('unidade', choices=[], coerce=int)
+    und_altura = SelectField('unidade', choices=[], coerce=int)
+    und_largura = SelectField('unidade', choices=[], coerce=int)
+    und_comprimento = SelectField('unidade', choices=[], coerce=int)
+    und_peso = SelectField('unidade', choices=[], coerce=int)
+    und_potencia = SelectField('unidade', choices=[], coerce=int)
+    und_tensao = SelectField('unidade', choices=[], coerce=int)
 
     grupo = SelectField('Grupo', choices=[], coerce=int)
     subgrupo = SelectField('Subgrupo', choices=[], coerce=int)
@@ -154,45 +179,49 @@ class EquipamentoForm(Form):
                 flash("Já existe equipamento com este descrição curta", category="danger")
                 return False
 
-            if Equipamento.query.filter(
-                    Equipamento.id != self.id.data,
-                    Equipamento.descricao_longa == self.descricao_longa.data,
-                    Equipamento.subgrupo_id == Subgrupo.id,
-                    Subgrupo.grupo_id == Grupo.id,
-                    Grupo.empresa_id == current_user.empresa_id
-            ).one_or_none():
-                flash("Já existe equipamento com este descrição longa", category="danger")
-                return False
+            if self.descricao_longa.data:
+                if Equipamento.query.filter(
+                        Equipamento.id != self.id.data,
+                        Equipamento.descricao_longa == self.descricao_longa.data,
+                        Equipamento.subgrupo_id == Subgrupo.id,
+                        Subgrupo.grupo_id == Grupo.id,
+                        Grupo.empresa_id == current_user.empresa_id
+                ).one_or_none():
+                    flash("Já existe equipamento com este descrição longa", category="danger")
+                    return False
 
-            if Equipamento.query.filter(
-                    Equipamento.id != self.id.data,
-                    Equipamento.ns == self.ns.data,
-                    Equipamento.subgrupo_id == Subgrupo.id,
-                    Subgrupo.grupo_id == Grupo.id,
-                    Grupo.empresa_id == current_user.empresa_id
-            ).one_or_none():
-                flash("Já existe equipamento com este número de série", category="danger")
-                return False
+            if self.ns.data:
+                if Equipamento.query.filter(
+                        Equipamento.id != self.id.data,
+                        Equipamento.ns == self.ns.data,
+                        Equipamento.subgrupo_id == Subgrupo.id,
+                        Subgrupo.grupo_id == Grupo.id,
+                        Grupo.empresa_id == current_user.empresa_id
+                ).one_or_none():
+                    flash("Já existe equipamento com este número de série", category="danger")
+                    return False
 
-            if Equipamento.query.filter(
-                    Equipamento.id != self.id.data,
-                    Equipamento.tag == self.tag.data,
-                    Equipamento.subgrupo_id == Subgrupo.id,
-                    Subgrupo.grupo_id == Grupo.id,
-                    Grupo.empresa_id == current_user.empresa_id
-            ).one_or_none():
-                flash("Já existe equipamento com esta tag", category="danger")
-                return False
+            if self.tag.data:
+                if Equipamento.query.filter(
+                        Equipamento.id != self.id.data,
+                        Equipamento.tag == self.tag.data,
+                        Equipamento.subgrupo_id == Subgrupo.id,
+                        Subgrupo.grupo_id == Grupo.id,
+                        Grupo.empresa_id == current_user.empresa_id
+                ).one_or_none():
+                    flash("Já existe equipamento com esta tag", category="danger")
+                    return False
 
-            if Equipamento.query.filter(
-                    Equipamento.id != self.id.data,
-                    Equipamento.patrimonio == self.patrimonio.data,
-                    Equipamento.subgrupo_id == Subgrupo.id,
-                    Subgrupo.grupo_id == Grupo.id,
-                    Grupo.empresa_id == current_user.empresa_id
-            ).one_or_none():
-                flash("Já existe equipamento com este patrimônio", category="danger")
-                return False
+            if self.patrimonio.data:
+                if Equipamento.query.filter(
+                        Equipamento.id != self.id.data,
+                        Equipamento.patrimonio == self.patrimonio.data,
+                        Equipamento.subgrupo_id == Subgrupo.id,
+                        Subgrupo.grupo_id == Grupo.id,
+                        Grupo.empresa_id == current_user.empresa_id
+                ).one_or_none():
+                    flash("Já existe equipamento com este patrimônio", category="danger")
+                    return False
 
             else:
                 return True

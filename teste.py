@@ -168,13 +168,46 @@ from pathlib import Path
 #     writer.writerows(titulos_doc)
 
 
-ativos = ['SIM', 'OK', 'POSITIVO', 'VERDADEIRO', 1, 'TRUE', True, 'Ativo']
+# ativos = ['SIM', 'OK', 'POSITIVO', 'VERDADEIRO', 1, 'TRUE', True, 'Ativo']
+#
+# itens = ['sim', True, '', 'aa', 1]
+#
+# for item in itens:
+#
+#     if item in ativos:
+#         print(f'{item}: presente')
+#     else:
+#         print(f'{item}: não presente')
 
-itens = ['sim', True, '', 'aa', 1]
 
-for item in itens:
+import pandas as pd
 
-    if item in ativos:
-        print(f'{item}: presente')
-    else:
-        print(f'{item}: não presente')
+# create a sample dataframe
+df = pd.DataFrame({
+    'Name': ['Alice', 'Bob', 'Charlie', 'David'],
+    'Age': [25, 30, 35, 40],
+    'Salary': [50000, 60000, 70000, 80000]
+})
+colunas_importada = df.columns
+
+
+colunas_base = {'Name': 'name', 'Nota': 'nota', 'Age': 'age', 'Endereco': 'endereco', 'Salary': 'salary'}
+
+nomes = []
+for i in colunas_base:
+    nomes.append(colunas_base[i])
+
+df_final = pd.DataFrame(columns=nomes)
+
+for col in colunas_importada:
+    df_final[colunas_base[col]] = df[col]
+
+print(df_final)
+
+# nomes=['Name','Nota','Age','Endereco','Salary']
+# df2 = pd.DataFrame(columns=nomes)
+#
+# print(df2)
+#
+# for a in df.columns:
+#     print(a)

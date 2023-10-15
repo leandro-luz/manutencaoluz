@@ -51,7 +51,7 @@
                     <td>
                         <a href="{{ url_for('contrato.telacontrato_excluir',
                             telacontrato_id=telacontrato.id,
-                            contrato_id=contrato.id) }}">
+                            contrato_id=contrato.id) }}" onclick="return deleteItem();">
                                 <span data-tooltip="Excluir">
                                       <i class="bi-trash fs-6"></i>
                                 </span>
@@ -108,4 +108,5 @@
 </body>
 
 <script src="/static/js/filtro_coluna.js" type="text/javascript"></script>
+<script src="/static/js/confirmacao_exclusao.js" type="text/javascript"></script>
 {% endblock %}
