@@ -19,7 +19,7 @@
     <div class="row">
 
         <a>
-           <span data-bs-target="#modal" data-bs-toggle="modal" data-tooltip="INCLUIR LOCALIZAÇÃO">
+           <span data-bs-target="#modal_localizacao" data-bs-toggle="modal" data-tooltip="INCLUIR LOCALIZAÇÃO">
                <i class="bi-globe2 fs-4">+</i><br>
            </span>
             {% include "localizacao_editar.html" %}
@@ -37,6 +37,7 @@
                     <th scope="col">NOME</th>
                     <th scope="col">SIGLA</th>
                     <th scope="col"></th>
+                    <th scope="col"></th>
                 </tr>
                 </thead>
 
@@ -45,6 +46,13 @@
                 <tr>
                     <td>{{ setor.nome }}</td>
                     <td>{{ setor.sigla }}</td>
+                    <td>
+                        <span data-bs-target="#modal_setor_editar" data-bs-toggle="modal"
+                              data-tooltip="Editar">
+                           <i class="bi-box-arrow-in-up fs-6"></i>
+                        </span>
+                        {% include "setor_editar.html" %}
+                    </td>
                     <td>
                         <a href="{{ url_for('equipamento.setor_excluir', setor_id=setor.id) }}"
                            onclick="return deleteItem();">
@@ -69,6 +77,7 @@
                     <th scope="col">NOME</th>
                     <th scope="col">SIGLA</th>
                     <th scope="col"></th>
+                    <th scope="col"></th>
                 </tr>
                 </thead>
 
@@ -77,6 +86,13 @@
                 <tr>
                     <td>{{ local.nome }}</td>
                     <td>{{ local.sigla }}</td>
+                    <td>
+                        <span data-bs-target="#modal_local_editar" data-bs-toggle="modal"
+                              data-tooltip="Editar">
+                           <i class="bi-box-arrow-in-up fs-6"></i>
+                        </span>
+                        {% include "local_editar.html" %}
+                    </td>
                     <td>
                         <a href="{{ url_for('equipamento.local_excluir', local_id=local.id) }}"
                            onclick="return deleteItem();">
@@ -101,6 +117,7 @@
                     <th scope="col">NOME</th>
                     <th scope="col">SIGLA</th>
                     <th scope="col"></th>
+                    <th scope="col"></th>
                 </tr>
                 </thead>
 
@@ -109,6 +126,13 @@
                 <tr>
                     <td>{{ pavimento.nome }}</td>
                     <td>{{ pavimento.sigla }}</td>
+                    <td>
+                        <span data-bs-target="#modal_pavimento_editar" data-bs-toggle="modal"
+                              data-tooltip="Editar">
+                           <i class="bi-box-arrow-in-up fs-6"></i>
+                        </span>
+                        {% include "pavimento_editar.html" %}
+                    </td>
                     <td>
                         <a href="{{ url_for('equipamento.pavimento_excluir', pavimento_id=pavimento.id) }}"
                            onclick="return deleteItem();">

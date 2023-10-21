@@ -352,8 +352,10 @@ class Pavimento(db.Model):
 
     def alterar_atributos(self, form):
         """    Função para alterar os atributos do objeto    """
-        self.nome = form.nome.data.upper()
-        self.sigla = form.sigla.data.upper()
+        if form.nome.data:
+            self.nome = form.nome.data.upper()
+        if form.sigla.data:
+            self.sigla = form.sigla.data.upper()
         self.empresa_id = current_user.empresa_id
 
     def salvar(self) -> bool:
@@ -400,8 +402,10 @@ class Setor(db.Model):
 
     def alterar_atributos(self, form):
         """    Função para alterar os atributos do objeto    """
-        self.nome = form.nome.data.upper()
-        self.sigla = form.sigla.data.upper()
+        if form.nome.data:
+            self.nome = form.nome.data.upper()
+        if form.sigla.data:
+            self.sigla = form.sigla.data.upper()
         self.empresa_id = current_user.empresa_id
 
     def salvar(self) -> bool:
@@ -448,8 +452,10 @@ class Local(db.Model):
 
     def alterar_atributos(self, form):
         """    Função para alterar os atributos do objeto    """
-        self.nome = form.nome.data.upper()
-        self.sigla = form.sigla.data.upper()
+        if form.nome.data:
+            self.nome = form.nome.data.upper()
+        if form.sigla.data:
+            self.sigla = form.sigla.data.upper()
         self.empresa_id = current_user.empresa_id
 
     def salvar(self) -> bool:

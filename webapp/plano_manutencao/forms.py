@@ -13,6 +13,7 @@ class PlanoForm(Form):
                        render_kw={"placeholder": "Digite o nome do plano de manutenção"})
     codigo = StringField('Código', validators=[InputRequired(), Length(max=50)],
                          render_kw={"placeholder": "Digite o código do plano de manutenção"})
+    cod_automatico = BooleanField('Gerar Código Automáticamente?')
     data_inicio = DateField('Data de Início', validators=[InputRequired()],
                             render_kw={"placeholder": "Digite a data de início"})
     tipoordem = SelectField('Tipo de Ordem Serviço', choices=[], coerce=int, validators=[InputRequired()])
@@ -23,7 +24,7 @@ class PlanoForm(Form):
     total_tecnico = IntegerField('Total de Técnicos', validators=[InputRequired(), NumberRange(min=1, max=100)],
                                  render_kw={"placeholder": "Digite o total de técnico "})
     tempo_estimado = DecimalField('Tempo estimado (h)', places=2, rounding=None,
-                                  validators=[InputRequired(), NumberRange(min=1, max=100)],
+                                  validators=[InputRequired()],
                                   render_kw={"placeholder": "Digite o tempo estimado "})
 
     file = FileField('Escolha um arquivo para o cadastro de planos de manutenção em Lote (4MB):',
@@ -44,12 +45,11 @@ class PlanoForm(Form):
             elif self.periodicidade.data == 0:
                 flash("Periodicidade não informada", category="danger")
                 return False
+            elif self.tipodata.data == 0:
+                flash("Tipo de Data Inicial não informada", category="danger")
+                return False
             elif self.tipoordem.data == 0:
                 flash("Tipo de Ordem de Serviço não informado", category="danger")
-                return False
-            elif datetime.datetime.combine(self.data_inicio.data,
-                                           datetime.time(0, 0)) < datetime.datetime.now() - datetime.timedelta(days=1):
-                flash("A data de início não pode ser retroativa", category="danger")
                 return False
             else:
                 return True

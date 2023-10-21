@@ -21,7 +21,8 @@
 
         <div class="col-1">
             <a>
-               <span data-bs-target="#modal" data-bs-toggle="modal" data-tooltip="INCLUIR AGRUPAMENTO">
+               <span data-bs-target="#modal_agrupamento_editar" data-bs-toggle="modal"
+                     data-tooltip="INCLUIR AGRUPAMENTO">
                    <i class="bi-bounding-box fs-4">+</i>
                </span>
             </a>
@@ -42,6 +43,7 @@
                     <th scope="col">TOTAL DE SUBGRUPOS</th>
                     <th scope="col"></th>
                     <th scope="col"></th>
+                    <th scope="col"></th>
                 </tr>
                 </thead>
 
@@ -50,6 +52,13 @@
                 <tr>
                     <td>{{ grupo['grupo'].nome }}</td>
                     <td>{{ grupo['total'] }}</td>
+                    <td>
+                        <span data-bs-target="#modal_grupo_editar" data-bs-toggle="modal"
+                              data-tooltip="Editar">
+                           <i class="bi-box-arrow-in-up fs-6"></i>
+                        </span>
+                        {% include "grupo_editar.html" %}
+                    </td>
                     <td>
                         <a href="{{ url_for('equipamento.grupo_excluir', grupo_id=grupo['grupo'].id, subgrupo_id=subgrupo_id) }} "
                            onclick="return deleteItem();">
@@ -89,6 +98,7 @@
                     <th scope="col">TOTAL DE EQUIPAMENTOS</th>
                     <th scope="col"></th>
                     <th scope="col"></th>
+                    <th scope="col"></th>
 
                 </tr>
                 </thead>
@@ -97,6 +107,14 @@
                 <tr>
                     <td>{{ subgrupo['subgrupo'].nome }}</td>
                     <td>{{ subgrupo['total'] }}</td>
+
+                    <td>
+                        <span data-bs-target="#modal_subgrupo_editar" data-bs-toggle="modal"
+                              data-tooltip="Editar">
+                           <i class="bi-box-arrow-in-up fs-6"></i>
+                        </span>
+                        {% include "subgrupo_editar.html" %}
+                    </td>
                     <td>
                         <a href="{{ url_for('equipamento.subgrupo_excluir', grupo_id=grupo_id,
                          subgrupo_id=subgrupo['subgrupo'].id) }}" onclick="return deleteItem();">

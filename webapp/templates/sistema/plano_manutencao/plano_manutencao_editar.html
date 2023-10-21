@@ -19,26 +19,37 @@
             {% endif %}
         </div>
     </div>
-
-    {% if plano.id == 0 %}
     <div class="row">
         <div class="col-10">
-            <form action="{{ url_for('plano_manutencao.plano_editar', plano_id=0) }}"
+            <form action="{{ url_for('plano_manutencao.plano_editar', plano_id=plano.id) }}"
                   method="POST">
                 {{form.csrf_token}}
 
                 {{form.nome.label}} {{form.nome(size=80)}}<br>
-                {{form.codigo.label}} {{form.codigo(size=80)}}<br>
-                {{form.tipoordem.label}} {{form.tipoordem}}<br>
+                {{form.codigo.label}} {{form.codigo(size=20)}}
+                {{form.cod_automatico.label}} {{form.cod_automatico}}<br>
                 {{form.total_tecnico.label}} {{form.total_tecnico}}<br>
                 {{form.tempo_estimado.label}} {{form.tempo_estimado}}<br>
-                {{form.tipodata.label}} {{form.tipodata}}<br>
                 {{form.data_inicio.label}} {{form.data_inicio}}<br>
+                {{form.tipoordem.label}} {{form.tipoordem}}<br>
+                {{form.tipodata.label}} {{form.tipodata}}<br>
                 {{form.periodicidade.label}} {{form.periodicidade}}<br>
-                {{form.equipamento.label}} {{form.equipamento}}<br><br>
-                <input type="submit" value="Cadastrar"/><br><br>
-            </form>
+                {{form.equipamento.label}} {{form.equipamento}}<br>
+                {{form.ativo.label}} {{form.ativo}}<br><br>
 
+                {% if plano.id == 0 %}
+                <input type="submit" value="Cadastrar"/><br><br>
+                {% else %}
+                <input type="submit" value="Atualizar"/><br><br>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+
+    {% if plano.id == 0 %}
+    <div class="row">
+        <div class="col-10">
 
             <form action="{{ url_for('plano_manutencao.cadastrar_lote_planos_manutencao') }}"
                   enctype="multipart/form-data"
@@ -55,20 +66,6 @@
     {% else %}
     <div class="row">
         <div class="col-10">
-
-            Nome: {{ plano.nome }}<br>
-            Código: {{ plano.codigo }}<br>
-            Tipo de Ordem Serviço: {{ plano.tipoordem.nome }}<br>
-            Total de Técnicos: {{ plano.total_tecnico }}<br>
-            Tempo estimado (horas): {{ plano.tempo_estimado }}<br>
-            Tipo de Data Inicial: {{ plano.tipodata.nome }}<br>
-            Data Inicial: {{ plano.data_inicio }}<br>
-            Periodicidade: {{ plano.periodicidade.nome }}<br>
-            Equipamento: {{ plano.equipamento.descricao_curta }}<br>
-            Localização: {{ plano.equipamento.setor.nome }} /
-            {{ plano.equipamento.local.nome }} /
-            {{ plano.equipamento.pavimento.nome }}<br>
-            Ativo: {{ plano.ativo }}<br><br>
 
             <h5>LISTA DE ATIVIDADES</h5>
             {% if plano.listaatividade.id %}

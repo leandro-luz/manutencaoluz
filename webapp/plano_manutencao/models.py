@@ -2,6 +2,10 @@ import logging
 import datetime
 from dateutil.relativedelta import relativedelta
 from webapp import db
+# from webapp.ordem_servico.models import TipoOrdem
+from webapp.equipamento.models import Equipamento
+from sqlalchemy import func
+from unidecode import unidecode
 
 logging.basicConfig(format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
 logging.getLogger().setLevel(logging.DEBUG)
@@ -242,7 +246,7 @@ class PlanoManutencao(db.Model):
     data_inicio = db.Column(db.DateTime(), nullable=False)
     ativo = db.Column(db.Boolean, nullable=False, default=False)
     total_tecnico = db.Column(db.Integer(), nullable=False)
-    tempo_estimado =  db.Column(db.Float(), nullable=False)
+    tempo_estimado = db.Column(db.Float(), nullable=False)
     revisao = db.Column(db.Integer(), nullable=False, default=0)
 
     tipodata_id = db.Column(db.Integer(), db.ForeignKey("tipo_data.id"), nullable=False)
@@ -260,10 +264,10 @@ class PlanoManutencao(db.Model):
     def __repr__(self):
         return f'<Plano de Manutenção: {self.id}-{self.codigo}>'
 
-    def alterar_atributos(self, form):
+    def alterar_atributos(self, form, new):
         """    Função para alterar os atributos do objeto    """
         self.nome = form.nome.data.upper()
-        self.codigo = form.codigo.data
+        self.codigo = self.gerar_codigo(form, new)
         self.tipoordem_id = form.tipoordem.data
         self.tipodata_id = form.tipodata.data
         self.periodicidade_id = form.periodicidade.data
@@ -299,6 +303,25 @@ class PlanoManutencao(db.Model):
             log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
             db.session.rollback()
             return False
+
+    def gerar_codigo(self, form, new):
+        """Função que gera automático o código do equipamento"""
+
+        if new:
+            posicao = db.session.query(func.max(PlanoManutencao.id)).first()[0] + 1
+        else:
+            posicao = self.id
+
+        if form.cod_automatico.data:
+            equipamento = Equipamento.query.filter_by(id=form.equipamento.data).one_or_none()
+
+            return (unidecode(str(equipamento.descricao_curta)[:3]) +
+                    str(form.tipoordem.data).zfill(2) + "." +
+                    str(form.tipodata.data).zfill(2) +
+                    str(form.periodicidade.data).zfill(2) + "." +
+                    str(posicao).zfill(4))
+        else:
+            return form.codigo.data
 
     @staticmethod
     def salvar_lote(lote):

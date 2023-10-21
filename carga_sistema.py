@@ -6,7 +6,7 @@ from funcoes_sistema import *
 from webapp import create_app
 from webapp import db
 
-env = os.environ.get('WEBAPP_ENV', 'dev')
+env = os.environ.get('WEBAPP_ENV', 'prod')
 app = create_app('config.%sConfig' % env.capitalize())
 app.app_context().push()
 
@@ -617,7 +617,7 @@ criar_potencia(potencia_lista)
 criar_tensao(tensao_lista)
 criar_peso(peso_lista)
 
-criar_equipamento(equipamento_lista)
+# criar_equipamento(equipamento_lista)
 
 # carregamento para os fornecedores
 criar_tipo_ordem(tipo_ordem_lista)
@@ -629,10 +629,10 @@ criar_tipos_parametros(tipo_parametros_lista)
 criar_lista_atividades(lista_atividade_lista)
 criar_tipo_binarios(tipo_binario_lista)
 # criar_atividades(atividades_lista)
-criar_planosmanutencao(planosmanutencao_lista)
+# criar_planosmanutencao(planosmanutencao_lista)
 
-criar_tipo_situacao_ordem(tipo_situacao_ordem_lista)
-criar_tipo_situacao_ordem_perfil_manutentor(situacao_tipo_ordem_perfil_manutentor_lista)
+# criar_tipo_situacao_ordem(tipo_situacao_ordem_lista)
+# criar_tipo_situacao_ordem_perfil_manutentor(situacao_tipo_ordem_perfil_manutentor_lista)
 criar_tipo_status_ordem(tipo_status_ordem_lista)
 # criar_fluxo_ordem(fluxo_ordem_lista)
 # criar_ordem_servico(ordem_servico_lista)

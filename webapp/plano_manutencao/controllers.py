@@ -406,7 +406,7 @@ def plano_editar(plano_id):
 
     # Validação
     if form.validate_on_submit():
-        plano.alterar_atributos(form)
+        plano.alterar_atributos(form, new)
         if plano.salvar():
             # Mensagens
             if plano_id > 0:

@@ -24,8 +24,8 @@ class GrupoForm(Form):
                 flash("Nome do grupo não foi informado", category="danger")
                 return False
             if Grupo.query.filter(
+                    current_user.empresa_id == Grupo.empresa_id,
                     Grupo.nome == self.nome.data,
-                    Grupo.empresa_id == current_user.empresa_id
             ).one_or_none():
                 flash("Já existe um grupo com este nome", category="danger")
                 return False
@@ -38,8 +38,6 @@ class GrupoForm(Form):
 class SubgrupoForm(Form):
     nome = StringField('Nome', validators=[InputRequired(), Length(max=50)],
                        render_kw={"placeholder": "Digite o nome do sistema"})
-    ativo = BooleanField('Ativo', render_kw={"placeholder": "Informe se o sistema está ativo"})
-    grupo = SelectField('Grupo de equipamentos', choices=[], coerce=int)
     submit = SubmitField("Salvar")
 
     file = FileField('Escolha um arquivo para o cadastro de subgrupos em Lote (4MB):', validators=[Optional()],
@@ -50,15 +48,16 @@ class SubgrupoForm(Form):
         check_validate = super(SubgrupoForm, self).validate()
 
         if check_validate:
-            if self.grupo.data == 0:
-                flash("Grupo não foi informado", category="danger")
+            if self.nome.data == '':
+                flash("Nome do subgrupo não foi informado", category="danger")
                 return False
             if Subgrupo.query.filter(
+                    current_user.empresa_id == Grupo.empresa_id,
+                    Grupo.id == Subgrupo.grupo_id,
                     Subgrupo.nome == self.nome.data,
-                    Subgrupo.grupo_id == self.grupo.data,
-                    Grupo.empresa_id == current_user.empresa_id
             ).one_or_none():
-                flash("Já existe um subgrupo com este nome para este grupo", category="danger")
+                flash("Já existe um subgrupo com este nome", category="danger")
+                return False
             else:
                 return True
 
@@ -337,3 +336,103 @@ class AgrupamentoForm(Form):
             return True
         else:
             return False
+
+
+class SetorForm(Form):
+    id = IntegerField('id')
+    nome = StringField('Nome', validators=[Optional(), Length(max=50)],
+                       render_kw={"placeholder": "Digite o nome"})
+    sigla = StringField('Sigla', validators=[Optional(), Length(max=5)],
+                        render_kw={"placeholder": "Digite a sigla"})
+
+    submit = SubmitField("Salvar")
+
+    def validate(self, **kwargs):
+        # # if our validators do not pass
+        check_validate = super(SetorForm, self).validate()
+
+        if check_validate:
+            if Setor.query.filter(
+                    Setor.nome == self.nome.data,
+                    Setor.empresa_id == current_user.empresa_id
+            ).one_or_none():
+                flash("Já existe um setor com este nome", category="danger")
+                return False
+            elif Setor.query.filter(
+                    Setor.sigla == self.sigla.data,
+                    Setor.empresa_id == current_user.empresa_id
+            ).one_or_none():
+                flash("Já existe um setor com esta sigla", category="danger")
+                return False
+            if not self.nome.data and not self.sigla.data:
+                flash("Não foi preenchido nenhum valor para alterar", category="danger")
+                return False
+            return True
+        return False
+
+
+class LocalForm(Form):
+    id = IntegerField('id')
+    nome = StringField('Nome', validators=[Optional(), Length(max=50)],
+                       render_kw={"placeholder": "Digite o nome"})
+    sigla = StringField('Sigla', validators=[Optional(), Length(max=5)],
+                        render_kw={"placeholder": "Digite a sigla"})
+
+    submit = SubmitField("Salvar")
+
+    def validate(self, **kwargs):
+        # # if our validators do not pass
+        check_validate = super(LocalForm, self).validate()
+
+        if check_validate:
+            if Local.query.filter(
+                    Local.nome == self.nome.data,
+                    Local.empresa_id == current_user.empresa_id
+            ).one_or_none():
+                flash("Já existe um local com este nome para este setor", category="danger")
+                return False
+
+            if Local.query.filter(
+                    Local.sigla == self.sigla.data,
+                    Local.empresa_id == current_user.empresa_id
+            ).one_or_none():
+                flash("Já existe este um local com esta sigla", category="danger")
+                return False
+            if not self.nome.data and not self.sigla.data:
+                flash("Não foi preenchido nenhum valor para alterar", category="danger")
+                return False
+            return True
+        return False
+
+
+class PavimentoForm(Form):
+    id = IntegerField('id')
+    nome = StringField('Nome', validators=[Optional(), Length(max=50)],
+                       render_kw={"placeholder": "Digite o nome"})
+    sigla = StringField('Sigla', validators=[Optional(), Length(max=5)],
+                        render_kw={"placeholder": "Digite a sigla"})
+
+    submit = SubmitField("Salvar")
+
+    def validate(self, **kwargs):
+        # # if our validators do not pass
+        check_validate = super(PavimentoForm, self).validate()
+
+        if check_validate:
+            if Pavimento.query.filter(
+                    Pavimento.nome == self.nome.data,
+                    Pavimento.empresa_id == current_user.empresa_id
+            ).one_or_none():
+                flash("Já existe um pavimento com este nome", category="danger")
+                return False
+            elif Pavimento.query.filter(
+                    Pavimento.sigla == self.sigla.data,
+                    Pavimento.empresa_id == current_user.empresa_id
+            ).one_or_none():
+                flash("Já existe um pavimento com esta sigla", category="danger")
+                return False
+            if not self.nome.data and not self.sigla.data:
+                flash("Não foi preenchido nenhum valor para alterar", category="danger")
+                return False
+            return True
+        return False

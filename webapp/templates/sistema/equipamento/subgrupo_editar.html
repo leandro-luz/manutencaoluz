@@ -1,0 +1,26 @@
+<!-- Add New Modal -->
+<!-- Modal -->
+<div aria-hidden="true" aria-labelledby="modalLabel" class="modal fade"
+     id="modal_subgrupo_editar" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLabel">Atualizar Subgrupo</h5>
+                <button aria-label="Close" class="btn-close"
+                        data-bs-dismiss="modal" type="button">
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('equipamento.subgrupo_editar',
+                grupo_id=grupo_id,
+                subgrupo_id=subgrupo['subgrupo'].id) }}"
+                      method="POST">
+                    {{form_subgrupo.csrf_token}}
+                    Nome Atual: {{ subgrupo['subgrupo'].nome }}<br>
+                    Nome Novo: {{form_subgrupo.nome(size=20)}}<br>
+                    <input type="submit" value="Atualizar"/>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
