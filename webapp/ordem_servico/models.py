@@ -172,12 +172,15 @@ class TramitacaoOrdem(db.Model):
             self.observacao = tiposituacao.nome
 
     @staticmethod
-    def insere_tramitacao(descricao, situacao, texto):
+    def insere_tramitacao(descricao, texto):
         tramitacao = TramitacaoOrdem()
+
         ordem = OrdemServico.query.filter_by(descricao=descricao).order_by(OrdemServico.id.desc()).first()
+        tiposituacao = TipoSituacaoOrdem.query.filter_by(sigla='AGAP').one_or_none()
+
         tramitacao.ordemservico_id = ordem.id
         tramitacao.usuario_id = current_user.id
-        tramitacao.tiposituacaoordem_id = situacao.id
+        tramitacao.tiposituacaoordem_id = tiposituacao.id
         tramitacao.observacao = texto
         tramitacao.data = datetime.datetime.now()
         tramitacao.salvar()

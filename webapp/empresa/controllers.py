@@ -7,13 +7,12 @@ from webapp.empresa.models import Interessado, Tipoempresa, Empresa
 from webapp.empresa.forms import EmpresaForm, EmpresaSimplesForm, RegistroInteressadoForm
 from webapp.contrato.models import Contrato
 from webapp.usuario.models import Senha, Usuario, PerfilAcesso, TelaPerfilAcesso
-from webapp.usuario.forms import LoginForm
 from webapp.contrato.models import Telacontrato
 from webapp.usuario import has_view
 from webapp.utils.email import send_email
 from webapp.utils.tools import create_token, verify_token
 from webapp.utils.erros import flash_errors
-from webapp.utils.files import arquivo_padrao
+from webapp.utils.files import lista_para_csv
 import pandas as pd
 import numpy as np
 
@@ -46,10 +45,10 @@ def empresa_cliente() -> str:
     return render_template('empresa_cliente.html', empresas=empresas)
 
 
-def lista_clientes(id):
+def lista_clientes(id_):
     clientes = Empresa.query.filter(
         Empresa.id != 1,
-        Empresa.empresa_gestora_id == id).all()
+        Empresa.empresa_gestora_id == id_).all()
 
     return [{cliente.nome_fantasia: lista_clientes(cliente.id)} for cliente in clientes]
 
@@ -221,12 +220,30 @@ def new_admin(empresa: [Empresa], enviar_email):
 @login_required
 @has_view('Empresa')
 def gerar_padrao_empresas():
-    # gera o nome e o arquivo para download
-    resultado, nome, arquivo = arquivo_padrao(nome_arquivo=Empresa.nome_doc, valores={x for x in Empresa.titulos_doc})
-    # se não houver erro envia o arquivo
-    if resultado:
-        return Response(arquivo, mimetype="text/csv",
-                        headers={"Content-disposition": f"attachment; filename={nome}"})
+    # Gera o arquivo csv dos tabela padrão para cadastro em lote
+    csv_data = lista_para_csv([[x] for x in Empresa.titulos_doc], None)
+    nome = "tabela_base_empresa.csv"
+
+    return Response(
+        csv_data,
+        content_type='text/csv',
+        headers={'Content-Disposition': f"attachment; filename={nome}"}
+    )
+
+
+@empresa_blueprint.route('/gerar_csv_empresas/', methods=['GET', 'POST'])
+@login_required
+@has_view('Empresa')
+def gerar_csv_empresas():
+    # Gera o arquivo csv com os titulos
+    csv_data = lista_para_csv([[x] for x in Empresa.query.filter_by(empresa_gestora_id=current_user.empresa_id)],
+                              Empresa.titulos_csv)
+
+    return Response(
+        csv_data,
+        content_type='text/csv',
+        headers={'Content-Disposition': 'attachment; filename=empresas.csv'}
+    )
 
 
 @empresa_blueprint.route('/cadastrar_lote_empresas>', methods=['GET', 'POST'])
@@ -336,12 +353,20 @@ def cadastrar_lote_empresas():
     # se a lista de rejeitados existir
     if len(rejeitados_texto) > 1:
         # publica ao usuário a lista dos rejeitados
-        resultado, nome, arquivo = arquivo_padrao(nome_arquivo="Empresas_rejeitadas", valores=rejeitados_texto)
+        csv_data = lista_para_csv(rejeitados_texto, None)
 
-        # se não houver erro envia o arquivo
-        if resultado:
-            return Response(arquivo, mimetype="text/csv",
-                            headers={"Content-disposition": f"attachment; filename={nome}"})
+        return Response(
+            csv_data,
+            content_type='text/csv',
+            headers={'Content-Disposition': 'attachment; filename=empresas_rejeitadas.csv'}
+        )
+
+        # resultado, nome, arquivo = arquivo_padrao(nome_arquivo="Empresas_rejeitadas", valores=rejeitados_texto)
+        #
+        # # se não houver erro envia o arquivo
+        # if resultado:
+        #     return Response(arquivo, mimetype="text/csv",
+        #                     headers={"Content-disposition": f"attachment; filename={nome}"})
 
     return redirect(url_for('empresa.empresa_listar'))
 

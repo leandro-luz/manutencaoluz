@@ -1,11 +1,11 @@
 import logging
-
+from webapp import db
 from typing import List
 from sqlalchemy.exc import SQLAlchemyError
 from webapp.usuario.models import PerfilAcesso, Senha, Usuario, TelaPerfilAcesso, PerfilManutentor
 from webapp.empresa.models import Interessado, Tipoempresa, Empresa
-from webapp.equipamento.models import Equipamento, Grupo, Subgrupo, Pavimento, Setor, Local, Vazao, Volume, Area, Peso, \
-    Comprimento, Potencia, TensaoEletrica
+from webapp.equipamento.models import Equipamento, Grupo, Subgrupo, Pavimento, Setor, Local, Vazao, \
+    Volume, Area, Peso, Comprimento, Potencia, TensaoEletrica
 from webapp.contrato.models import Contrato, Tela, Telacontrato
 from webapp.plano_manutencao.models import TipoData, Unidade, Periodicidade, PlanoManutencao, Atividade, \
     TipoParametro, ListaAtividade, TipoBinario
@@ -15,8 +15,6 @@ from webapp.ordem_servico.models import TipoSituacaoOrdem, FluxoOrdem, OrdemServ
 logging.basicConfig(format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
 logging.getLogger().setLevel(logging.DEBUG)
 log = logging.getLogger(__name__)
-
-from webapp import db
 
 
 def criar_contrato(lista: List[dict]) -> List[Contrato]:

@@ -249,16 +249,18 @@ telasperfil_lista = [
 senha_lista = [
     {'senha': 'aaa11111', 'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
      'senha_expira': False, 'senha_temporaria': False},
+    {'senha': 'admin123', 'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
+     'senha_expira': False, 'senha_temporaria': False},
+    {'senha': 'adminteste123', 'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
+     'senha_expira': False, 'senha_temporaria': False},
     {'senha': 'teste123', 'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
+     'senha_expira': False, 'senha_temporaria': False},
+    {'senha': 'adminbeta123', 'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
      'senha_expira': False, 'senha_temporaria': False},
     {'senha': 'beta123', 'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
      'senha_expira': False, 'senha_temporaria': False},
-    {'senha': 'aaa44444', 'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
-     'senha_expira': False, 'senha_temporaria': False},
-    {'senha': 'aaa55555', 'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
-     'senha_expira': False, 'senha_temporaria': False},
-    {'senha': 'aaa66666', 'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
-     'senha_expira': False, 'senha_temporaria': False},
+    {'senha': 'adminluz123', 'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
+     'senha_expira': True, 'senha_temporaria': True},
     {'senha': '12345678', 'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
      'senha_expira': True, 'senha_temporaria': True},
 ]
@@ -269,27 +271,27 @@ usuario_lista = [
      'data_assinatura': '1980/05/10 12:45:10',
      'empresa': 'manluz.ltda'},
     {'nome': 'leandro', 'email': 'admin@admin.com',
-     'senha': 'aaa11111', 'perfil': 'admin',
+     'senha': 'admin123', 'perfil': 'admin',
      'data_assinatura': '1980/05/10 12:45:10',
      'empresa': 'manluz.ltda'},
 
     {'nome': 'adminluz_teste', 'email': 'adminteste@hotmail.com',
-     'senha': 'aaa11111', 'perfil': 'adminluz', 'data_assinatura': '1980/05/10 12:45:10',
+     'senha': 'adminteste123', 'perfil': 'adminluz', 'data_assinatura': '1980/05/10 12:45:10',
      'empresa': 'empresa_teste.ltda'},
     {'nome': 'admin_teste', 'email': 'gerenciadorteste@hotmail.com',
-     'senha': '12345678', 'perfil': 'admin',
+     'senha': 'teste123', 'perfil': 'admin',
      'data_assinatura': '2023/06/05 18:00:00',
      'empresa': 'empresa_teste.ltda'},
 
     {'nome': 'adminluz_beta', 'email': 'adminbeta@gmail.com',
-     'senha': 'aaa11111', 'perfil': 'adminluz', 'data_assinatura': '1980/05/10 12:45:10',
+     'senha': 'adminbeta123', 'perfil': 'adminluz', 'data_assinatura': '1980/05/10 12:45:10',
      'empresa': 'empresa_beta.ltda'},
     {'nome': 'admin_beta', 'email': 'gerenciadorbeta@gmail.com',
-     'senha': '12345678', 'perfil': 'admin', 'data_assinatura': '2023/06/05 18:00:00',
+     'senha': 'beta123', 'perfil': 'admin', 'data_assinatura': '2023/06/05 18:00:00',
      'empresa': 'empresa_beta.ltda'},
 
     {'nome': 'adminluz_semeente', 'email': 'guguleo2019@gmail.com',
-     'senha': 'aaa11111', 'perfil': 'adminluz', 'data_assinatura': '1980/05/10 12:45:10',
+     'senha': 'adminluz123', 'perfil': 'adminluz', 'data_assinatura': '1980/05/10 12:45:10',
      'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA'},
     {'nome': 'admin_Semeente', 'email': 'contato.luzengenharia@gmail.com',
      'senha': '12345678', 'perfil': 'admin', 'data_assinatura': '2023/06/05 18:00:00',
@@ -617,7 +619,7 @@ criar_potencia(potencia_lista)
 criar_tensao(tensao_lista)
 criar_peso(peso_lista)
 
-# criar_equipamento(equipamento_lista)
+
 
 # carregamento para os fornecedores
 criar_tipo_ordem(tipo_ordem_lista)
@@ -628,12 +630,15 @@ criar_periodicidades(periodicidade_lista)
 criar_tipos_parametros(tipo_parametros_lista)
 criar_lista_atividades(lista_atividade_lista)
 criar_tipo_binarios(tipo_binario_lista)
+
+criar_tipo_status_ordem(tipo_status_ordem_lista)
+
+
+# criar_equipamento(equipamento_lista)
 # criar_atividades(atividades_lista)
 # criar_planosmanutencao(planosmanutencao_lista)
-
 # criar_tipo_situacao_ordem(tipo_situacao_ordem_lista)
 # criar_tipo_situacao_ordem_perfil_manutentor(situacao_tipo_ordem_perfil_manutentor_lista)
-criar_tipo_status_ordem(tipo_status_ordem_lista)
 # criar_fluxo_ordem(fluxo_ordem_lista)
 # criar_ordem_servico(ordem_servico_lista)
 # criar_tramitacao(tramitacao_lista)

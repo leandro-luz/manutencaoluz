@@ -1,0 +1,26 @@
+<div aria-hidden="true" aria-labelledby="exampleModalLabel" class="modal fade" id="exampleModal"
+     tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">New message</h5>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+            <div class="modal-body">
+                <form action="" method="POST" onsubmit="return validateForm()">
+                    {{form_grupo.csrf_tag}}
+
+                    <div class="mb-3">
+                        <label id="nomeatual"> nome </label><br>
+
+
+                        {{form_grupo.nome.label}}  {{form_grupo.nome(size=20)}}<br>
+                        <button class="btn btn-primary" type="submit">Atualizar</button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+

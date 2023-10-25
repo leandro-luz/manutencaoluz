@@ -8,7 +8,7 @@ from .models import Equipamento, Grupo, Subgrupo, Pavimento, Setor, Local, Area,
 from .forms import EquipamentoForm, GrupoForm, SubgrupoForm, LocalizacaoForm, AgrupamentoForm, SetorForm, LocalForm, \
     PavimentoForm
 from webapp.usuario import has_view
-from webapp.utils.files import arquivo_padrao
+from webapp.utils.files import arquivo_padrao, lista_para_csv
 from webapp.utils.erros import flash_errors
 
 equipamento_blueprint = Blueprint(
@@ -203,12 +203,33 @@ def equipamento_ativar(equipamento_id):
 @login_required
 @has_view('Equipamento')
 def gerar_padrao_equipamentos():
-    result, path = arquivo_padrao(nome_arquivo=Equipamento.nome_doc, valores=[[x] for x in Equipamento.titulos_doc])
-    if result:
-        flash(f'Foi gerado o arquivo padrão no caminho: {path}', category="success")
-    else:
-        flash("Não foi gerado o arquivo padrão", category="danger")
-    return redirect(url_for("equipamento.equipamento_listar"))
+    csv_data = lista_para_csv([[x] for x in Equipamento.titulos_doc], None)
+    nome = "tabela_base_equipamento.csv"
+
+    return Response(
+        csv_data,
+        content_type='text/csv',
+        headers={'Content-Disposition': f"attachment; filename={nome}"})
+
+
+@equipamento_blueprint.route('/gerar_csv_equipamentos/', methods=['GET', 'POST'])
+@login_required
+@has_view('Equipamento')
+def gerar_csv_equipamentos():
+    # Gera o arquivo csv com os titulos
+
+    csv_data = lista_para_csv([[x] for x in Equipamento.query.filter(
+        current_user.empresa_id == Empresa.id,
+        Empresa.id == Grupo.empresa_id,
+        Grupo.id == Subgrupo.grupo_id,
+        Subgrupo.id == Equipamento.subgrupo_id
+    ).all()], Equipamento.titulos_csv)
+
+    return Response(
+        csv_data,
+        content_type='text/csv',
+        headers={'Content-Disposition': 'attachment; filename=equipamentos.csv'}
+    )
 
 
 @equipamento_blueprint.route('/cadastrar_lote_equipamentos/', methods=['GET', 'POST'])
@@ -423,30 +444,32 @@ def grupo_excluir(grupo_id, subgrupo_id):
 @login_required
 @has_view('Equipamento')
 def grupo_editar(grupo_id, subgrupo_id):
-    if grupo_id > 0:
-        # localiza a empresa do grupo
-        grupo = Grupo.query.filter(
-            current_user.empresa_id == Empresa.id,
-            Empresa.id == Grupo.empresa_id,
-            Grupo.id == grupo_id
-        ).one_or_none()
-
-        # se grupo existir
-        if grupo:
-            form = GrupoForm(obj=grupo)
-            # Validação
-            if form.validate_on_submit():
-                grupo.alterar_atributos(form)
-                if grupo.salvar():
-                    flash("Grupo atualizado", category="success")
-                else:
-                    flash("Erro ao atualizar grupo", category="danger")
-            else:
-                flash_errors(form)
-        else:
-            flash("Grupo não localizado", category="danger")
-    else:
-        flash("Grupo não informado", category="danger")
+    print('testando...')
+    print(grupo_id, subgrupo_id)
+    # if grupo_id > 0:
+    #     # localiza a empresa do grupo
+    #     grupo = Grupo.query.filter(
+    #         current_user.empresa_id == Empresa.id,
+    #         Empresa.id == Grupo.empresa_id,
+    #         Grupo.id == grupo_id
+    #     ).one_or_none()
+    #
+    #     # se grupo existir
+    #     if grupo:
+    #         form = GrupoForm(obj=grupo)
+    #         # Validação
+    #         if form.validate_on_submit():
+    #             grupo.alterar_atributos(form)
+    #             if grupo.salvar():
+    #                 flash("Grupo atualizado", category="success")
+    #             else:
+    #                 flash("Erro ao atualizar grupo", category="danger")
+    #         else:
+    #             flash_errors(form)
+    #     else:
+    #         flash("Grupo não localizado", category="danger")
+    # else:
+    #     flash("Grupo não informado", category="danger")
 
     return redirect(url_for("equipamento.agrupamento_listar", grupo_id=grupo_id, subgrupo_id=subgrupo_id))
 

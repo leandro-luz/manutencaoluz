@@ -198,7 +198,7 @@ def ordem_editar(ordem_id):
                     flash("Ordem de Serviço Atualizado", category="success")
 
                 else:
-                    TramitacaoOrdem.insere_tramitacao(form_ordem.descricao.data, situacao,
+                    TramitacaoOrdem.insere_tramitacao(form_ordem.descricao.data,
                                                       "ABERTURA DA ORDEM DE SERVIÇO")
 
                     flash("Ordem de Serviço Cadastrado", category="success")

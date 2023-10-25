@@ -73,8 +73,6 @@ class Tipoempresa(db.Model):
 
 class Empresa(db.Model):
     """  Classe da empresa   """
-    # nome do arquivo para cadastro em lote
-    nome_doc = 'padrão_empresas'
     # titulos para cadastro
     titulos_doc = {'CNPJ*': 'cnpj', 'Razao_Social*': 'razao_social', 'Nome_Fantasia*': 'nome_fantasia',
                    'Tipo*': 'tipo', 'CEP*': 'cep', 'Logradouro*': 'logradouro', 'Numero*': 'numero',
@@ -86,6 +84,11 @@ class Empresa(db.Model):
                    'Inscricao_Estadual': 'inscricao_estadual', 'Inscricao_Municipal': 'inscricao_municipal',
                    'Localizacao': 'localizacao', 'Complemento': 'complemento', 'Nome_Responsavel': 'nome_responsavel',
                    'Ativo': 'ativo'}
+
+    titulos_csv = {'cnpj; razao_social; nome_fantasia; data_abertura; situacao; tipo; '
+                   + 'nome_responsavel; porte; natureza_juridica; cnae_principal; cnae_principal_texto; '
+                   + 'inscricao_estadual; inscricao_municipal; cep; numero; complemento; logradouro; bairro; '
+                   + 'municipio; uf; latitude; telefone; email; ativo; data_cadastro; contrato_nome'}
 
     __tablename__ = 'empresa'
     id = db.Column(db.Integer(), primary_key=True)
@@ -131,7 +134,12 @@ class Empresa(db.Model):
     supplier = db.relationship("Supplier", back_populates="empresa")
 
     def __repr__(self) -> str:
-        return f'<Empresa: {self.id}-{self.cnpj}-{self.nome_fantasia}-{self.razao_social}-{self.empresa_gestora_id}>'
+        return f'{self.cnpj}; {self.razao_social}; {self.nome_fantasia}; {self.data_abertura}; ' \
+               f'{self.situacao}; {self.tipo}; {self.nome_responsavel}; {self.porte}; {self.natureza_juridica}; ' \
+               f'{self.cnae_principal}; {self.cnae_principal_texto}; {self.inscricao_estadual}; ' \
+               f'{self.inscricao_municipal}; {self.cep}; {self.numero}; {self.complemento}; {self.logradouro}; ' \
+               f'{self.bairro}; {self.municipio}; {self.uf}; {self.latitude}; {self.telefone}; {self.email}; ' \
+               f'{self.ativo}; {self.data_cadastro}; {self.contrato.nome}'
 
     def alterar_atributos_externo(self, form, empresa_id, tipoempresa_id, new=False) -> None:
         """    Alterações dos atributos da empresa     """

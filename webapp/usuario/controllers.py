@@ -14,7 +14,7 @@ from webapp.usuario import has_view
 from webapp.utils.email import send_email
 from webapp.utils.tools import create_token, verify_token
 from webapp.utils.erros import flash_errors
-from webapp.utils.files import arquivo_padrao
+from webapp.utils.files import arquivo_padrao, lista_para_csv
 
 usuario_blueprint = Blueprint(
     'usuario',
@@ -227,21 +227,21 @@ def trocar_email(token):
 def usuario_ativar(usuario_id):
     """    Função que ativa/inativa um usuário"""
     # retorna o usuário com o identificador
-    usuario = Usuario.query.filter_by(id=usuario_id).one_or_none()
-    if usuario:  # se o usuário existir
-        ativo = usuario.ativo
+    usuario_ = Usuario.query.filter_by(id=usuario_id).one_or_none()
+    if usuario_:  # se o usuário existir
+        ativo = usuario_.ativo
 
         # não permite ativar se o perfilacesso não estivar ativo
         if not ativo:
-            if not usuario.perfilacesso.ativo:
+            if not usuario_.perfilacesso.ativo:
                 flash("O perfil de acesso não está ativo", category="danger")
                 return redirect(url_for('usuario.usuario_listar'))
 
         # grava as informações vindas do formulário
-        usuario.ativar_desativar()
+        usuario_.ativar_desativar()
         # grava as informações no banco de dados
 
-        if usuario.salvar():
+        if usuario_.salvar():
             if ativo:
                 flash("Usuário desativado", category="success")
             else:
@@ -368,18 +368,33 @@ def usuario_editar(usuario_id):
     return render_template("usuario_editar.html", form=form, usuario=usuario_, ppm=permissao_perfil_manutentor)
 
 
-@usuario_blueprint.route('/gerar_padrao_usuarios/', methods=['GET', 'POST'])
+@usuario_blueprint.route('/gerar_padrao_usuario/', methods=['GET', 'POST'])
 @login_required
 @has_view('Usuário')
-def gerar_padrao_usuarios():
-    resultado, nome, arquivo = arquivo_padrao(nome_arquivo=Usuario.nome_doc, valores={x for x in Usuario.titulos_doc})
+def gerar_padrao_usuario():
+    # Gera o arquivo csv dos tabela padrão para cadastro em lote
+    csv_data = lista_para_csv([[x] for x in Usuario.titulos_doc], None)
+    nome = "tabela_base_usuario.csv"
 
-    # se não houver erro envia o arquivo
-    if resultado:
-        return Response(arquivo, mimetype="text/csv",
-                        headers={"Content-disposition": f"attachment; filename={nome}"})
+    return Response(
+        csv_data,
+        content_type='text/csv',
+        headers={'Content-Disposition': f"attachment; filename={nome}"}
+    )
 
-    return redirect(url_for("usuario.usuario_listar"))
+
+@usuario_blueprint.route('/gerar_csv_usuario/', methods=['GET', 'POST'])
+@login_required
+@has_view('Usuário')
+def gerar_csv_usuario():
+    # Gera o arquivo csv com os titulos
+    csv_data = lista_para_csv([[x] for x in Usuario.query.filter_by(empresa_id=current_user.empresa_id)],
+                              Usuario.titulos_csv)
+
+    return Response(
+        csv_data,
+        content_type='text/csv',
+        headers={'Content-Disposition': 'attachment; filename=usuarios.csv'})
 
 
 @usuario_blueprint.route('/cadastrar_lote_usuarios>', methods=['GET', 'POST'])
@@ -507,8 +522,8 @@ def perfilacesso_listar():
                                                    Usuario.perfilacesso_id == perfilacesso.id,
                                                    Empresa.id == current_user.empresa_id).count(),
                      'telas': TelaPerfilAcesso.query.filter_by(perfilacesso_id=perfilacesso.id).count()}
-                    for perfilacesso in PerfilAcesso.query.filter_by(empresa_id=current_user.empresa_id). \
-                        filter(PerfilAcesso.nome.notlike("%adminluz%")).order_by(PerfilAcesso.nome).all()]
+                    for perfilacesso in PerfilAcesso.query.filter_by(empresa_id=current_user.empresa_id).filter(
+            PerfilAcesso.nome.notlike("%adminluz%")).order_by(PerfilAcesso.nome).all()]
 
     form = PerfilAcessoForm()
 
@@ -531,7 +546,7 @@ def perfilacesso_editar(perfilacesso_id):
         # verifica se o perfil existe
         if perfilacesso:
             form = PerfilAcessoForm(obj=perfilacesso)
-            new = False
+            # new = False
 
             # Usuários vinculados no perfil
             usuarios = Usuario.query.filter_by(perfilacesso_id=perfilacesso.id).all()
@@ -545,7 +560,7 @@ def perfilacesso_editar(perfilacesso_id):
         perfilacesso = PerfilAcesso()
         perfilacesso.id = 0
         form = PerfilAcessoForm()
-        new = True
+        # new = True
 
     # LISTA DAS TELAS DO PERFIL ACESSO
     telasperfilacesso_liberadas = TelaPerfilAcesso.query.filter_by(perfilacesso_id=perfilacesso_id).all()
@@ -819,18 +834,18 @@ def perfilmanutentor_listar(usuario_id):
 @has_view('Usuário')
 @has_view('Ordem de Serviço')
 def perfilmanutentor_editar(usuario_id):
-    usuario = Usuario.query.filter_by(id=usuario_id).one_or_none()
+    usuario_ = Usuario.query.filter_by(id=usuario_id).one_or_none()
     form = PerfilManutentorForm()
 
     # verifica se o usuário está cadastrado
-    if not usuario:
+    if not usuario_:
         flash("Usuário não cadastrado", category="danger")
         return redirect(url_for('usuario.usuario_editar', usuario_id=usuario_id))
     else:
         # pesquisa os perfis manutentor cadastrado
         form.perfilmanutentor.choices = [(0, '')] + [(pm.id, pm.nome)
                                                      for pm in PerfilManutentor.query.all()]
-        form.usuario_id.data = usuario.id
+        form.usuario_id.data = usuario_.id
 
     # Realiza a validação do formulário
     if form.validate_on_submit():

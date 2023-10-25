@@ -52,13 +52,17 @@
                 <tr>
                     <td>{{ grupo['grupo'].nome }}</td>
                     <td>{{ grupo['total'] }}</td>
-                    <td>
-                        <span data-bs-target="#modal_grupo_editar" data-bs-toggle="modal"
-                              data-tooltip="Editar">
-                           <i class="bi-box-arrow-in-up fs-6"></i>
-                        </span>
-                        {% include "grupo_editar.html" %}
-                    </td>
+<!--                    <td>-->
+<!--                        <span data-bs-target="#exampleModal"-->
+<!--                              data-bs-toggle="modal"-->
+<!--                              data-bs-whatever="{{ grupo['grupo'].nome }}"-->
+<!--                              data-tooltip="Editar">-->
+<!--                          <i class="bi-box-arrow-in-up fs-6"></i>-->
+<!--                        </span>-->
+<!--                        //<input id="txtValue" type="text" value="{{ grupo['grupo'].id }}">-->
+<!--                        {% include "modal_teste.html" %}-->
+<!--                    </td>-->
+
                     <td>
                         <a href="{{ url_for('equipamento.grupo_excluir', grupo_id=grupo['grupo'].id, subgrupo_id=subgrupo_id) }} "
                            onclick="return deleteItem();">
@@ -185,4 +189,45 @@
 <script src="/static/js/filtro_coluna.js" type="text/javascript"></script>
 <script src="/static/js/confirmacao_exclusao.js" type="text/javascript"></script>
 
-{% endblock %}
+<!--<script>-->
+<!--var exampleModal = document.getElementById('exampleModal')-->
+<!--exampleModal.addEventListener('show.bs.modal', function (event) {-->
+
+<!--  // Button that triggered the modal-->
+<!--  var button = event.relatedTarget-->
+
+<!--  // Extract info from data-bs-* attributes-->
+<!--  var recipient = button.getAttribute('data-bs-whatever')-->
+
+<!--  // Update the modal's content.-->
+<!--  var modalTitle = exampleModal.querySelector('.modal-title')-->
+<!--  var modalBodyInput = exampleModal.querySelector('.modal-body label')-->
+
+<!--  modalTitle.textContent = 'Atualização Grupo'-->
+<!--  modalBodyInput.value = recipient-->
+<!--  document.getElementById('nomeatual').innerHTML = 'Nome Atual: ' + recipient-->
+<!--})-->
+
+
+<!--</script>-->
+
+
+<!--<script>-->
+<!--function validateForm() {-->
+<!--    alert('Validating form...');-->
+<!--    var text = document.getElementById('txtValue').value;-->
+
+<!--    var aa = 5;-->
+
+<!--    var bb = 'testando=' + aa;-->
+
+<!--    alert(bb);-->
+
+<!--    location.href = "{{ url_for('equipamento.grupo_editar', grupo_id=1, subgrupo_id=2) }}";-->
+
+<!--    return false;-->
+<!--}-->
+<!--</script>-->
+
+
+<!--{% endblock %}-->

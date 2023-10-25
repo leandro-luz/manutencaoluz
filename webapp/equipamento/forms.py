@@ -66,7 +66,7 @@ class SubgrupoForm(Form):
 
 class EquipamentoForm(Form):
     id = IntegerField('Id')
-    cod = StringField('Código', validators=[InputRequired(), Length(max=50)],
+    cod = StringField('Código', validators=[Optional(), Length(max=50)],
                       render_kw={"placeholder": "Digite o código"})
     cod_automatico = BooleanField('Gerar Código Automáticamente?')
 
@@ -318,7 +318,7 @@ class AgrupamentoForm(Form):
             if self.tipo.data == 1:
                 if Grupo.query.filter(
                         Grupo.nome == self.nome.data,
-                        Setor.empresa_id == current_user.empresa_id
+                        Grupo.empresa_id == current_user.empresa_id
                 ).one_or_none():
                     flash("Já existe um grupo com este nome", category="danger")
                     return False

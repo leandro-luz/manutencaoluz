@@ -233,10 +233,11 @@ class Senha(db.Model):
 
 class Usuario(db.Model):
     """ Classe de usuário    """
-    # nome do arquivo para cadastro em lote
-    nome_doc = 'padrão_usuarios'
+
     # titulos para cadastro
     titulos_doc = {'Nome*': 'nome', 'Email*': 'email', 'PerfilAcesso*': 'perfilacesso_id'}
+
+    titulos_csv = {'nome; email; perfilacesso_nome; ativo'}
 
     __tablename__ = 'usuario'
     id = db.Column(db.Integer(), primary_key=True)
@@ -257,8 +258,8 @@ class Usuario(db.Model):
     tramitacaoordem = db.relationship("TramitacaoOrdem", back_populates="usuario")
     perfilmanutentorusuario = db.relationship("PerfilManutentorUsuario", back_populates="usuario")
 
-    def __repr__(self):
-        return f'<Usuario: {self.id}-{self.nome}>'
+    def __repr__(self) -> str:
+        return f'{self.nome}; {self.email}; {self.perfilacesso.nome}; {self.ativo}'
 
     def usuario_administrador(self, nome: str, email: str, empresa_id: int, perfilacesso_id: int,
                               senha_id: int) -> None:

@@ -3,6 +3,8 @@ from pathlib import Path
 from csv import writer
 import pandas as pd
 import numpy as np
+import csv
+from io import StringIO
 
 logging.basicConfig(format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
 logging.getLogger().setLevel(logging.DEBUG)
@@ -33,3 +35,28 @@ def arquivo_padrao(nome_arquivo, valores):
 def verificar_extensao(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in EXTENSOES_VALIDAS
+
+
+def lista_para_csv(lista, titulos):
+    # Cria um objeto CSV em memória
+    output = StringIO()
+    csv_writer = csv.writer(output, dialect='excel')
+
+    # Escreve os nomes dos titulos
+    if titulos:
+        csv_writer.writerow(titulos)
+
+    # Escreve os dados da lista no objeto CSV
+    for item in lista:
+        csv_writer.writerow(item)
+
+    # Retorna o objeto CSV como uma string
+    return output.getvalue()
+
+#
+# from sqlalchemy.orm import class_mapper
+# import sqlalchemy
+# def attribute_names(cls):
+#     return [prop.key for prop in class_mapper(cls).iterate_properties
+#             if isinstance(prop, sqlalchemy.orm.ColumnProperty)]
+# print(attribute_names(Empresa))

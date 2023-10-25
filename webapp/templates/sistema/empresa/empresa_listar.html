@@ -26,14 +26,14 @@
             </a>
         </div>
 
-
         <div class="col-1">
-            <button onclick="exportar_lista('empresas.csv', 1)" type="button">
-                <span data-tooltip="EXPORTAR LISTA">
-                    <i class="bi-download fs-6"></i>
+            <a href="{{ url_for('empresa.gerar_csv_empresas') }}">
+                <span data-tooltip="GERAR CSV">
+                    <i class="bi-download fs-4"></i>
                 </span>
-            </button>
+            </a>
         </div>
+
     </div>
 
     <div class="row">

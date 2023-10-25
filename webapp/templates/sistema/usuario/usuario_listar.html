@@ -32,12 +32,13 @@
         </div>
 
         <div class="col-1">
-            <button onclick="exportar_lista('usuarios.csv', 1)" type="button">
-                <span data-tooltip="EXPORTAR LISTA">
-                    <i class="bi-download fs-6"></i>
+            <a href="{{ url_for('usuario.gerar_csv_usuario') }}">
+                <span data-tooltip="GERAR CSV">
+                    <i class="bi-download fs-4"></i>
                 </span>
-            </button>
+            </a>
         </div>
+
     </div>
 
     <div class="row">
