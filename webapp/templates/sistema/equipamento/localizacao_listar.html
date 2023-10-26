@@ -17,136 +17,128 @@
     </div>
     <br>
     <div class="row">
-
-        <a>
+        <div class="col-1">
+            <a>
            <span data-bs-target="#modal_localizacao" data-bs-toggle="modal" data-tooltip="INCLUIR LOCALIZAÇÃO">
                <i class="bi-globe2 fs-4">+</i><br>
            </span>
-            {% include "localizacao_editar.html" %}
-        </a>
+                {% include "localizacao_editar.html" %}
+            </a>
+        </div>
 
-        <div class="col-4">
+        <div class="col-1">
+            <a href="{{ url_for('equipamento.gerar_csv_localizacao') }}">
+                <span data-tooltip="GERAR CSV">
+                    <i class="bi-download fs-4"></i>
+                </span>
+            </a>
+        </div>
 
-            <div class="row">
-                <h5>SETORES</h5>
-            </div>
+        <div class="row">
+            <div class="col-4">
 
-            <table class="table">
-                <thead>
-                <tr>
-                    <th scope="col">NOME</th>
-                    <th scope="col">SIGLA</th>
-                    <th scope="col"></th>
-                    <th scope="col"></th>
-                </tr>
-                </thead>
+                <div class="row">
+                    <h5>SETORES</h5>
+                </div>
 
-                <tbody id="tabela_setor">
-                {% for setor in setores %}
-                <tr>
-                    <td>{{ setor.nome }}</td>
-                    <td>{{ setor.sigla }}</td>
-                    <td>
-                        <span data-bs-target="#modal_setor_editar" data-bs-toggle="modal"
-                              data-tooltip="Editar">
-                           <i class="bi-box-arrow-in-up fs-6"></i>
-                        </span>
-                        {% include "setor_editar.html" %}
-                    </td>
-                    <td>
-                        <a href="{{ url_for('equipamento.setor_excluir', setor_id=setor.id) }}"
-                           onclick="return deleteItem();">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th scope="col">NOME</th>
+                        <th scope="col">SIGLA</th>
+                        <th scope="col"></th>
+                        <th scope="col"></th>
+                    </tr>
+                    </thead>
+
+                    <tbody id="tabela_setor">
+                    {% for setor in setores %}
+                    <tr>
+                        <td>{{ setor.nome }}</td>
+                        <td>{{ setor.sigla }}</td>
+
+                        <td>
+                            <a href="{{ url_for('equipamento.setor_excluir', setor_id=setor.id) }}"
+                               onclick="return deleteItem();">
                             <span data-tooltip="Excluir">
                                <i class="bi-trash fs-6"></i>
                             </span>
-                        </a>
-                    </td>
-                </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        <div class="col-4">
-            <div class="row">
-                <h5>LOCAIS</h5>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
             </div>
-            <table class="table">
-                <thead>
-                <tr>
-                    <th scope="col">NOME</th>
-                    <th scope="col">SIGLA</th>
-                    <th scope="col"></th>
-                    <th scope="col"></th>
-                </tr>
-                </thead>
 
-                <tbody id="tabela_local">
-                {% for local in locais %}
-                <tr>
-                    <td>{{ local.nome }}</td>
-                    <td>{{ local.sigla }}</td>
-                    <td>
-                        <span data-bs-target="#modal_local_editar" data-bs-toggle="modal"
-                              data-tooltip="Editar">
-                           <i class="bi-box-arrow-in-up fs-6"></i>
-                        </span>
-                        {% include "local_editar.html" %}
-                    </td>
-                    <td>
-                        <a href="{{ url_for('equipamento.local_excluir', local_id=local.id) }}"
-                           onclick="return deleteItem();">
+            <div class="col-4">
+                <div class="row">
+                    <h5>LOCAIS</h5>
+                </div>
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th scope="col">NOME</th>
+                        <th scope="col">SIGLA</th>
+                        <th scope="col"></th>
+                        <th scope="col"></th>
+                    </tr>
+                    </thead>
+
+                    <tbody id="tabela_local">
+                    {% for local in locais %}
+                    <tr>
+                        <td>{{ local.nome }}</td>
+                        <td>{{ local.sigla }}</td>
+
+                        <td>
+                            <a href="{{ url_for('equipamento.local_excluir', local_id=local.id) }}"
+                               onclick="return deleteItem();">
                             <span data-tooltip="Excluir">
                                <i class="bi-trash fs-6"></i>
                             </span>
-                        </a>
-                    </td>
-                </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        <div class="col-4">
-            <div class="row">
-                <h5>PAVIMENTOS</h5>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
             </div>
-            <table class="table">
-                <thead>
-                <tr>
-                    <th scope="col">NOME</th>
-                    <th scope="col">SIGLA</th>
-                    <th scope="col"></th>
-                    <th scope="col"></th>
-                </tr>
-                </thead>
 
-                <tbody id="tabela_pavimento">
-                {% for pavimento in pavimentos %}
-                <tr>
-                    <td>{{ pavimento.nome }}</td>
-                    <td>{{ pavimento.sigla }}</td>
-                    <td>
-                        <span data-bs-target="#modal_pavimento_editar" data-bs-toggle="modal"
-                              data-tooltip="Editar">
-                           <i class="bi-box-arrow-in-up fs-6"></i>
-                        </span>
-                        {% include "pavimento_editar.html" %}
-                    </td>
-                    <td>
-                        <a href="{{ url_for('equipamento.pavimento_excluir', pavimento_id=pavimento.id) }}"
-                           onclick="return deleteItem();">
+            <div class="col-4">
+                <div class="row">
+                    <h5>PAVIMENTOS</h5>
+                </div>
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th scope="col">NOME</th>
+                        <th scope="col">SIGLA</th>
+                        <th scope="col"></th>
+                        <th scope="col"></th>
+                    </tr>
+                    </thead>
+
+                    <tbody id="tabela_pavimento">
+                    {% for pavimento in pavimentos %}
+                    <tr>
+                        <td>{{ pavimento.nome }}</td>
+                        <td>{{ pavimento.sigla }}</td>
+
+                        <td>
+                            <a href="{{ url_for('equipamento.pavimento_excluir', pavimento_id=pavimento.id) }}"
+                               onclick="return deleteItem();">
                             <span data-tooltip="Excluir">
                                <i class="bi-trash fs-6"></i>
                             </span>
-                        </a>
-                    </td>
-                </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
-
     </div>
 </div>
 

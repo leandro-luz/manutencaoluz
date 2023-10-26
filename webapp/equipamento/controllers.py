@@ -332,6 +332,43 @@ def cadastrar_lote_equipamentos():
     return redirect(url_for("equipamento.equipamento_listar"))
 
 
+import io
+import zipfile
+
+
+@equipamento_blueprint.route('/gerar_csv_agrupamento/', methods=['GET', 'POST'])
+@login_required
+@has_view('Equipamento')
+def gerar_csv_agrupamento():
+    # Gera o arquivo csv com os titulos
+    csv_grupo = lista_para_csv([[x] for x in Grupo.query.filter(
+        current_user.empresa_id == Empresa.id,
+        Empresa.id == Grupo.empresa_id,
+    ).all()], Grupo.titulos_csv)
+    nome_grupo = "grupos.csv"
+
+    csv_subgrupo = lista_para_csv([[x] for x in Subgrupo.query.filter(
+        current_user.empresa_id == Empresa.id,
+        Empresa.id == Grupo.empresa_id,
+        Grupo.id == Subgrupo.grupo_id,
+    ).all()], Subgrupo.titulos_csv)
+    nome_subgrupo = "subgrupos.csv"
+
+    # Criar um arquivo ZIP em memória
+    memory_file = io.BytesIO()
+    with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        zipf.writestr(nome_grupo, csv_grupo)
+        zipf.writestr(nome_subgrupo, csv_subgrupo)
+
+    # Configurar a resposta com o arquivo ZIP
+    memory_file.seek(0)
+    return Response(
+        memory_file,
+        content_type='application/zip',
+        headers={'Content-Disposition': 'attachment; filename=agrupamento.zip'}
+    )
+
+
 @equipamento_blueprint.route('/agrupamento_listar/<int:grupo_id>/<int:subgrupo_id>/', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
@@ -764,6 +801,42 @@ def localizacao_editar():
         flash_errors(form)
 
     return redirect(url_for('equipamento.localizacao_listar'))
+
+
+@equipamento_blueprint.route('/gerar_csv_localizacao/', methods=['GET', 'POST'])
+@login_required
+@has_view('Equipamento')
+def gerar_csv_localizacao():
+    # Gera o arquivo csv com os titulos
+    csv_setor = lista_para_csv([[x] for x in Setor.query.filter(
+        current_user.empresa_id == Setor.empresa_id
+    ).all()], Setor.titulos_csv)
+    nome_setor = "setores.csv"
+
+    csv_local = lista_para_csv([[x] for x in Local.query.filter(
+        current_user.empresa_id == Local.empresa_id
+    ).all()], Local.titulos_csv)
+    nome_local = "locais.csv"
+
+    csv_pavimento = lista_para_csv([[x] for x in Pavimento.query.filter(
+        current_user.empresa_id == Pavimento.empresa_id
+    ).all()], Pavimento.titulos_csv)
+    nome_pavimento = "pavimentos.csv"
+
+    # Criar um arquivo ZIP em memória
+    memory_file = io.BytesIO()
+    with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        zipf.writestr(nome_setor, csv_setor)
+        zipf.writestr(nome_local, csv_local)
+        zipf.writestr(nome_pavimento, csv_pavimento)
+
+    # Configurar a resposta com o arquivo ZIP
+    memory_file.seek(0)
+    return Response(
+        memory_file,
+        content_type='application/zip',
+        headers={'Content-Disposition': 'attachment; filename=localizacao.zip'}
+    )
 
 
 @equipamento_blueprint.route('/setor_excluir/<int:setor_id>', methods=['GET', 'POST'])

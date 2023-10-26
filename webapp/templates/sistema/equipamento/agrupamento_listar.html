@@ -29,6 +29,15 @@
             {% include "agrupamento_editar.html" %}
         </div>
 
+          <div class="col-1">
+            <a href="{{ url_for('equipamento.gerar_csv_agrupamento') }}">
+                <span data-tooltip="GERAR CSV">
+                    <i class="bi-download fs-4"></i>
+                </span>
+            </a>
+        </div>
+
+
     </div>
 
     <div class="row">

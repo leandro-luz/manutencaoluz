@@ -12,9 +12,11 @@ log = logging.getLogger(__name__)
 
 class Grupo(db.Model):
     """    Classe de grupo de ativos    """
-    nome_doc = 'padrão_grupo'
+
     # titulos para cadastro
     titulos_doc = {'Nome*': 'nome'}
+
+    titulos_csv = {'Grupo_nome'}
 
     __tablename__ = 'grupo'
     id = db.Column(db.Integer(), primary_key=True)
@@ -25,7 +27,7 @@ class Grupo(db.Model):
     subgrupo = db.relationship("Subgrupo", back_populates="grupo")
 
     def __repr__(self):
-        return f'<Grupo: {self.id}-{self.nome}>'
+        return f'{self.nome}'
 
     def alterar_atributos(self, form):
         """    Função para alterar os atributos do objeto    """
@@ -70,9 +72,10 @@ class Grupo(db.Model):
 class Subgrupo(db.Model):
     """    Classe de sistemas nos ativos   """
 
-    nome_doc = 'padrão_subgrupo'
     # titulos para cadastro
     titulos_doc = {'Nome*': 'nome', 'Grupo*': 'grupo'}
+
+    titulos_csv = {'Grupo_nome; Subgrupo_nome'}
 
     __tablename__ = 'subgrupo'
     id = db.Column(db.Integer(), primary_key=True)
@@ -83,7 +86,7 @@ class Subgrupo(db.Model):
     equipamento = db.relationship("Equipamento", back_populates="subgrupo")
 
     def __repr__(self):
-        return f'<Subgrupo: {self.id}-{self.nome}>'
+        return f'{self.grupo.nome}; {self.nome}'
 
     def alterar_atributos(self, form, grupo_id):
         """    Função para alterar os atributos do objeto    """
@@ -359,9 +362,10 @@ def salvar_lote(lote):
 class Pavimento(db.Model):
     """    Classe de grupo de ativos    """
 
-    nome_doc = 'pavimento'
     # titulos para cadastro
     titulos_doc = {'Nome*': 'nome', 'Sigla*': 'sigla'}
+
+    titulos_csv = {'Nome; Sigla'}
 
     __tablename__ = 'pavimento'
     id = db.Column(db.Integer(), primary_key=True)
@@ -374,7 +378,7 @@ class Pavimento(db.Model):
     equipamento = db.relationship("Equipamento", back_populates="pavimento")
 
     def __repr__(self):
-        return f'<Pavimento: {self.id}-{self.nome}>'
+        return f'{self.nome}; {self.sigla}'
 
     def alterar_atributos(self, form):
         """    Função para alterar os atributos do objeto    """
@@ -410,9 +414,10 @@ class Pavimento(db.Model):
 class Setor(db.Model):
     """    Classe de grupo de ativos    """
 
-    nome_doc = 'setor'
     # titulos para cadastro
     titulos_doc = {'Nome*': 'nome', 'Sigla*': 'sigla'}
+
+    titulos_csv = {'Nome; Sigla'}
 
     __tablename__ = 'setor'
     id = db.Column(db.Integer(), primary_key=True)
@@ -424,7 +429,7 @@ class Setor(db.Model):
     equipamento = db.relationship("Equipamento", back_populates="setor")
 
     def __repr__(self):
-        return f'<Setor: {self.id}-{self.nome}>'
+        return f'{self.nome}; {self.sigla}'
 
     def alterar_atributos(self, form):
         """    Função para alterar os atributos do objeto    """
@@ -460,9 +465,10 @@ class Setor(db.Model):
 class Local(db.Model):
     """    Classe de grupo de ativos    """
 
-    nome_doc = 'local'
     # titulos para cadastro
     titulos_doc = {'Nome*': 'nome', 'Sigla*': 'sigla'}
+
+    titulos_csv = {'Nome; Sigla'}
 
     __tablename__ = 'local'
     id = db.Column(db.Integer(), primary_key=True)
@@ -474,7 +480,7 @@ class Local(db.Model):
     equipamento = db.relationship("Equipamento", back_populates="local")
 
     def __repr__(self):
-        return f'<Local: {self.id}-{self.nome}>'
+        return f'{self.nome}; {self.sigla}'
 
     def alterar_atributos(self, form):
         """    Função para alterar os atributos do objeto    """
