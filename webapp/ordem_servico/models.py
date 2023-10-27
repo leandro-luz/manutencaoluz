@@ -1,8 +1,9 @@
 import datetime
 import logging
 from webapp import db
-from webapp.plano_manutencao.models import ListaAtividade
+from webapp.plano_manutencao.models import ListaAtividade, PlanoManutencao
 from webapp.usuario.models import PerfilManutentorUsuario
+from webapp.utils.objetos import atributo_existe
 from sqlalchemy import func
 from flask_login import current_user
 from flask import flash
@@ -187,6 +188,9 @@ class TramitacaoOrdem(db.Model):
 
 
 class OrdemServico(db.Model):
+    titulos_csv = {'codigo; descricao; data_abertura; data_prevista; data_fechamento; equipamento_descricao_curta;'
+                   'situacao_nome; status_nome; solicitante_nome; tipo_ordem_nome; plano_manutencao_codigo; reservico'}
+
     __tablename__ = 'ordem_servico'
 
     id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
@@ -214,7 +218,10 @@ class OrdemServico(db.Model):
     listaatividade = db.relationship("ListaAtividade", back_populates="ordemservico")
 
     def __repr__(self) -> str:
-        return f'<Ordem de Serviço: {self.id}-{self.descricao}>'
+        return f'{self.codigo};{self.descricao};{self.data_abertura};{self.data_prevista};{self.data_fechamento};' \
+               f'{self.equipamento.descricao_curta};{self.tiposituacaoordem.nome};{self.tipostatusordem.nome};' \
+               f'{atributo_existe(self, "usuario", "nome")};{self.tipoordem.nome};' \
+               f'{PlanoManutencao.retornar_codigo_plano(self.planomanutencao_id)};{self.reservico}'
 
     def salvar(self) -> bool:
         """    Função para salvar no banco de dados o objeto"""

@@ -31,11 +31,11 @@
         {% endif %}
 
         <div class="col-1">
-            <button onclick="exportar_lista('ordens_serviços.csv', 1)" type="button">
-                <span data-tooltip="EXPORTAR LISTA">
-                    <i class="bi-download fs-6"></i>
+            <a href="{{ url_for('ordem_servico.gerar_csv_ordens') }}">
+                <span data-tooltip="GERAR CSV">
+                    <i class="bi-download fs-4"></i>
                 </span>
-            </button>
+            </a>
         </div>
     </div>
 

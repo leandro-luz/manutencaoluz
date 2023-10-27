@@ -232,11 +232,14 @@ class Atividade(db.Model):
 
 class PlanoManutencao(db.Model):
     """    Classe de Plano de Manutenção   """
-    nome_doc = 'padrão_plano_manutenção'
+
     # titulos para cadastro
     titulos_doc = {'Nome*': 'nome', 'Codigo*': 'codigo', 'Tipo_Ordem*': 'tipoordem_id',
                    'Tipo_Data_Inicial*': 'tipodata_id', 'Data_Inicio*': 'data_inicio',
                    'Periodicidade*': 'periodicidade_id', 'Equipamento_cod*': 'equipamento_id'}
+
+    titulos_csv = {'nome; codigo; data_inicio; ativo; total_tecnico; tempo_estimado; revisao;'
+                   'tipodata_nome; periodicidade_nome; equipamento_descricao_curta; tipoordem_nome'}
 
     __tablename__ = 'plano_manutencao'
 
@@ -262,7 +265,9 @@ class PlanoManutencao(db.Model):
     listaatividade = db.relationship("ListaAtividade", back_populates="planomanutencao")
 
     def __repr__(self):
-        return f'<Plano de Manutenção: {self.id}-{self.codigo}>'
+        return f'{self.nome}; {self.codigo}; {self.data_inicio}; {self.ativo}; {self.total_tecnico}; ' \
+               f'{self.tempo_estimado}; {self.revisao}; {self.tipodata.nome}; {self.periodicidade.nome}; ' \
+               f'{self.equipamento.descricao_curta}; {self.tipoordem.nome}'
 
     def alterar_atributos(self, form, new):
         """    Função para alterar os atributos do objeto    """
@@ -359,3 +364,11 @@ class PlanoManutencao(db.Model):
             if unidade in ["mês", "ano"]:
                 return data.replace(hour=0, minute=0, second=0, microsecond=0) + \
                        relativedelta(months=tempo)
+
+    @staticmethod
+    def retornar_codigo_plano(plano_id):
+        if plano_id:
+            plano = PlanoManutencao.query.filter_by(id=plano_id).one_or_none()
+            return plano.codigo
+        else:
+            return None

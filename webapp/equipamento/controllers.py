@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+import io
+import zipfile
 from flask import render_template, Blueprint, redirect, url_for, flash, Response
 from flask_login import current_user, login_required
 from webapp.empresa.models import Empresa
@@ -8,7 +10,7 @@ from .models import Equipamento, Grupo, Subgrupo, Pavimento, Setor, Local, Area,
 from .forms import EquipamentoForm, GrupoForm, SubgrupoForm, LocalizacaoForm, AgrupamentoForm, SetorForm, LocalForm, \
     PavimentoForm
 from webapp.usuario import has_view
-from webapp.utils.files import arquivo_padrao, lista_para_csv
+from webapp.utils.files import lista_para_csv
 from webapp.utils.erros import flash_errors
 
 equipamento_blueprint = Blueprint(
@@ -323,17 +325,20 @@ def cadastrar_lote_equipamentos():
     # se a lista de rejeitados existir
     if len(rejeitados_texto) > 0:
         # publica ao usuário a lista dos rejeitados
-        result, path = arquivo_padrao(nome_arquivo="Equipamentos_rejeitados", valores=rejeitados_texto)
-        if result:
-            flash(f'Foi gerado o arquivo de equipamentos rejeitados no caminho: {path}', category="warning")
-        else:
-            flash("Não foi gerado o arquivo de equipamentos rejeitados", category="danger")
+        csv_data = lista_para_csv(rejeitados_texto, None)
+
+        return Response(
+            csv_data,
+            content_type='text/csv',
+            headers={'Content-Disposition': 'attachment; filename=equipamentos_rejeitados.csv'})
+
+        # result, path = arquivo_padrao(nome_arquivo="Equipamentos_rejeitados", valores=rejeitados_texto)
+        # if result:
+        #     flash(f'Foi gerado o arquivo de equipamentos rejeitados no caminho: {path}', category="warning")
+        # else:
+        #     flash("Não foi gerado o arquivo de equipamentos rejeitados", category="danger")
 
     return redirect(url_for("equipamento.equipamento_listar"))
-
-
-import io
-import zipfile
 
 
 @equipamento_blueprint.route('/gerar_csv_agrupamento/', methods=['GET', 'POST'])
@@ -428,6 +433,9 @@ def agrupamento_listar(grupo_id, subgrupo_id):
 @has_view('Equipamento')
 def agrupamento_editar(grupo_id):
     form = AgrupamentoForm()
+
+    # atribui o valor do grupo no formulario
+    form.grupo_id.data = grupo_id
 
     if form.validate_on_submit():
 
@@ -535,16 +543,18 @@ def subgrupo_excluir(grupo_id, subgrupo_id):
     return redirect(url_for("equipamento.agrupamento_listar", grupo_id=grupo_id, subgrupo_id=subgrupo_id))
 
 
-@equipamento_blueprint.route('/gerar_padrao_grupos/<int:subgrupo_id>/<int:equipamento_id>', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/gerar_padrao_grupos/', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def gerar_padrao_grupos(subgrupo_id, equipamento_id):
-    resultado, nome, arquivo = arquivo_padrao(nome_arquivo=Grupo.nome_doc, valores=[[x] for x in Grupo.titulos_doc])
+def gerar_padrao_grupos():
+    csv_data = lista_para_csv([[x] for x in Grupo.titulos_doc], None)
+    nome = "tabela_base_grupo.csv"
 
-    # se não houver erro envia o arquivo
-    if resultado:
-        return Response(arquivo, mimetype="text/csv",
-                        headers={"Content-disposition": f"attachment; filename={nome}"})
+    return Response(
+        csv_data,
+        content_type='text/csv',
+        headers={'Content-Disposition': f"attachment; filename={nome}"}
+    )
 
 
 @equipamento_blueprint.route('/cadastrar_lote_grupos/<int:subgrupo_id>/<int:equipamento_id>>', methods=['GET', 'POST'])
@@ -614,11 +624,18 @@ def cadastrar_lote_grupos(subgrupo_id, equipamento_id):
     # se a lista de rejeitados existir
     if len(rejeitados_texto) > 0:
         # publica ao usuário a lista dos rejeitados
-        result, path = arquivo_padrao(nome_arquivo="Grupos_rejeitados", valores=rejeitados_texto)
-        if result:
-            flash(f'Foi gerado o arquivo de grupos rejeitados no caminho: {path}', category="warning")
-        else:
-            flash("Não foi gerado o arquivo de grupos rejeitados", category="danger")
+        csv_data = lista_para_csv(rejeitados_texto, None)
+
+        return Response(
+            csv_data,
+            content_type='text/csv',
+            headers={'Content-Disposition': 'attachment; filename=grupos_rejeitados.csv'})
+
+        # result, path = arquivo_padrao(nome_arquivo="Grupos_rejeitados", valores=rejeitados_texto)
+        # if result:
+        #     flash(f'Foi gerado o arquivo de grupos rejeitados no caminho: {path}', category="warning")
+        # else:
+        #     flash("Não foi gerado o arquivo de grupos rejeitados", category="danger")
 
     return redirect(url_for('equipamento.grupo_listar', subgrupo_id=subgrupo_id, equipamento_id=equipamento_id))
 
@@ -656,16 +673,18 @@ def subgrupo_editar(grupo_id, subgrupo_id):
     return redirect(url_for("equipamento.agrupamento_listar", grupo_id=grupo_id, subgrupo_id=subgrupo_id))
 
 
-@equipamento_blueprint.route('/gerar_padrao_subgrupos/<int:equipamento_id>', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/gerar_padrao_subgrupos/', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def gerar_padrao_subgrupos(equipamento_id):
-    result, path = arquivo_padrao(nome_arquivo=Subgrupo.nome_doc, valores=[[x] for x in Subgrupo.titulos_doc])
-    if result:
-        flash(f'Foi gerado o arquivo padrão no caminho: {path}', category="success")
-    else:
-        flash("Não foi gerado o arquivo padrão", category="danger")
-    return redirect(url_for('equipamento.subgrupo_listar', equipamento_id=equipamento_id))
+def gerar_padrao_subgrupos():
+    csv_data = lista_para_csv([[x] for x in Subgrupo.titulos_doc], None)
+    nome = "tabela_base_subgrupo.csv"
+
+    return Response(
+        csv_data,
+        content_type='text/csv',
+        headers={'Content-Disposition': f"attachment; filename={nome}"}
+    )
 
 
 @equipamento_blueprint.route('/cadastrar_lote_subgrupos>/<int:equipamento_id>', methods=['GET', 'POST'])
@@ -745,11 +764,18 @@ def cadastrar_lote_subgrupos(equipamento_id):
     # se a lista de rejeitados existir
     if len(rejeitados_texto) > 0:
         # publica ao usuário a lista dos rejeitados
-        result, path = arquivo_padrao(nome_arquivo="Subgrupos_rejeitados", valores=rejeitados_texto)
-        if result:
-            flash(f'Foi gerado o arquivo de subgrupos rejeitados no caminho: {path}', category="warning")
-        else:
-            flash("Não foi gerado o arquivo de subgrupos rejeitados", category="danger")
+        csv_data = lista_para_csv(rejeitados_texto, None)
+
+        return Response(
+            csv_data,
+            content_type='text/csv',
+            headers={'Content-Disposition': 'attachment; filename=subgrupos_rejeitados.csv'})
+
+        # result, path = arquivo_padrao(nome_arquivo="Subgrupos_rejeitados", valores=rejeitados_texto)
+        # if result:
+        #     flash(f'Foi gerado o arquivo de subgrupos rejeitados no caminho: {path}', category="warning")
+        # else:
+        #     flash("Não foi gerado o arquivo de subgrupos rejeitados", category="danger")
 
     return redirect(url_for('equipamento.subgrupo_listar', equipamento_id=equipamento_id))
 

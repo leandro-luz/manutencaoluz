@@ -1,5 +1,5 @@
 import copy
-from flask import (render_template, Blueprint, redirect, url_for, flash, request)
+from flask import (render_template, Blueprint, redirect, url_for, flash, Response)
 from flask_login import current_user, login_required
 from webapp.empresa.models import Empresa
 from webapp.plano_manutencao.models import PlanoManutencao, ListaAtividade, Atividade, TipoBinario, TipoParametro
@@ -11,6 +11,7 @@ from webapp.equipamento.models import Equipamento, Subgrupo, Grupo
 from webapp.usuario.models import PerfilManutentorUsuario, Usuario
 from webapp.usuario import has_view
 from webapp.utils.erros import flash_errors
+from webapp.utils.files import lista_para_csv
 
 ordem_servico_blueprint = Blueprint(
     'ordem_servico',
@@ -218,6 +219,27 @@ def ordem_editar(ordem_id):
                            lib_executante=lib_executante,
                            lib_aprovador=lib_aprovador,
                            lib_fiscalizador=lib_fiscalizador)
+
+
+@ordem_servico_blueprint.route('/gerar_csv_ordens/', methods=['GET', 'POST'])
+@login_required
+@has_view('Ordem de Serviço')
+def gerar_csv_ordens():
+    # Gera o arquivo csv com os titulos
+
+    csv_data = lista_para_csv([[x] for x in OrdemServico.query.filter(
+        OrdemServico.equipamento_id == Equipamento.id,
+        Equipamento.subgrupo_id == Subgrupo.id,
+        Subgrupo.grupo_id == Grupo.id,
+        Grupo.empresa_id == Empresa.id,
+        Empresa.id == current_user.empresa_id
+    ).all()], OrdemServico.titulos_csv)
+
+    return Response(
+        csv_data,
+        content_type='text/csv',
+        headers={'Content-Disposition': 'attachment; filename=ordens_servico.csv'}
+    )
 
 
 @ordem_servico_blueprint.route('/tramitacao/<int:ordem_id>/<int:tipo_situacao_id>/',

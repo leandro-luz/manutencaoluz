@@ -14,7 +14,7 @@ from webapp.usuario import has_view
 from webapp.utils.email import send_email
 from webapp.utils.tools import create_token, verify_token
 from webapp.utils.erros import flash_errors
-from webapp.utils.files import arquivo_padrao, lista_para_csv
+from webapp.utils.files import lista_para_csv
 
 usuario_blueprint = Blueprint(
     'usuario',
@@ -503,12 +503,19 @@ def cadastrar_lote_usuarios():
     # se a lista de rejeitados existir
     if len(rejeitados_texto) > 0:
         # publica ao usuário a lista dos rejeitados
-        resultado, nome, arquivo = arquivo_padrao(nome_arquivo="Usuários_rejeitados", valores=rejeitados_texto)
+        csv_data = lista_para_csv(rejeitados_texto, None)
 
-        # se não houver erro envia o arquivo
-        if resultado:
-            return Response(arquivo, mimetype="text/csv",
-                            headers={"Content-disposition": f"attachment; filename={nome}"})
+        return Response(
+            csv_data,
+            content_type='text/csv',
+            headers={'Content-Disposition': 'attachment; filename=usuarios_rejeitados.csv'})
+
+        # resultado, nome, arquivo = arquivo_padrao(nome_arquivo="Usuários_rejeitados", valores=rejeitados_texto)
+        #
+        # # se não houver erro envia o arquivo
+        # if resultado:
+        #     return Response(arquivo, mimetype="text/csv",
+        #                     headers={"Content-disposition": f"attachment; filename={nome}"})
 
     return redirect(url_for("usuario.usuario_listar"))
 
@@ -640,13 +647,14 @@ def perfilacesso_ativar(perfilacesso_id):
 @login_required
 @has_view('Usuário')
 def gerar_padrao_perfis():
-    resultado, nome, arquivo = arquivo_padrao(nome_arquivo=PerfilAcesso.nome_doc,
-                                              valores=[[x] for x in PerfilAcesso.titulos_doc])
+    csv_data = lista_para_csv([[x] for x in PerfilAcesso.titulos_doc], None)
+    nome = "tabela_base_perfis.csv"
 
-    # se não houver erro envia o arquivo
-    if resultado:
-        return Response(arquivo, mimetype="text/csv",
-                        headers={"Content-disposition": f"attachment; filename={nome}"})
+    return Response(
+        csv_data,
+        content_type='text/csv',
+        headers={'Content-Disposition': f"attachment; filename={nome}"}
+    )
 
     return redirect(url_for('usuario.perfil_listar'))
 
@@ -729,12 +737,19 @@ def cadastrar_lote_perfis():
     # se a lista de rejeitados existir
     if len(rejeitados_texto) > 0:
         # publica ao usuário a lista dos rejeitados
-        resultado, nome, arquivo = arquivo_padrao(nome_arquivo="Perfis_rejeitados", valores=rejeitados_texto)
+        csv_data = lista_para_csv(rejeitados_texto, None)
 
-        # se não houver erro envia o arquivo
-        if resultado:
-            return Response(arquivo, mimetype="text/csv",
-                            headers={"Content-disposition": f"attachment; filename={nome}"})
+        return Response(
+            csv_data,
+            content_type='text/csv',
+            headers={'Content-Disposition': 'attachment; filename=perfis_rejeitados.csv'})
+
+        # resultado, nome, arquivo = arquivo_padrao(nome_arquivo="Perfis_rejeitados", valores=rejeitados_texto)
+        #
+        # # se não houver erro envia o arquivo
+        # if resultado:
+        #     return Response(arquivo, mimetype="text/csv",
+        #                     headers={"Content-disposition": f"attachment; filename={nome}"})
 
     return redirect(url_for('usuario.perfil_listar'))
 

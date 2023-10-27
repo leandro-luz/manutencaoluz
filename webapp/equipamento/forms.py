@@ -300,6 +300,7 @@ class LocalizacaoForm(Form):
 
 class AgrupamentoForm(Form):
     id = IntegerField('id')
+    grupo_id = IntegerField()
     nome = StringField('Nome', validators=[InputRequired(), Length(max=50)],
                        render_kw={"placeholder": "Digite o nome"})
     tipo = SelectField('Tipo', choices=[], coerce=int, validate_choice=False, )
@@ -327,7 +328,9 @@ class AgrupamentoForm(Form):
             if self.tipo.data == 2:
                 if Subgrupo.query.filter(
                         Subgrupo.nome == self.nome.data,
+                        Subgrupo.grupo_id == self.grupo_id.data,
                         Subgrupo.grupo_id == Grupo.id,
+                        Grupo.id == self.grupo_id.data,
                         Grupo.empresa_id == current_user.empresa_id
                 ).one_or_none():
                     flash("Já existe um subgrupo com este nome para este grupo", category="danger")

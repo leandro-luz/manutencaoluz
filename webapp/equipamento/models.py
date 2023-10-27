@@ -229,134 +229,126 @@ class Equipamento(db.Model):
                f'{atributo_existe(self, "volume", "unidade")}; {atributo_existe(self, "area", "unidade")}; ' \
                f'{atributo_existe(self, "potencia", "unidade")}; {atributo_existe(self, "tensaoeletrica", "unidade")}'
 
+    def retornar_ativo(self):
+        return self.ativo
 
-def retornar_ativo(self):
-    return self.ativo
+    def alterar_ativo(self, ativo):
+        self.ativo = ativo
 
+    def alterar_atributos(self, form, new):
+        """    Função para alterar os atributos do objeto    """
+        self.cod = self.gerar_codigo(form, new)
+        self.tag = self.gerar_tag(form, new)
+        self.descricao_curta = form.descricao_curta.data.upper()
+        self.descricao_longa = form.descricao_longa.data.upper()
+        self.fabricante = form.fabricante.data.upper()
+        self.marca = form.marca.data.upper()
+        self.modelo = form.modelo.data.upper()
+        self.ns = form.ns.data.upper()
+        self.data_fabricacao = form.data_fabricacao.data
+        self.data_aquisicao = form.data_aquisicao.data
+        self.data_instalacao = form.data_instalacao.data
+        self.custo_aquisicao = form.custo_aquisicao.data
+        self.depreciacao = form.depreciacao.data
+        self.patrimonio = form.patrimonio.data.upper()
+        self.latitude = form.latitude.data
+        self.longitude = form.longitude.data
+        self.centro_custo = form.centro_custo.data.upper()
+        self.ativo = form.ativo.data
+        self.subgrupo_id = form.subgrupo.data
+        self.setor_id = form.setor.data
+        self.local_id = form.local.data
+        self.pavimento_id = form.pavimento.data
+        self.largura_valor = form.largura_valor.data
+        self.und_largura_id = form.und_largura.data
+        self.comprimento_valor = form.comprimento_valor.data
+        self.und_comprimento_id = form.und_comprimento.data
+        self.altura_valor = form.altura_valor.data
+        self.und_altura_id = form.und_altura.data
+        self.peso_valor = form.peso_valor.data
+        self.und_peso_id = form.und_peso.data
+        self.vazao_valor = form.vazao_valor.data
+        self.und_vazao_id = form.und_vazao.data
+        self.volume_valor = form.volume_valor.data
+        self.und_volume_id = form.und_volume.data
+        self.area_valor = form.area_valor.data
+        self.und_area_id = form.und_area.data
+        self.peso_valor = form.peso_valor.data
+        self.und_peso_id = form.und_peso.data
+        self.potencia_valor = form.potencia_valor.data
+        self.und_potencia_id = form.und_potencia.data
+        self.tensao_valor = form.tensao_valor.data
+        self.und_tensao_id = form.und_tensao.data
 
-def alterar_ativo(self, ativo):
-    self.ativo = ativo
+    def ativar_desativar(self):
+        """Função para ativar e desativar """
+        if self.ativo:
+            self.alterar_ativo(False)
+        else:
+            self.alterar_ativo(True)
 
+    def salvar(self) -> bool:
+        """    Função para salvar no banco de dados o objeto"""
+        try:
+            db.session.add(self)
+            db.session.commit()
+            return True
+        except Exception as e:
+            log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
+            db.session.rollback()
+            return False
 
-def alterar_atributos(self, form, new):
-    """    Função para alterar os atributos do objeto    """
-    self.cod = self.gerar_codigo(form, new)
-    self.tag = self.gerar_tag(form, new)
-    self.descricao_curta = form.descricao_curta.data.upper()
-    self.descricao_longa = form.descricao_longa.data.upper()
-    self.fabricante = form.fabricante.data.upper()
-    self.marca = form.marca.data.upper()
-    self.modelo = form.modelo.data.upper()
-    self.ns = form.ns.data.upper()
-    self.data_fabricacao = form.data_fabricacao.data
-    self.data_aquisicao = form.data_aquisicao.data
-    self.data_instalacao = form.data_instalacao.data
-    self.custo_aquisicao = form.custo_aquisicao.data
-    self.depreciacao = form.depreciacao.data
-    self.patrimonio = form.patrimonio.data.upper()
-    self.latitude = form.latitude.data
-    self.longitude = form.longitude.data
-    self.centro_custo = form.centro_custo.data.upper()
-    self.ativo = form.ativo.data
-    self.subgrupo_id = form.subgrupo.data
-    self.setor_id = form.setor.data
-    self.local_id = form.local.data
-    self.pavimento_id = form.pavimento.data
-    self.largura_valor = form.largura_valor.data
-    self.und_largura_id = form.und_largura.data
-    self.comprimento_valor = form.comprimento_valor.data
-    self.und_comprimento_id = form.und_comprimento.data
-    self.altura_valor = form.altura_valor.data
-    self.und_altura_id = form.und_altura.data
-    self.peso_valor = form.peso_valor.data
-    self.und_peso_id = form.und_peso.data
-    self.vazao_valor = form.vazao_valor.data
-    self.und_vazao_id = form.und_vazao.data
-    self.volume_valor = form.volume_valor.data
-    self.und_volume_id = form.und_volume.data
-    self.area_valor = form.area_valor.data
-    self.und_area_id = form.und_area.data
-    self.peso_valor = form.peso_valor.data
-    self.und_peso_id = form.und_peso.data
-    self.potencia_valor = form.potencia_valor.data
-    self.und_potencia_id = form.und_potencia.data
-    self.tensao_valor = form.tensao_valor.data
-    self.und_tensao_id = form.und_tensao.data
+    def gerar_codigo(self, form, new):
+        """Função que gera automático o código do equipamento"""
 
+        if new:
+            posicao = db.session.query(func.max(Equipamento.id)).first()[0] + 1
+        else:
+            posicao = self.id
 
-def ativar_desativar(self):
-    """Função para ativar e desativar """
-    if self.ativo:
-        self.alterar_ativo(False)
-    else:
-        self.alterar_ativo(True)
+        if form.cod_automatico.data:
+            subgrupo = Subgrupo.query.filter_by(id=form.subgrupo.data).one_or_none()
+            return (str(subgrupo.grupo.empresa_id).zfill(5) + "." +
+                    unidecode(str(subgrupo.grupo.nome)[:3]) +
+                    str(subgrupo.grupo.id).zfill(5) + "." +
+                    unidecode(str(subgrupo.nome)[:3]) +
+                    str(subgrupo.id).zfill(5) + "." +
+                    unidecode(str(self.descricao_curta)[:3]) +
+                    str(posicao).zfill(5))
+        else:
+            return form.cod.data
 
+    def gerar_tag(self, form, new):
+        """Função que gera automático o tag do equipamento"""
 
-def salvar(self) -> bool:
-    """    Função para salvar no banco de dados o objeto"""
-    try:
-        db.session.add(self)
-        db.session.commit()
-        return True
-    except Exception as e:
-        log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
-        db.session.rollback()
+        if new:
+            posicao = db.session.query(func.max(Equipamento.id)).first()[0] + 1
+        else:
+            posicao = self.id
+
+        if form.tag_automatico.data:
+            set = Setor.query.filter_by(id=form.setor.data).one_or_none()
+            loc = Local.query.filter_by(id=form.local.data).one_or_none()
+            pav = Pavimento.query.filter_by(id=form.pavimento.data).one_or_none()
+            return (unidecode(str(set.sigla)) + "." +
+                    unidecode(str(loc.sigla)) + "." +
+                    unidecode(str(pav.sigla)) + "." +
+                    unidecode(str(self.descricao_curta)[:3]) +
+                    str(posicao).zfill(5))
+        else:
+            return form.tag.data
+
+    @staticmethod
+    def salvar_lote(lote):
+        """Função para salvar o lote"""
+        try:
+            db.session.add_all(lote)
+            db.session.commit()
+            return True
+        except Exception as e:
+            log.error(f'Erro salvar ao tentar salvar o lote:{e}')
+            db.session.rollback()
         return False
-
-
-def gerar_codigo(self, form, new):
-    """Função que gera automático o código do equipamento"""
-
-    if new:
-        posicao = db.session.query(func.max(Equipamento.id)).first()[0] + 1
-    else:
-        posicao = self.id
-
-    if form.cod_automatico.data:
-        subgrupo = Subgrupo.query.filter_by(id=form.subgrupo.data).one_or_none()
-        return (str(subgrupo.grupo.empresa_id).zfill(5) + "." +
-                unidecode(str(subgrupo.grupo.nome)[:3]) +
-                str(subgrupo.grupo.id).zfill(5) + "." +
-                unidecode(str(subgrupo.nome)[:3]) +
-                str(subgrupo.id).zfill(5) + "." +
-                unidecode(str(self.descricao_curta)[:3]) +
-                str(posicao).zfill(5))
-    else:
-        return form.cod.data
-
-
-def gerar_tag(self, form, new):
-    """Função que gera automático o tag do equipamento"""
-
-    if new:
-        posicao = db.session.query(func.max(Equipamento.id)).first()[0] + 1
-    else:
-        posicao = self.id
-
-    if form.tag_automatico.data:
-        set = Setor.query.filter_by(id=form.setor.data).one_or_none()
-        loc = Local.query.filter_by(id=form.local.data).one_or_none()
-        pav = Pavimento.query.filter_by(id=form.pavimento.data).one_or_none()
-        return (unidecode(str(set.sigla)) + "." +
-                unidecode(str(loc.sigla)) + "." +
-                unidecode(str(pav.sigla)) + "." +
-                unidecode(str(self.descricao_curta)[:3]) +
-                str(posicao).zfill(5))
-    else:
-        return form.tag.data
-
-
-@staticmethod
-def salvar_lote(lote):
-    """Função para salvar o lote"""
-    try:
-        db.session.add_all(lote)
-        db.session.commit()
-        return True
-    except Exception as e:
-        log.error(f'Erro salvar ao tentar salvar o lote:{e}')
-        db.session.rollback()
-    return False
 
 
 class Pavimento(db.Model):

@@ -25,6 +25,8 @@ class PerfilAcesso(db.Model):
     # titulos para cadastro
     titulos_doc = {'Nome*': 'nome', 'Descricao': 'descricao', 'Ativo': 'ativo'}
 
+    titulos_csv = {'nome; descricao; ativo'}
+
     __tablename__ = 'perfil_acesso'
     id = db.Column(db.Integer(), primary_key=True)
     nome = db.Column(db.String(50), unique=False, index=True)
@@ -37,7 +39,7 @@ class PerfilAcesso(db.Model):
     telaperfilacesso = db.relationship("TelaPerfilAcesso", back_populates="perfilacesso")
 
     def __repr__(self) -> str:
-        return f'<PerfilAcesso: {self.id}-{self.nome}>'
+        return f'{self.nome}; {self.descricao}; {self.ativo}'
 
     def ativar_desativar(self):
         """Função para ativar e desativar"""

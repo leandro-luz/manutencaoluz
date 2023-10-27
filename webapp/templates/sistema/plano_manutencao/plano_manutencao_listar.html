@@ -25,11 +25,17 @@
                    <span data-bs-target="#modal" data-bs-toggle="modal" data-tooltip="INCLUIR PLANO">
                        <i class="bi-clipboard fs-4">+</i>
                    </span>
-
                 </a>
             </div>
-        </div>
+            <div class="col-1">
+                <a href="{{ url_for('plano_manutencao.gerar_csv_planos') }}">
+                <span data-tooltip="GERAR CSV">
+                    <i class="bi-download fs-4"></i>
+                </span>
+                </a>
+            </div>
 
+        </div>
 
         <div class="col-10">
             <table class="table">

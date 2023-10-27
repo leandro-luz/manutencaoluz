@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from flask import (render_template, Blueprint, redirect, url_for, flash, request)
+from flask import (render_template, Blueprint, redirect, url_for, flash, request, Response)
 from flask_login import current_user, login_required
 from webapp.empresa.models import Empresa
 from webapp.plano_manutencao.models import PlanoManutencao, TipoData, Periodicidade, Atividade, TipoBinario, \
@@ -10,7 +10,7 @@ from webapp.equipamento.models import Equipamento, Grupo, Subgrupo
 from webapp.plano_manutencao.forms import PlanoForm, AtividadeForm, ListaAtividadeForm
 from webapp.usuario import has_view
 from webapp.ordem_servico.models import TipoOrdem
-from webapp.utils.files import arquivo_padrao
+from webapp.utils.files import arquivo_padrao, lista_para_csv
 from webapp.utils.erros import flash_errors
 
 plano_manutencao_blueprint = Blueprint(
@@ -436,6 +436,26 @@ def gerar_padrao_planos_manutencao():
     else:
         flash("Não foi gerado o arquivo padrão", category="danger")
     return redirect(url_for("plano_manutencao.plano_listar"))
+
+
+@plano_manutencao_blueprint.route('/gerar_csv_planos/', methods=['GET', 'POST'])
+@login_required
+@has_view('Plano de Manutenção')
+def gerar_csv_planos():
+    # Gera o arquivo csv com os titulos
+
+    csv_data = lista_para_csv([[x] for x in PlanoManutencao.query.filter(
+        current_user.empresa_id == Empresa.id,
+        Empresa.id == Grupo.empresa_id,
+        Grupo.id == Subgrupo.grupo_id,
+        Subgrupo.id == Equipamento.subgrupo_id,
+        Equipamento.id == PlanoManutencao.equipamento_id).all()], PlanoManutencao.titulos_csv)
+
+    return Response(
+        csv_data,
+        content_type='text/csv',
+        headers={'Content-Disposition': 'attachment; filename=planos_manutencao.csv'}
+    )
 
 
 @plano_manutencao_blueprint.route('/cadastrar_lote_planos_manutencao/', methods=['GET', 'POST'])
