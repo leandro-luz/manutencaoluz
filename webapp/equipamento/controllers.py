@@ -42,6 +42,7 @@ def equipamento_editar(equipamento_id):
     grupo_id = 0
     subgrupo_id = 0
     new = True
+    equipamento = Equipamento()
 
     if equipamento_id > 0:
         # Atualizar
@@ -99,7 +100,6 @@ def equipamento_editar(equipamento_id):
             return redirect(url_for("equipamento.equipamento_listar"))
     else:
         # Cadastrar
-        equipamento = Equipamento()
         equipamento.id = 0
         form = EquipamentoForm()
         g_d = form.grupo.data
@@ -171,6 +171,7 @@ def equipamento_editar(equipamento_id):
 
     # Validação
     if form.validate_on_submit():
+        print(equipamento)
         equipamento.alterar_atributos(form, new)
         if equipamento.salvar():
             # Mensagens
