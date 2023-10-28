@@ -139,7 +139,18 @@ class Equipamento(db.Model):
                    'Tensao': 'tensao', 'Ano_Fabricacao': 'data_fabricacao', 'Data_Aquisicao': 'data_aquisicao',
                    'Data_Instalacao': 'data_instalacao', 'Custo_Aquisicao': 'custo_aquisicao',
                    'Taxa_Depreciacao': 'depreciacao', 'Patrimonio': 'patrimonio', 'Localizacao': 'localizacao',
-                   'Latitude': 'latitude', 'Longitude': 'longitude', 'Centro_Custo': 'centro_custo', 'Ativo': 'ativo'}
+                   'Latitude': 'latitude', 'Longitude': 'longitude', 'Centro_Custo': 'centro_custo', 'Ativo': 'ativo',
+                   'Setor': 'setor_id', 'Local': 'local_id', 'Pavimento': 'pavimento_id',
+                   'Largura_valor': 'largura_valor', 'Largura_und': 'und_largura_id',
+                   'Comprimento_valor': 'comprimento_valor', 'Comprimento_und': 'und_comprimento_id',
+                   'Altura_valor': 'altura_valor', 'Altura_und': 'und_altura_id',
+                   'Peso_valor': 'peso_valor', 'Peso_und': 'und_peso_id',
+                   'Vazao_valor': 'vazao_valor', 'Vazao_und': 'und_vazao_id',
+                   'Volume_valor': 'volume_valor', 'Volume_und': 'und_volume_id',
+                   'Area_valor': 'area_valor', 'Area_und': 'und_area_id',
+                   'Potencia_valor': 'potencia_valor', 'Potencia_und': 'und_potencia_id',
+                   'Tensao_valor': 'tensao_valor', 'Tensao_und': 'und_tensao_id'
+                   }
 
     titulos_csv = {'cod; descricao_curta; descricao_longa; fabricante; marca; modelo; ns; data_fabricacao; '
                    'data_aquisicao; data_instalacao; custo_aquisicao; depreciacao; tag; patrimonio; '
@@ -163,7 +174,7 @@ class Equipamento(db.Model):
     data_instalacao = db.Column(db.DateTime(), nullable=True)
     custo_aquisicao = db.Column(db.Float(), nullable=True)
     depreciacao = db.Column(db.Integer(), nullable=True)
-    tag = db.Column(db.String(30), nullable=False)
+    tag = db.Column(db.String(30), nullable=True)
     patrimonio = db.Column(db.String(20), nullable=True)
 
     latitude = db.Column(db.String(20), nullable=True)
@@ -171,7 +182,7 @@ class Equipamento(db.Model):
     centro_custo = db.Column(db.String(50), nullable=True)
     ativo = db.Column(db.Boolean, nullable=False, default=True)
 
-    subgrupo_id = db.Column(db.Integer(), db.ForeignKey("subgrupo.id"), nullable=True)
+    subgrupo_id = db.Column(db.Integer(), db.ForeignKey("subgrupo.id"), nullable=False)
     setor_id = db.Column(db.Integer(), db.ForeignKey("setor.id"), nullable=True)
     local_id = db.Column(db.Integer(), db.ForeignKey("local.id"), nullable=True)
     pavimento_id = db.Column(db.Integer(), db.ForeignKey("pavimento.id"), nullable=True)
@@ -219,7 +230,8 @@ class Equipamento(db.Model):
         return f'{self.cod}; {self.descricao_curta}; {self.descricao_longa}; {self.fabricante}; ' \
                f'{self.marca}; {self.modelo}; {self.ns}; {self.data_fabricacao}; {self.data_aquisicao}; ' \
                f'{self.data_instalacao}; {self.custo_aquisicao}; {self.depreciacao}; {self.tag}; {self.patrimonio}; ' \
-               f'{self.latitude}; {self.longitude}; {self.centro_custo}; {self.ativo}; {self.subgrupo.nome}; ' \
+               f'{self.latitude}; {self.longitude}; {self.centro_custo}; {self.ativo}; ' \
+               f'{atributo_existe(self, "subgrupo", "nome")};' \
                f'{atributo_existe(self, "setor", "nome")}; {atributo_existe(self, "local", "nome")}; ' \
                f'{atributo_existe(self, "pavimento", "nome")}; {self.largura_valor}; {self.comprimento_valor}; ' \
                f'{self.altura_valor}; {self.peso_valor}; {self.vazao_valor}; {self.volume_valor}; {self.area_valor}; ' \

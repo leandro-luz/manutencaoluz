@@ -171,7 +171,6 @@ def equipamento_editar(equipamento_id):
 
     # Validação
     if form.validate_on_submit():
-        print(equipamento)
         equipamento.alterar_atributos(form, new)
         if equipamento.salvar():
             # Mensagens
@@ -181,7 +180,7 @@ def equipamento_editar(equipamento_id):
                 flash("Equipamento cadastrado", category="success")
             return redirect(url_for("equipamento.equipamento_listar"))
         else:
-            flash("Equipamento não cadastrado/atualizado", category="danger")
+            flash("Erro no ao cadastrar/atualizar o equipamento", category="danger")
     else:
         flash_errors(form)
     return render_template("equipamento_editar.html", form=form, equipamento=equipamento, grupo_id=grupo_id,
