@@ -130,14 +130,9 @@ def equipamento_editar(equipamento_id):
         Subgrupo.nome)
 
     # Listas
-    setores = Setor.query.filter_by(
-        empresa_id=current_user.empresa_id).order_by(Setor.nome)
-
-    locais = Local.query.filter_by(
-        empresa_id=current_user.empresa_id).order_by(Local.nome)
-
-    pavimentos = Pavimento.query.filter_by(
-        empresa_id=current_user.empresa_id).order_by(Pavimento.nome)
+    setores = Setor.query.filter_by(empresa_id=current_user.empresa_id).order_by(Setor.nome)
+    locais = Local.query.filter_by(empresa_id=current_user.empresa_id).order_by(Local.nome)
+    pavimentos = Pavimento.query.filter_by(empresa_id=current_user.empresa_id).order_by(Pavimento.nome)
 
     form.setor.choices = [(0, '')] + [(st.id, st.nome) for st in setores]
     form.local.choices = [(0, '')] + [(lo.id, lo.nome) for lo in locais]

@@ -1,6 +1,6 @@
 import logging
 from webapp import db
-from webapp.utils.objetos import atributo_existe
+from webapp.utils.objetos import atributo_existe, atribuir_none_id
 from flask_login import current_user
 from sqlalchemy import func
 from unidecode import unidecode
@@ -268,29 +268,29 @@ class Equipamento(db.Model):
         self.centro_custo = form.centro_custo.data.upper()
         self.ativo = form.ativo.data
         self.subgrupo_id = form.subgrupo.data
-        self.setor_id = form.setor.data
-        self.local_id = form.local.data
-        self.pavimento_id = form.pavimento.data
+        self.setor_id = atribuir_none_id(form.setor.data)
+        self.local_id = atribuir_none_id(form.local.data)
+        self.pavimento_id = atribuir_none_id(form.pavimento.data)
         self.largura_valor = form.largura_valor.data
-        self.und_largura_id = form.und_largura.data
+        self.und_largura_id = atribuir_none_id(form.und_largura.data)
         self.comprimento_valor = form.comprimento_valor.data
-        self.und_comprimento_id = form.und_comprimento.data
+        self.und_comprimento_id = atribuir_none_id(form.und_comprimento.data)
         self.altura_valor = form.altura_valor.data
-        self.und_altura_id = form.und_altura.data
+        self.und_altura_id = atribuir_none_id(form.und_altura.data)
         self.peso_valor = form.peso_valor.data
-        self.und_peso_id = form.und_peso.data
+        self.und_peso_id = atribuir_none_id(form.und_peso.data)
         self.vazao_valor = form.vazao_valor.data
-        self.und_vazao_id = form.und_vazao.data
+        self.und_vazao_id = atribuir_none_id(form.und_vazao.data)
         self.volume_valor = form.volume_valor.data
-        self.und_volume_id = form.und_volume.data
+        self.und_volume_id = atribuir_none_id(form.und_volume.data)
         self.area_valor = form.area_valor.data
-        self.und_area_id = form.und_area.data
+        self.und_area_id = atribuir_none_id(form.und_area.data)
         self.peso_valor = form.peso_valor.data
-        self.und_peso_id = form.und_peso.data
+        self.und_peso_id = atribuir_none_id(form.und_peso.data)
         self.potencia_valor = form.potencia_valor.data
-        self.und_potencia_id = form.und_potencia.data
+        self.und_potencia_id = atribuir_none_id(form.und_potencia.data)
         self.tensao_valor = form.tensao_valor.data
-        self.und_tensao_id = form.und_tensao.data
+        self.und_tensao_id = atribuir_none_id(form.und_tensao.data)
 
     def ativar_desativar(self):
         """Função para ativar e desativar """
