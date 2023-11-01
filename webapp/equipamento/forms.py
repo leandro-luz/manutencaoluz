@@ -10,7 +10,6 @@ from flask_login import current_user
 class GrupoForm(Form):
     nome = StringField('Nome', validators=[InputRequired(), Length(max=50)],
                        render_kw={"placeholder": "Digite o nome do grupo"})
-    ativo = BooleanField('Ativo', render_kw={"placeholder": "Informe se o grupo está ativo"})
     submit = SubmitField("Salvar")
 
     file = FileField('Escolha um arquivo para o cadastro de grupos em Lote (4MB):', validators=[Optional()],
@@ -25,13 +24,10 @@ class GrupoForm(Form):
                 return False
             if Grupo.query.filter(
                     current_user.empresa_id == Grupo.empresa_id,
-                    Grupo.nome == self.nome.data,
-            ).one_or_none():
+                    Grupo.nome == self.nome.data).one_or_none():
                 flash("Já existe um grupo com este nome", category="danger")
                 return False
-            else:
-                return True
-
+            return True
         return False
 
 

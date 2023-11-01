@@ -1,0 +1,30 @@
+<!-- Modal de exibição de produto -->
+<div aria-hidden="true" aria-labelledby="agrupamentoModalLabel" class="modal fade"
+     id="agrupamentoModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="agrupamentoModalLabel">Editar Agrupamento</h5>
+                <button aria-label="Close" class="btn-close"
+                        data-bs-dismiss="modal" type="button">
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('equipamento.agrupamento_editar_elementos') }}"
+                      id="agrupamentoForm" method="POST">
+                    <div class="mb-3">
+                        <input class="form-control" id="agp_tipo" name="agp_tipo" type="hidden">
+                        <input class="form-control" id="agp_grupo_id" name="agp_grupo_id" type="hidden">
+                        <input class="form-control" id="agp_subgrupo_id" name="agp_subgrupo_id" type="hidden">
+                    </div>
+                    <div class="mb-3">
+                        <label for="agp_nome">Nome:</label>
+                        <input class="form-control" id="agp_nome" name="agp_nome" type="text">
+                    </div>
+                    <button class="btn btn-primary" type="submit">Alterar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+

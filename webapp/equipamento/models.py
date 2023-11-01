@@ -314,7 +314,11 @@ class Equipamento(db.Model):
         """Função que gera automático o código do equipamento"""
 
         if new:
-            posicao = db.session.query(func.max(Equipamento.id)).first()[0] + 1
+            posicao = db.session.query(func.max(Equipamento.id)).first()[0]
+            if posicao:
+                posicao += 1
+            else:
+                posicao = 1
         else:
             posicao = self.id
 
@@ -334,7 +338,11 @@ class Equipamento(db.Model):
         """Função que gera automático o tag do equipamento"""
 
         if new:
-            posicao = db.session.query(func.max(Equipamento.id)).first()[0] + 1
+            posicao = db.session.query(func.max(Equipamento.id)).first()[0]
+            if posicao:
+                posicao += 1
+            else:
+                posicao = 1
         else:
             posicao = self.id
 

@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import io
 import zipfile
-from flask import render_template, Blueprint, redirect, url_for, flash, Response
+from flask import render_template, Blueprint, redirect, url_for, flash, Response, jsonify, request
 from flask_login import current_user, login_required
 from webapp.empresa.models import Empresa
 from .models import Equipamento, Grupo, Subgrupo, Pavimento, Setor, Local, Area, Volume, Vazao, Comprimento, Peso, \
@@ -123,12 +123,6 @@ def equipamento_editar(equipamento_id):
         Empresa.id == current_user.empresa_id).order_by(
         Grupo.nome)
 
-    subgrupos = Subgrupo.query.filter(
-        Subgrupo.grupo_id == Grupo.id,
-        Grupo.empresa_id == Empresa.id,
-        Empresa.id == current_user.empresa_id).order_by(
-        Subgrupo.nome)
-
     # Listas
     setores = Setor.query.filter_by(empresa_id=current_user.empresa_id).order_by(Setor.nome)
     locais = Local.query.filter_by(empresa_id=current_user.empresa_id).order_by(Local.nome)
@@ -138,7 +132,7 @@ def equipamento_editar(equipamento_id):
     form.local.choices = [(0, '')] + [(lo.id, lo.nome) for lo in locais]
     form.pavimento.choices = [(0, '')] + [(pv.id, pv.nome) for pv in pavimentos]
     form.grupo.choices = [(0, '')] + [(g.id, g.nome) for g in grupos]
-    form.subgrupo.choices = [(0, '')] + [(sg.id, sg.nome) for sg in subgrupos]
+    form.subgrupo.choices = [(0, '')]
     form.und_area.choices = [(0, '')] + [(ar.id, ar.unidade) for ar in Area.query.all()]
     form.und_vazao.choices = [(0, '')] + [(va.id, va.unidade) for va in Vazao.query.all()]
     form.und_volume.choices = [(0, '')] + [(vol.id, vol.unidade) for vol in Volume.query.all()]
@@ -480,36 +474,77 @@ def grupo_excluir(grupo_id, subgrupo_id):
     return redirect(url_for("equipamento.agrupamento_listar", grupo_id=grupo_id, subgrupo_id=subgrupo_id))
 
 
-@equipamento_blueprint.route('/grupo_editar/<int:grupo_id>/<int:subgrupo_id>', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/agrupamento_editar_elementos/', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def grupo_editar(grupo_id, subgrupo_id):
-    print('testando...')
-    print(grupo_id, subgrupo_id)
-    # if grupo_id > 0:
-    #     # localiza a empresa do grupo
-    #     grupo = Grupo.query.filter(
-    #         current_user.empresa_id == Empresa.id,
-    #         Empresa.id == Grupo.empresa_id,
-    #         Grupo.id == grupo_id
-    #     ).one_or_none()
-    #
-    #     # se grupo existir
-    #     if grupo:
-    #         form = GrupoForm(obj=grupo)
-    #         # Validação
-    #         if form.validate_on_submit():
-    #             grupo.alterar_atributos(form)
-    #             if grupo.salvar():
-    #                 flash("Grupo atualizado", category="success")
-    #             else:
-    #                 flash("Erro ao atualizar grupo", category="danger")
-    #         else:
-    #             flash_errors(form)
-    #     else:
-    #         flash("Grupo não localizado", category="danger")
-    # else:
-    #     flash("Grupo não informado", category="danger")
+def agrupamento_editar_elementos():
+    # coletando as informações
+    tipo = str(request.form.get('agp_tipo')).upper()
+    grupo_id = int(request.form.get('agp_grupo_id'))
+    subgrupo_id = int(request.form.get('agp_subgrupo_id'))
+    tipo_nome = str(request.form.get('agp_nome')).upper()
+
+    if tipo_nome == '':
+        flash("Nome não informado", category="danger")
+    else:
+        if tipo == 'GRUPO':
+            if grupo_id > 0:
+                # valida o preenchimento
+                if Grupo.query.filter(
+                        current_user.empresa_id == Grupo.empresa_id,
+                        Grupo.nome == tipo_nome).one_or_none():
+                    flash("Já existe um grupo com este nome", category="danger")
+                else:
+                    # localiza a empresa do grupo
+                    grupo = Grupo.query.filter(
+                        current_user.empresa_id == Empresa.id,
+                        Empresa.id == Grupo.empresa_id,
+                        Grupo.id == grupo_id
+                    ).one_or_none()
+                    # se grupo existir
+                    if grupo:
+                        grupo.nome = tipo_nome
+                        # salva no BD
+                        if grupo.salvar():
+                            flash("Grupo atualizado", category="success")
+                        else:
+                            flash("Erro ao atualizar grupo", category="danger")
+                    else:
+                        flash("Grupo não localizado", category="danger")
+            else:
+                flash("Grupo não informado", category="danger")
+
+        if tipo == 'SUBGRUPO':
+            if grupo_id > 0 and subgrupo_id > 0:
+                # valida o preenchimento
+                if Subgrupo.query.filter(
+                        current_user.empresa_id == Grupo.empresa_id,
+                        Grupo.id == Subgrupo.grupo_id,
+                        Grupo.id == grupo_id,
+                        Subgrupo.nome == tipo_nome).one_or_none():
+                    flash("Já existe um subgrupo com este nome", category="danger")
+                else:
+                    # localiza a empresa do subgrupo
+                    subgrupo = Subgrupo.query.filter(
+                        current_user.empresa_id == Empresa.id,
+                        Empresa.id == Grupo.empresa_id,
+                        Grupo.id == Subgrupo.grupo_id,
+                        Subgrupo.id == subgrupo_id
+                    ).one_or_none()
+
+                    # se subgrupo existir
+                    if subgrupo:
+                        subgrupo.nome = tipo_nome
+
+                        # salva no BD
+                        if subgrupo.salvar():
+                            flash("Subgrupo atualizado", category="success")
+                        else:
+                            flash("Erro ao atualizar subgrupo", category="danger")
+                    else:
+                        flash("Subgrupo não localizado", category="danger")
+            else:
+                flash("Subgrupo ou Grupo não informado", category="danger")
 
     return redirect(url_for("equipamento.agrupamento_listar", grupo_id=grupo_id, subgrupo_id=subgrupo_id))
 
@@ -997,5 +1032,80 @@ def pavimento_editar(pavimento_id):
             flash("Pavimento não localizado", category="danger")
     else:
         flash("Pavimento não informado", category="danger")
+
+    return redirect(url_for("equipamento.localizacao_listar"))
+
+
+@equipamento_blueprint.route('/subgrupo_lista/<int:grupo_id>', methods=['GET', 'POST'])
+@login_required
+def subgrupo_lista(grupo_id: int):
+    """    Função que retorna lista de locais"""
+    subgrupos = Subgrupo.query.filter(
+        current_user.empresa_id == Grupo.empresa_id,
+        Grupo.id == Subgrupo.grupo_id,
+        Grupo.id == grupo_id).all()
+
+    # com base no identificador
+    subgrupoarray = []
+    subgrupovazio = {'id': 0, 'nome': ''}
+    subgrupoarray.append(subgrupovazio)
+
+    for subgrupo in subgrupos:
+        subgrupoobj = {'id': subgrupo.id, 'nome': subgrupo.nome}
+        subgrupoarray.append(subgrupoobj)
+    return jsonify({'subgrupo_lista': subgrupoarray})
+
+
+@equipamento_blueprint.route('/localizacao_editar_elementos/', methods=['GET', 'POST'])
+@login_required
+@has_view('Equipamento')
+def localizacao_editar_elementos():
+    # coletando as informações
+    tipo = str(request.form.get('localizacao_tipo')).upper()
+    tipo_id = int(request.form.get('localizacao_id'))
+    tipo_nome = str(request.form.get('localizacao_nome')).upper()
+    tipo_sigla = str(request.form.get('localizacao_sigla')).upper()
+
+    def flash_error(message):
+        flash(message, category="danger")
+
+    def flash_success(message):
+        flash(message, category="success")
+
+    def validate_and_update_location(model, model_name, tipo_id, tipo_nome, tipo_sigla):
+        if tipo_id > 0:
+            if model.query.filter(current_user.empresa_id == model.empresa_id,
+                                  model.id != tipo_id,
+                                  model.nome == tipo_nome).one_or_none():
+                flash_error(f"Já existe um {model_name} com este nome")
+            elif model.query.filter(model.sigla == tipo_sigla,
+                                    model.id != tipo_id,
+                                    model.empresa_id == current_user.empresa_id).one_or_none():
+                flash_error(f"Já existe um {model_name} com esta sigla")
+            else:
+                location = model.query.filter(
+                    current_user.empresa_id == Empresa.id,
+                    Empresa.id == model.empresa_id,
+                    model.id == tipo_id).one_or_none()
+                if location:
+                    location.nome = tipo_nome
+                    location.sigla = tipo_sigla
+                    if location.salvar():
+                        flash_success(f"{model_name} atualizado")
+                    else:
+                        flash_error(f"Erro ao atualizar {model_name}")
+                else:
+                    flash_error(f"{model_name} não localizado")
+        else:
+            flash_error(f"{model_name} não informado")
+
+    if tipo == 'SETOR':
+        validate_and_update_location(Setor, 'Setor', tipo_id, tipo_nome, tipo_sigla)
+    elif tipo == 'LOCAL':
+        validate_and_update_location(Local, 'Local', tipo_id, tipo_nome, tipo_sigla)
+    elif tipo == 'PAVIMENTO':
+        validate_and_update_location(Pavimento, 'Pavimento', tipo_id, tipo_nome, tipo_sigla)
+    else:
+        flash_error("Tipo desconhecido")
 
     return redirect(url_for("equipamento.localizacao_listar"))

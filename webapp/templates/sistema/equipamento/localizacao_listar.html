@@ -58,6 +58,19 @@
                         <td>{{ setor.sigla }}</td>
 
                         <td>
+                            <span data-bs-target="#localizacaoModal"
+                                  data-bs-toggle="modal"
+                                  data-id="{{ setor.id }}"
+                                  data-nome="{{ setor.nome }}"
+                                  data-sigla="{{ setor.sigla }}"
+                                  data-tipo="Setor"
+                                  data-tooltip="Editar">
+                              <i class="bi-box-arrow-in-up fs-6"></i>
+                            </span>
+                            {% include "localizacao_modal.html" %}
+                        </td>
+
+                        <td>
                             <a href="{{ url_for('equipamento.setor_excluir', setor_id=setor.id) }}"
                                onclick="return deleteItem();">
                             <span data-tooltip="Excluir">
@@ -90,6 +103,19 @@
                     <tr>
                         <td>{{ local.nome }}</td>
                         <td>{{ local.sigla }}</td>
+
+                        <td>
+                            <span data-bs-target="#localizacaoModal"
+                                  data-bs-toggle="modal"
+                                  data-id="{{ local.id }}"
+                                  data-nome="{{ local.nome }}"
+                                  data-sigla="{{ local.sigla }}"
+                                  data-tipo="Local"
+                                  data-tooltip="Editar">
+                              <i class="bi-box-arrow-in-up fs-6"></i>
+                            </span>
+                            {% include "localizacao_modal.html" %}
+                        </td>
 
                         <td>
                             <a href="{{ url_for('equipamento.local_excluir', local_id=local.id) }}"
@@ -126,6 +152,19 @@
                         <td>{{ pavimento.sigla }}</td>
 
                         <td>
+                            <span data-bs-target="#localizacaoModal"
+                                  data-bs-toggle="modal"
+                                  data-id="{{ pavimento.id }}"
+                                  data-nome="{{ pavimento.nome }}"
+                                  data-sigla="{{ pavimento.sigla }}"
+                                  data-tipo="Pavimento"
+                                  data-tooltip="Editar">
+                              <i class="bi-box-arrow-in-up fs-6"></i>
+                            </span>
+                            {% include "localizacao_modal.html" %}
+                        </td>
+
+                        <td>
                             <a href="{{ url_for('equipamento.pavimento_excluir', pavimento_id=pavimento.id) }}"
                                onclick="return deleteItem();">
                             <span data-tooltip="Excluir">
@@ -144,8 +183,9 @@
 
 
 </body>
-<script src="/static/js/exportar_consulta.js" type="text/javascript"></script>
+
 <script src="/static/js/filtro_coluna.js" type="text/javascript"></script>
 <script src="/static/js/confirmacao_exclusao.js" type="text/javascript"></script>
+<script src="/static/js/atualizar_agrupamento.js" type="text/javascript"></script>
 
 {% endblock %}

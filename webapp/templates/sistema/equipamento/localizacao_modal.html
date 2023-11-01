@@ -1,0 +1,30 @@
+<!-- Modal de exibição de produto -->
+<div aria-hidden="true" aria-labelledby="localizacaoModalLabel" class="modal fade"
+     id="localizacaoModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="localizacaoModalLabel">Editar Localização</h5>
+                <button aria-label="Close" class="btn-close"
+                        data-bs-dismiss="modal" type="button">
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('equipamento.localizacao_editar_elementos') }}"
+                      id="localizacaoForm" method="POST">
+                    <div class="mb-3">
+                        <input class="form-control" id="localizacao_tipo" name="localizacao_tipo" type="hidden">
+                        <input class="form-control" id="localizacao_id" name="localizacao_id" type="hidden">
+                    </div>
+                    <div class="mb-3">
+                        <label for="localizacao_nome">Nome:</label>
+                        <input class="form-control" id="localizacao_nome" name="localizacao_nome" type="text">
+                        <label for="localizacao_sigla">Sigla:</label>
+                        <input class="form-control" id="localizacao_sigla" name="localizacao_sigla" type="text">
+                    </div>
+                    <button class="btn btn-primary" type="submit">Alterar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
