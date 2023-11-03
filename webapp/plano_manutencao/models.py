@@ -70,7 +70,7 @@ class ListaAtividade(db.Model):
     data = db.Column(db.DateTime(), nullable=True)
     observacao = db.Column(db.String(500), nullable=True)
 
-    atividade = db.relationship("Atividade", back_populates="listaatividade")
+    atividade = db.relationship("Atividade", back_populates="listaatividade", cascade="all, delete-orphan")
     planomanutencao = db.relationship("PlanoManutencao", back_populates="listaatividade")
     ordemservico = db.relationship("OrdemServico", back_populates="listaatividade")
 
@@ -317,7 +317,7 @@ class PlanoManutencao(db.Model):
         else:
             posicao = self.id
 
-        if form.cod_automatico.data:
+        if form.cod_automatico.data or not form.codigo:
             equipamento = Equipamento.query.filter_by(id=form.equipamento.data).one_or_none()
 
             return (unidecode(str(equipamento.descricao_curta)[:3]) +

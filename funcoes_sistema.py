@@ -712,6 +712,7 @@ def criar_equipamento(lista: List[dict]) -> List[Equipamento]:
     setores = {st.nome: st.id for st in Setor.query.all()}
     locais = {lo.nome: lo.id for lo in Local.query.all()}
     pavimentos = {p.nome: p.id for p in Pavimento.query.all()}
+    empresas = {e.razao_social: e.id for e in Empresa.query.all()}
 
     # Criando uma lista de novos tipodatas para serem adicionados
     novos_equipamentos = [Equipamento(cod=item['cod'],
@@ -720,7 +721,8 @@ def criar_equipamento(lista: List[dict]) -> List[Equipamento]:
                                       subgrupo_id=subgrupos[item['subgrupo']],
                                       setor_id=setores[item['setor']],
                                       local_id=locais[item['local']],
-                                      pavimento_id=pavimentos[item['pavimento']]
+                                      pavimento_id=pavimentos[item['pavimento']],
+                                      empresa_id=empresas[item['empresa']]
                                       )
                           for item in lista if item['cod'] not in [si.cod for si in Equipamento.query.all()]]
 

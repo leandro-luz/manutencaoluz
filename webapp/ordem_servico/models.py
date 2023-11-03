@@ -214,8 +214,9 @@ class OrdemServico(db.Model):
     tipostatusordem = db.relationship("TipoStatusOrdem", back_populates="ordemservico")
     usuario = db.relationship("Usuario", back_populates="ordemservico")
     tipoordem = db.relationship("TipoOrdem", back_populates="ordemservico")
-    tramitacaoordem = db.relationship("TramitacaoOrdem", back_populates="ordemservico")
-    listaatividade = db.relationship("ListaAtividade", back_populates="ordemservico")
+    tramitacaoordem = db.relationship("TramitacaoOrdem", back_populates="ordemservico", cascade="all, delete-orphan")
+    listaatividade = db.relationship("ListaAtividade", back_populates="ordemservico", cascade="all, delete-orphan",
+                                     single_parent=True)
 
     def __repr__(self) -> str:
         return f'{self.codigo};{self.descricao};{self.data_abertura};{self.data_prevista};{self.data_fechamento};' \

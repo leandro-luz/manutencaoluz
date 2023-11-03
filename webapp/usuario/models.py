@@ -36,7 +36,7 @@ class PerfilAcesso(db.Model):
 
     usuario = db.relationship("Usuario", back_populates="perfilacesso")
     empresa = db.relationship("Empresa", back_populates="perfilacesso")
-    telaperfilacesso = db.relationship("TelaPerfilAcesso", back_populates="perfilacesso")
+    telaperfilacesso = db.relationship("TelaPerfilAcesso", back_populates="perfilacesso", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
         return f'{self.nome}; {self.descricao}; {self.ativo}'
@@ -255,10 +255,11 @@ class Usuario(db.Model):
 
     perfilacesso = db.relationship("PerfilAcesso", back_populates="usuario")
     empresa = db.relationship("Empresa", back_populates="usuario")
-    senha = db.relationship("Senha", back_populates="usuario")
+    senha = db.relationship("Senha", back_populates="usuario", cascade="all, delete-orphan", single_parent=True)
     ordemservico = db.relationship("OrdemServico", back_populates="usuario")
     tramitacaoordem = db.relationship("TramitacaoOrdem", back_populates="usuario")
-    perfilmanutentorusuario = db.relationship("PerfilManutentorUsuario", back_populates="usuario")
+    perfilmanutentorusuario = db.relationship("PerfilManutentorUsuario", back_populates="usuario",
+                                              cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
         return f'{self.nome}; {self.email}; {self.perfilacesso.nome}; {self.ativo}'

@@ -36,7 +36,7 @@ class Grupo(db.Model):
     empresa_id = db.Column(db.Integer(), db.ForeignKey("empresa.id"), nullable=False)
 
     empresa = db.relationship("Empresa", back_populates="grupo")
-    subgrupo = db.relationship("Subgrupo", back_populates="grupo")
+    subgrupo = db.relationship("Subgrupo", back_populates="grupo", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f'{self.nome}'
@@ -171,6 +171,7 @@ class Equipamento(db.Model):
     centro_custo = db.Column(db.String(50), nullable=True)
     ativo = db.Column(db.Boolean, nullable=False, default=True)
 
+    empresa_id = db.Column(db.Integer(), db.ForeignKey("empresa.id"), nullable=False)
     subgrupo_id = db.Column(db.Integer(), db.ForeignKey("subgrupo.id"), nullable=False)
     setor_id = db.Column(db.Integer(), db.ForeignKey("setor.id"), nullable=True)
     local_id = db.Column(db.Integer(), db.ForeignKey("local.id"), nullable=True)
@@ -197,9 +198,10 @@ class Equipamento(db.Model):
     und_potencia_id = db.Column(db.Integer(), db.ForeignKey("tipo_potencia.id"), nullable=True)
     und_tensao_id = db.Column(db.Integer(), db.ForeignKey("tipo_tensao_eletrica.id"), nullable=True)
 
+    empresa = db.relationship("Empresa", back_populates="equipamento")
     subgrupo = db.relationship("Subgrupo", back_populates="equipamento")
-    planomanutencao = db.relationship("PlanoManutencao", back_populates="equipamento")
-    ordemservico = db.relationship("OrdemServico", back_populates="equipamento")
+    planomanutencao = db.relationship("PlanoManutencao", back_populates="equipamento", cascade="all, delete-orphan")
+    ordemservico = db.relationship("OrdemServico", back_populates="equipamento", cascade="all, delete-orphan")
     setor = db.relationship("Setor", back_populates="equipamento")
     local = db.relationship("Local", back_populates="equipamento")
     pavimento = db.relationship("Pavimento", back_populates="equipamento")
@@ -240,6 +242,7 @@ class Equipamento(db.Model):
         """    Função para alterar os atributos do objeto    """
         self.cod = self.gerar_codigo(form, new)
         self.tag = self.gerar_tag(form, new)
+        self.empresa_id = current_user.empresa_id
         self.descricao_curta = form.descricao_curta.data.upper()
         self.descricao_longa = form.descricao_longa.data.upper()
         self.fabricante = form.fabricante.data.upper()
@@ -301,7 +304,6 @@ class Equipamento(db.Model):
 
     def gerar_codigo(self, form, new):
         """Função que gera automático o código do equipamento"""
-
         if new:
             posicao = db.session.query(func.max(Equipamento.id)).first()[0]
             if posicao:
@@ -311,7 +313,7 @@ class Equipamento(db.Model):
         else:
             posicao = self.id
 
-        if form.cod_automatico.data:
+        if form.cod_automatico.data or not form.cod:
             subgrupo = Subgrupo.query.filter_by(id=form.subgrupo.data).one_or_none()
             return (str(subgrupo.grupo.empresa_id).zfill(5) + "." +
                     unidecode(str(subgrupo.grupo.nome)[:3]) +
@@ -325,7 +327,6 @@ class Equipamento(db.Model):
 
     def gerar_tag(self, form, new):
         """Função que gera automático o tag do equipamento"""
-
         if new:
             posicao = db.session.query(func.max(Equipamento.id)).first()[0]
             if posicao:
@@ -335,7 +336,7 @@ class Equipamento(db.Model):
         else:
             posicao = self.id
 
-        if form.tag_automatico.data:
+        if form.tag_automatico.data or not form.tag:
             set = Setor.query.filter_by(id=form.setor.data).one_or_none()
             loc = Local.query.filter_by(id=form.local.data).one_or_none()
             pav = Pavimento.query.filter_by(id=form.pavimento.data).one_or_none()

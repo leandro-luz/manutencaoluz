@@ -354,13 +354,13 @@ locais_lista = [
 
 equipamento_lista = [
     {'cod': 'A.000.001', 'short': 'GERADOR', 'subgrupo': 'GERADOR', 'tag': 'ger.001',
-     'setor': 'DIRETORIA', 'local': 'WC PRIVATIVO', 'pavimento': '4º ANDAR'},
+     'setor': 'DIRETORIA', 'local': 'WC PRIVATIVO', 'pavimento': '4º ANDAR', 'empresa': 'manluz.ltda'},
     {'cod': 'A.000.002', 'short': 'SUBESTAÇÃO 13.8KV', 'subgrupo': 'SUBESTAÇÃO', 'tag': 'se.001',
-     'setor': 'DIRETORIA', 'local': 'SALA REUNIÃO', 'pavimento': '4º ANDAR'},
+     'setor': 'DIRETORIA', 'local': 'SALA REUNIÃO', 'pavimento': '4º ANDAR', 'empresa': 'manluz.ltda'},
     {'cod': 'A.000.003', 'short': 'CHILLER', 'subgrupo': 'REFRIGERAÇÃO', 'tag': 'ch.001',
-     'setor': 'MANUTENÇÃO', 'local': 'LAVADOR PEÇAS', 'pavimento': '1º ANDAR'},
+     'setor': 'MANUTENÇÃO', 'local': 'LAVADOR PEÇAS', 'pavimento': '1º ANDAR', 'empresa': 'manluz.ltda'},
     {'cod': 'A.000.004', 'short': 'CARRO', 'subgrupo': 'FROTA', 'tag': 'ca.001',
-     'setor': 'MANUTENÇÃO', 'local': 'OFICINA MECÂNICA', 'pavimento': 'SUBSOLO 01'}
+     'setor': 'MANUTENÇÃO', 'local': 'OFICINA MECÂNICA', 'pavimento': 'SUBSOLO 01', 'empresa': 'manluz.ltda'}
 ]
 
 tipoData_lista = [
@@ -619,8 +619,6 @@ criar_potencia(potencia_lista)
 criar_tensao(tensao_lista)
 criar_peso(peso_lista)
 
-
-
 # carregamento para os fornecedores
 criar_tipo_ordem(tipo_ordem_lista)
 criar_tipodata(tipoData_lista)
@@ -633,12 +631,11 @@ criar_tipo_binarios(tipo_binario_lista)
 
 criar_tipo_status_ordem(tipo_status_ordem_lista)
 
-
-# criar_equipamento(equipamento_lista)
-# criar_atividades(atividades_lista)
-# criar_planosmanutencao(planosmanutencao_lista)
-# criar_tipo_situacao_ordem(tipo_situacao_ordem_lista)
-# criar_tipo_situacao_ordem_perfil_manutentor(situacao_tipo_ordem_perfil_manutentor_lista)
-# criar_fluxo_ordem(fluxo_ordem_lista)
-# criar_ordem_servico(ordem_servico_lista)
-# criar_tramitacao(tramitacao_lista)
+criar_equipamento(equipamento_lista)
+criar_atividades(atividades_lista)
+criar_planosmanutencao(planosmanutencao_lista)
+criar_tipo_situacao_ordem(tipo_situacao_ordem_lista)
+criar_tipo_situacao_ordem_perfil_manutentor(situacao_tipo_ordem_perfil_manutentor_lista)
+criar_fluxo_ordem(fluxo_ordem_lista)
+criar_ordem_servico(ordem_servico_lista)
+criar_tramitacao(tramitacao_lista)

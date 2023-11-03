@@ -83,6 +83,22 @@ def empresa_ativar(empresa_id):
     return redirect(url_for('empresa.empresa_listar'))
 
 
+@empresa_blueprint.route('/empresa_excluir/<int:empresa_id>', methods=['GET', 'POST'])
+@login_required
+@has_view('Empresa')
+def empresa_excluir(empresa_id):
+    empresa = Empresa.query.filter_by(id=empresa_id).one_or_none()
+
+    if empresa:
+        if empresa.excluir():
+            flash("Empresa excluída", category="success")
+        else:
+            flash("Erro ao excluir a empresa", category="danger")
+    else:
+        flash("Empresa não cadastrada", category="danger")
+    return redirect(url_for('empresa.empresa_listar'))
+
+
 @empresa_blueprint.route('/empresa_editar/<int:empresa_id>', methods=['GET', 'POST'])
 @login_required
 @has_view('Empresa')
@@ -266,9 +282,11 @@ def cadastrar_lote_empresas():
         df[colunas_base[col]] = df_inicial[col]
 
     pd.set_option('display.max_columns', None)
-
+    # Colocar todos os valores em caixa alta
+    df = df.applymap(lambda x: x.upper() if isinstance(x, str) else x)
     # converter os valores Nan para Null
     df = df.replace({np.NAN: None})
+
     # lista dos titulos obrigatórios
     titulos_obrigatorio = [v for k, v in Empresa.titulos_doc.items() if k.count('*')]
     # lista dos equipamentos existentes
@@ -289,57 +307,57 @@ def cadastrar_lote_empresas():
             # Verifica se foi preenchio
             if df.at[linha, col_ob] is None:
                 # salva na lista dos rejeitados devido ao não preenchimento obrigatório
+                rejeitados.append(linha)
                 rejeitados_texto.append(
                     [df.at[linha, 'cnpj'], f"rejeitado pelo nao preenchimento do campo obrigatorio: {col_ob} "])
-                rejeitados.append(df.at[linha, 'cnpj'])
 
         # verifica repetições no BD
         for empresa in existentes:
-            if empresa.cnpj == df.at[linha, 'cnpj'].upper():
-                rejeitados.append(df.at[linha, 'cnpj'])
+            if empresa.cnpj == df.at[linha, 'cnpj']:
+                rejeitados.append(linha)
                 rejeitados_texto.append(
                     [df.at[linha, 'cnpj'], "rejeitado devido CNPJ ja existir no banco de dados"])
 
         # verifica repetições na lista atual
         if df.at[linha, 'cnpj'] in aceitos_cod:
-            rejeitados.append(df.at[linha, 'cnpj'])
+            rejeitados.append(linha)
             rejeitados_texto.append(
                 [df.at[linha, 'cnpj'], "rejeitado devido a estar repetido"])
             continue
 
         # Verifica se não foi rejeitado
-        if df.at[linha, 'cnpj'] not in rejeitados:
+        if linha not in rejeitados:
 
             # verificar existência do contrato
-            contrato = Contrato.query.filter_by(nome=df.at[linha, 'contrato_id'].upper(),
+            contrato = Contrato.query.filter_by(nome=df.at[linha, 'contrato_id'],
                                                 empresa_gestora_id=current_user.empresa_id).one_or_none()
 
             if not contrato:
-                rejeitados.append(df.at[linha, 'cnpj'])
+                rejeitados.append(linha)
                 rejeitados_texto.append(
                     [df.at[linha, 'cnpj'], df.at[linha, 'contrato_nome'],
                      "rejeitado devido ao Contrato nao existir"])
-                continue
-            # altera o valor do contrato
-            df.at[linha, 'contrato_id'] = contrato.id
-            # cria um equipamento e popula ele
-            empresa = Empresa()
+            else:
+                # altera o valor do contrato
+                df.at[linha, 'contrato_id'] = contrato.id
+                # cria um equipamento e popula ele
+                empresa = Empresa()
 
-            for k, v in empresa.titulos_doc.items():
-                # recupere o valor
-                valor = df.at[linha, v]
-                if str(valor).isnumeric() or valor is None:
-                    # Salva o atributo se o valor e numerico ou nulo
-                    setattr(empresa, v, valor)
-                else:
-                    # Salva o atributo quando texto
-                    setattr(empresa, v, valor.upper())
-            # setando as empresas como cliente
-            empresa.tipoempresa_id = tipoempresa.id
-            # insere nas listas dos aceitos
-            aceitos_cod.append(df.at[linha, 'cnpj'])
-            # insere o equipamento na lista
-            aceitos.append(empresa)
+                for k, v in empresa.titulos_doc.items():
+                    # recupere o valor
+                    valor = df.at[linha, v]
+                    if str(valor).isnumeric() or valor is None:
+                        # Salva o atributo se o valor e numerico ou nulo
+                        setattr(empresa, v, valor)
+                    else:
+                        # Salva o atributo quando texto
+                        setattr(empresa, v, valor)
+                # setando as empresas como cliente
+                empresa.tipoempresa_id = tipoempresa.id
+                # insere nas listas dos aceitos
+                aceitos_cod.append(df.at[linha, 'cnpj'])
+                # insere o equipamento na lista
+                aceitos.append(empresa)
 
     # salva a lista de equipamentos no banco de dados
     if len(aceitos) > 0:
@@ -360,13 +378,6 @@ def cadastrar_lote_empresas():
             content_type='text/csv',
             headers={'Content-Disposition': 'attachment; filename=empresas_rejeitadas.csv'}
         )
-
-        # resultado, nome, arquivo = arquivo_padrao(nome_arquivo="Empresas_rejeitadas", valores=rejeitados_texto)
-        #
-        # # se não houver erro envia o arquivo
-        # if resultado:
-        #     return Response(arquivo, mimetype="text/csv",
-        #                     headers={"Content-disposition": f"attachment; filename={nome}"})
 
     return redirect(url_for('empresa.empresa_listar'))
 

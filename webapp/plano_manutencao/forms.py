@@ -11,7 +11,7 @@ from flask_login import current_user
 class PlanoForm(Form):
     nome = StringField('Nome', validators=[InputRequired(), Length(max=50)],
                        render_kw={"placeholder": "Digite o nome do plano de manutenção"})
-    codigo = StringField('Código', validators=[InputRequired(), Length(max=50)],
+    codigo = StringField('Código', validators=[Optional(), Length(max=50)],
                          render_kw={"placeholder": "Digite o código do plano de manutenção"})
     cod_automatico = BooleanField('Gerar Código Automáticamente?')
     data_inicio = DateField('Data de Início', validators=[InputRequired()],

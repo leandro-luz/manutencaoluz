@@ -307,6 +307,11 @@ def plano_ativar(plano_id):
                         # salva a nova ordem de serviço
                         if ordem.salvar():
                             flash("Ordem de Serviço Cadastrado", category="success")
+                            # criar a primeira tramitação
+                            tipo_situacao = TipoSituacaoOrdem.query.filter_by(sigla="AGEX").one_or_none()
+                            return redirect(
+                                url_for("ordem_servico.tramitacao", ordem_id=ordem.id,
+                                        tipo_situacao_id=tipo_situacao.id))
                         else:
                             flash("Ordem de Serviço não Cadastrado", category="danger")
                     # Ativa o plano

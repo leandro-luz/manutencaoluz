@@ -44,7 +44,8 @@
                     <th scope="col">CNPJ</th>
                     <th scope="col">NOME FANTASIA</th>
                     <th scope="col">CONTRATO</th>
-                    <th scope="col">ATIVO</th>
+                    <th scope="col"></th>
+                    <th scope="col"></th>
                     <th scope="col"></th>
                     <th scope="col"></th>
                     <th scope="col"></th>
@@ -57,6 +58,14 @@
                     <th scope="row">{{ empresa.cnpj }}</th>
                     <td>{{ empresa.nome_fantasia }}</td>
                     <td>{{ empresa.contrato.nome }}</td>
+                    <td>
+                        <a href="{{ url_for('empresa.empresa_excluir', empresa_id=empresa.id) }}"
+                           onclick="return deleteItem();">
+                            <span data-tooltip="Excluir">
+                               <i class="bi-trash fs-6"></i>
+                            </span>
+                        </a>
+                    </td>
                     {% if empresa.ativo == True %}
                     <td>
                         <a href="{{ url_for('empresa.empresa_ativar', empresa_id=empresa.id) }}">
@@ -103,7 +112,7 @@
 </div>
 
 </body>
-<script src="/static/js/exportar_consulta.js" type="text/javascript"></script>
-<script src="/static/js/filtro_coluna.js" type="text/javascript"></script>
 
+<script src="/static/js/filtro_coluna.js" type="text/javascript"></script>
+<script src="/static/js/confirmacao_exclusao.js" type="text/javascript"></script>
 {% endblock %}

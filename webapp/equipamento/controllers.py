@@ -992,9 +992,9 @@ def pavimento_excluir(pavimento_id):
         if pavimento.excluir():
             flash("Pavimento excluído", category="success")
         else:
-            flash("Erro ao setor o setor", category="danger")
+            flash("Erro ao excluir o setor", category="danger")
     else:
-        flash("Pavimento não cadastrado/atualizado", category="danger")
+        flash("Pavimento não cadastrado", category="danger")
     return redirect(url_for("equipamento.localizacao_listar"))
 
 

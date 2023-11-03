@@ -19,7 +19,7 @@ class Contrato(db.Model):
     empresa_gestora_id = db.Column(db.Integer(), nullable=True)
 
     empresa = db.relationship("Empresa", back_populates="contrato")
-    telacontrato = db.relationship("Telacontrato", back_populates="contrato")
+    telacontrato = db.relationship("Telacontrato", back_populates="contrato", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
         return f'<Contrato: {self.id}-{self.nome}>'

@@ -4,6 +4,7 @@ import re
 from flask import flash
 from itertools import cycle
 from webapp import db
+from webapp.utils.objetos import atributo_existe, atribuir_none_id
 
 logging.basicConfig(format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
 logging.getLogger().setLevel(logging.DEBUG)
@@ -124,12 +125,13 @@ class Empresa(db.Model):
 
     contrato = db.relationship("Contrato", back_populates="empresa")
     tipoempresa = db.relationship("Tipoempresa", back_populates="empresa")
-    usuario = db.relationship("Usuario", back_populates="empresa")
-    perfilacesso = db.relationship("PerfilAcesso", back_populates="empresa")
-    grupo = db.relationship("Grupo", back_populates="empresa")
-    pavimento = db.relationship("Pavimento", back_populates="empresa")
-    setor = db.relationship("Setor", back_populates="empresa")
-    local = db.relationship("Local", back_populates="empresa")
+    usuario = db.relationship("Usuario", back_populates="empresa", cascade="all, delete-orphan")
+    perfilacesso = db.relationship("PerfilAcesso", back_populates="empresa", cascade="all, delete-orphan")
+    grupo = db.relationship("Grupo", back_populates="empresa", cascade="all, delete-orphan")
+    pavimento = db.relationship("Pavimento", back_populates="empresa", cascade="all, delete-orphan")
+    setor = db.relationship("Setor", back_populates="empresa", cascade="all, delete-orphan")
+    local = db.relationship("Local", back_populates="empresa", cascade="all, delete-orphan")
+    equipamento = db.relationship("Equipamento", back_populates="empresa", cascade="all, delete-orphan")
 
     supplier = db.relationship("Supplier", back_populates="empresa")
 
@@ -139,7 +141,7 @@ class Empresa(db.Model):
                f'{self.cnae_principal}; {self.cnae_principal_texto}; {self.inscricao_estadual}; ' \
                f'{self.inscricao_municipal}; {self.cep}; {self.numero}; {self.complemento}; {self.logradouro}; ' \
                f'{self.bairro}; {self.municipio}; {self.uf}; {self.latitude}; {self.telefone}; {self.email}; ' \
-               f'{self.ativo}; {self.data_cadastro}; {self.contrato.nome}'
+               f'{self.ativo}; {self.data_cadastro}; {atributo_existe(self, "contrato", "nome")}'
 
     def alterar_atributos_externo(self, form, empresa_id, tipoempresa_id, new=False) -> None:
         """    Alterações dos atributos da empresa     """
@@ -191,6 +193,17 @@ class Empresa(db.Model):
             return True
         except Exception as e:
             log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
+            db.session.rollback()
+            return False
+
+    def excluir(self) -> bool:
+        """    Função para retirar do banco de dados o objeto"""
+        try:
+            db.session.delete(self)
+            db.session.commit()
+            return True
+        except Exception as e:
+            log.error(f'Erro Deletar objeto no banco de dados: {self.__repr__()}:{e}')
             db.session.rollback()
             return False
 
