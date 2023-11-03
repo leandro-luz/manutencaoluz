@@ -6,7 +6,7 @@ from funcoes_sistema import *
 from webapp import create_app
 from webapp import db
 
-env = os.environ.get('WEBAPP_ENV', 'dev')
+env = os.environ.get('WEBAPP_ENV', 'prod')
 app = create_app('config.%sConfig' % env.capitalize())
 app.app_context().push()
 

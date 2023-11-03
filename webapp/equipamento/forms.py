@@ -231,6 +231,9 @@ class LocalizacaoForm(Form):
                         render_kw={"placeholder": "Digite a sigla"})
     tipo = SelectField('Tipo', choices=[], coerce=int, validate_choice=False, )
 
+    file = FileField('Escolha um arquivo para o cadastro de localização em Lote (4MB):', validators=[Optional()],
+                     render_kw={"placeholder": "Selecione o arquivo"})
+
     submit = SubmitField("Salvar")
 
     def validate(self, **kwargs):
@@ -300,6 +303,10 @@ class AgrupamentoForm(Form):
     nome = StringField('Nome', validators=[InputRequired(), Length(max=50)],
                        render_kw={"placeholder": "Digite o nome"})
     tipo = SelectField('Tipo', choices=[], coerce=int, validate_choice=False, )
+
+    file = FileField('Escolha um arquivo para o cadastro de agrupamento em Lote (4MB):', validators=[Optional()],
+                     render_kw={"placeholder": "Selecione o arquivo"})
+
     submit = SubmitField("Salvar")
 
     def validate(self, **kwargs):

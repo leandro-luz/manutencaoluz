@@ -1,27 +1,40 @@
-
-<!-- Add New Modal -->
-<!-- Modal -->
-<div aria-hidden="true" aria-labelledby="modalLabel" class="modal fade"
-     id="modal_localizacao" tabindex="-1">
-    <div class="modal-dialog modal-sm">
+<div aria-hidden="true" aria-labelledby="modalLabel" class="modal fade" id="modal_localizacao" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="modalLabel">Cadastro de Localização</h5>
-                <button aria-label="Close" class="btn-close"
-                        data-bs-dismiss="modal" type="button">
-                </button>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
             </div>
             <div class="modal-body">
                 <form action="{{ url_for('equipamento.localizacao_editar') }}" method="POST">
-                    {{form.csrf_token}}
-
-                    {{form.tipo.label}} {{form.tipo}}<br>
-                    {{form.nome.label}} {{form.nome(size=20)}}<br>
-                    {{form.sigla.label}} {{form.sigla(size=20)}}<br><br>
-
-                    <input type="submit" value="Cadastrar"/>
-
+                    {{ form.csrf_token }}
+                    <div class="mb-3">
+                        <label for="{{ form.tipo.id }}">Tipo:</label>
+                        {{ form.tipo }}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.nome.id }}">Nome:</label>
+                        {{ form.nome(size=20) }}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.sigla.id }}">Sigla:</label>
+                        {{ form.sigla(size=20) }}
+                    </div>
+                    <button class="btn btn-primary" type="submit">Cadastrar</button>
                 </form>
+
+                <hr>
+
+                <form action="{{ url_for('equipamento.cadastrar_lote_localizacao') }}" enctype="multipart/form-data"
+                      method="POST">
+                    {{ form.file.label }}
+                    {{ form.file }}
+                    <button class="btn btn-primary" type="submit">Cadastrar Lote</button>
+                </form>
+
+                <p class="mt-3">
+                    <a href="{{ url_for('equipamento.gerar_padrao_localizacao') }}">Gerar Arquivo Base</a>
+                </p>
             </div>
         </div>
     </div>

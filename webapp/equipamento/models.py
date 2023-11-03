@@ -10,11 +10,23 @@ logging.getLogger().setLevel(logging.DEBUG)
 log = logging.getLogger(__name__)
 
 
+def verificar_existencia_localizacao_by_nome(model, valor):
+    return model.query.filter(model.nome == valor,
+                              model.empresa_id == current_user.empresa_id
+                              ).one_or_none()
+
+
+def verificar_existencia_localizacao_by_sigla(model, valor):
+    return model.query.filter(model.sigla == valor,
+                              model.empresa_id == current_user.empresa_id
+                              ).one_or_none()
+
+
 class Grupo(db.Model):
     """    Classe de grupo de ativos    """
 
     # titulos para cadastro
-    titulos_doc = {'Nome*': 'nome'}
+    titulos_doc = {'Tipo*': 'tipo', 'Grupo_nome*': 'nome'}
 
     titulos_csv = {'Grupo_nome'}
 
@@ -56,24 +68,13 @@ class Grupo(db.Model):
             db.session.rollback()
             return False
 
-    @staticmethod
-    def salvar_lote(lote):
-        """Função para salvar em lote"""
-        try:
-            db.session.add_all(lote)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro salvar ao tentar salvar o lote:{e}')
-            db.session.rollback()
-        return False
-
 
 class Subgrupo(db.Model):
     """    Classe de sistemas nos ativos   """
 
     # titulos para cadastro
-    titulos_doc = {'Nome*': 'nome', 'Grupo*': 'grupo'}
+    titulos_doc = {'Tipo*': 'tipo', 'Grupo_nome*': 'grupo', 'Subgrupo_nome*': 'nome'}
+    titulos_geral_doc = {'Tipo*': 'tipo', 'Grupo_nome*': 'grupo', 'Subgrupo_nome*': 'nome'}
 
     titulos_csv = {'Grupo_nome; Subgrupo_nome'}
 
@@ -114,18 +115,6 @@ class Subgrupo(db.Model):
             log.error(f'Erro Deletar objeto no banco de dados: {self.__repr__()}:{e}')
             db.session.rollback()
             return False
-
-    @staticmethod
-    def salvar_lote(lote):
-        """Função para salvar em lote"""
-        try:
-            db.session.add_all(lote)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro salvar ao tentar salvar o lote:{e}')
-            db.session.rollback()
-        return False
 
 
 class Equipamento(db.Model):
@@ -358,18 +347,6 @@ class Equipamento(db.Model):
         else:
             return form.tag.data
 
-    @staticmethod
-    def salvar_lote(lote):
-        """Função para salvar o lote"""
-        try:
-            db.session.add_all(lote)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro salvar ao tentar salvar o lote:{e}')
-            db.session.rollback()
-        return False
-
 
 class Pavimento(db.Model):
     """    Classe de grupo de ativos    """
@@ -427,7 +404,7 @@ class Setor(db.Model):
     """    Classe de grupo de ativos    """
 
     # titulos para cadastro
-    titulos_doc = {'Nome*': 'nome', 'Sigla*': 'sigla'}
+    titulos_doc = {'Tipo*': 'tipo', 'Nome*': 'nome', 'Sigla*': 'sigla'}
 
     titulos_csv = {'Nome; Sigla'}
 

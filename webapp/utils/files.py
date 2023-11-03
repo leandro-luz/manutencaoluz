@@ -53,10 +53,6 @@ def lista_para_csv(lista, titulos):
     # Retorna o objeto CSV como uma string
     return output.getvalue()
 
-
-
-
-
 #
 # from sqlalchemy.orm import class_mapper
 # import sqlalchemy

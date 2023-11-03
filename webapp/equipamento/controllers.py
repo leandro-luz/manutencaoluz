@@ -2,14 +2,14 @@ import numpy as np
 import pandas as pd
 import io
 import zipfile
-from flask import render_template, Blueprint, redirect, url_for, flash, Response, jsonify, request
+from flask import render_template, Blueprint, redirect, url_for, flash, Response, jsonify, request, make_response
 from flask_login import current_user, login_required
 from webapp.empresa.models import Empresa
-from .models import Equipamento, Grupo, Subgrupo, Pavimento, Setor, Local, Area, Volume, Vazao, Comprimento, Peso, \
-    Potencia, TensaoEletrica
-from .forms import EquipamentoForm, GrupoForm, SubgrupoForm, LocalizacaoForm, AgrupamentoForm, SetorForm, LocalForm, \
-    PavimentoForm
+from webapp.equipamento.models import Equipamento, Grupo, Subgrupo, Pavimento, Setor, Local, Area, Volume, Vazao, \
+    Comprimento, Peso, Potencia, TensaoEletrica
+from webapp.equipamento.forms import EquipamentoForm, GrupoForm, SubgrupoForm, LocalizacaoForm, AgrupamentoForm
 from webapp.usuario import has_view
+from webapp.utils.objetos import salvar_lote
 from webapp.utils.files import lista_para_csv
 from webapp.utils.erros import flash_errors
 
@@ -20,6 +20,8 @@ equipamento_blueprint = Blueprint(
     url_prefix="/sistema"
 )
 
+
+# EQUIPAMENTO ----------------------------------------------------------------------------------------
 
 @equipamento_blueprint.route('/equipamento_listar', methods=['GET', 'POST'])
 @login_required
@@ -307,7 +309,7 @@ def cadastrar_lote_equipamentos():
 
     # salva a lista de equipamentos no banco de dados
     if len(aceitos) > 0:
-        Equipamento.salvar_lote(aceitos)
+        salvar_lote(aceitos)
 
     flash(f"Total de equipamentos cadastrados: {len(aceitos)}, rejeitados:{len(rejeitados_texto)}", "success")
 
@@ -329,6 +331,8 @@ def cadastrar_lote_equipamentos():
 
     return redirect(url_for("equipamento.equipamento_listar"))
 
+
+# AGRUPAMENTO ----------------------------------------------------------------------------------------
 
 @equipamento_blueprint.route('/gerar_csv_agrupamento/', methods=['GET', 'POST'])
 @login_required
@@ -453,27 +457,6 @@ def agrupamento_editar(grupo_id):
     return redirect(url_for("equipamento.agrupamento_listar", grupo_id=grupo_id, subgrupo_id=0))
 
 
-@equipamento_blueprint.route('/grupo_excluir/<int:grupo_id>/<int:subgrupo_id>', methods=['GET', 'POST'])
-@login_required
-@has_view('Equipamento')
-def grupo_excluir(grupo_id, subgrupo_id):
-    # verificar se o grupo existe
-    grupo = Grupo.query.filter_by(id=grupo_id, empresa_id=current_user.empresa_id).one_or_none()
-
-    if grupo:
-        # realizar a contagem de subgrupos vinculados
-        # se for >0 não permite a exclusão
-        if Subgrupo.query.filter_by(grupo_id=grupo_id).count() == 0:
-            if grupo.excluir():
-                flash("Grupo excluído com sucesso", category="success")
-            else:
-                flash("Erro ao excluir o grupo", category="danger")
-        else:
-            flash("Não permitido excluir, pois existe subgrupo vinculado", category="danger")
-
-    return redirect(url_for("equipamento.agrupamento_listar", grupo_id=grupo_id, subgrupo_id=subgrupo_id))
-
-
 @equipamento_blueprint.route('/agrupamento_editar_elementos/', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
@@ -549,6 +532,27 @@ def agrupamento_editar_elementos():
     return redirect(url_for("equipamento.agrupamento_listar", grupo_id=grupo_id, subgrupo_id=subgrupo_id))
 
 
+@equipamento_blueprint.route('/grupo_excluir/<int:grupo_id>/<int:subgrupo_id>', methods=['GET', 'POST'])
+@login_required
+@has_view('Equipamento')
+def grupo_excluir(grupo_id, subgrupo_id):
+    # verificar se o grupo existe
+    grupo = Grupo.query.filter_by(id=grupo_id, empresa_id=current_user.empresa_id).one_or_none()
+
+    if grupo:
+        # realizar a contagem de subgrupos vinculados
+        # se for >0 não permite a exclusão
+        if Subgrupo.query.filter_by(grupo_id=grupo_id).count() == 0:
+            if grupo.excluir():
+                flash("Grupo excluído com sucesso", category="success")
+            else:
+                flash("Erro ao excluir o grupo", category="danger")
+        else:
+            flash("Não permitido excluir, pois existe subgrupo vinculado", category="danger")
+
+    return redirect(url_for("equipamento.agrupamento_listar", grupo_id=grupo_id, subgrupo_id=subgrupo_id))
+
+
 @equipamento_blueprint.route('/subgrupo_excluir/<int:grupo_id>/<int:subgrupo_id>', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
@@ -573,223 +577,148 @@ def subgrupo_excluir(grupo_id, subgrupo_id):
     return redirect(url_for("equipamento.agrupamento_listar", grupo_id=grupo_id, subgrupo_id=subgrupo_id))
 
 
-@equipamento_blueprint.route('/gerar_padrao_grupos/', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/gerar_padrao_agrupamento/', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def gerar_padrao_grupos():
-    csv_data = lista_para_csv([[x] for x in Grupo.titulos_doc], None)
-    nome = "tabela_base_grupo.csv"
-
-    return Response(
-        csv_data,
-        content_type='text/csv',
-        headers={'Content-Disposition': f"attachment; filename={nome}"}
-    )
-
-
-@equipamento_blueprint.route('/cadastrar_lote_grupos/<int:subgrupo_id>/<int:equipamento_id>>', methods=['GET', 'POST'])
-@login_required
-@has_view('Equipamento')
-def cadastrar_lote_grupos(subgrupo_id, equipamento_id):
-    form = GrupoForm()
-
-    filestream = form.file.data
-    filestream.seek(0)
-    df = pd.DataFrame(pd.read_csv(filestream, sep=";", names=Grupo.titulos_doc, encoding='latin-1'))
-
-    # converter os valores Nan para Null
-    df = df.replace({np.NAN: None})
-
-    # lista dos titulos obrigatórios
-    titulos_obrigatorio = [x for x in Grupo.titulos_doc if x.count('*')]
-    # lista dos equipamentos existentes
-    existentes = [x.nome for x in Grupo.query.filter(
-        current_user.empresa_id == Empresa.id,
-        Empresa.id == Grupo.empresa_id
-    ).all()]
-
-    rejeitados_texto = [['NOME', 'MOTIVO']]
-    rejeitados = []
-    aceitos_cod = []
-    aceitos = []
-    # percorre por todas as linhas
-    for linha in range(df.shape[0]):
-        # verifica se os campo obrigatórios foram preenchidos
-        for col_ob in titulos_obrigatorio:
-            # caso não seja
-            if not df.at[linha, col_ob]:
-                # salva na lista dos rejeitados devido ao não preenchimento obrigatório
-                rejeitados.append(df.at[linha, 'Código*'])
-                rejeitados_texto.append(
-                    [df.at[linha, 'Nome*'], "rejeitado pelo não preenchimento de algum campo obrigatório"])
-
-        # Verifica se não existe repetições dos já salvos no BD
-        if df.at[linha, 'Nome*'].upper() in existentes:
-            # salva na lista dos rejeitados devido a repetição
-            rejeitados.append(df.at[linha, 'Código*'])
-            rejeitados_texto.append([df.at[linha, 'Nome*'], "rejeitado por já existir no banco de dados"])
-
-        # verifica se não existe na lista atual
-        if df.at[linha, 'Nome*'] in aceitos_cod:
-            rejeitados.append(df.at[linha, 'Código*'])
-            rejeitados_texto.append([df.at[linha, 'Código*'], "rejeitado devido a estar repetido"])
-
-        # Verifica se não foi rejeitado
-        if df.at[linha, 'Nome*'] not in rejeitados:
-            # cria um equipamento e popula ele
-            grupo = Grupo()
-            grupo.nome = df.at[linha, 'Nome*'].upper()
-            grupo.empresa_id = current_user.empresa_id
-            # insere nas listas dos aceitos
-            aceitos_cod.append(df.at[linha, 'Nome*'])
-            # insere o equipamento na lista
-            aceitos.append(grupo)
-
-    # salva a lista de equipamentos no banco de dados
-    if len(aceitos) > 0:
-        Grupo.salvar_lote(aceitos)
-
-    flash(f"Total de grupos cadastrados: {len(aceitos)}, rejeitados:{len(rejeitados_texto)}", "success")
-
-    # se a lista de rejeitados existir
-    if len(rejeitados_texto) > 0:
-        # publica ao usuário a lista dos rejeitados
-        csv_data = lista_para_csv(rejeitados_texto, None)
-
-        return Response(
-            csv_data,
-            content_type='text/csv',
-            headers={'Content-Disposition': 'attachment; filename=grupos_rejeitados.csv'})
-
-        # result, path = arquivo_padrao(nome_arquivo="Grupos_rejeitados", valores=rejeitados_texto)
-        # if result:
-        #     flash(f'Foi gerado o arquivo de grupos rejeitados no caminho: {path}', category="warning")
-        # else:
-        #     flash("Não foi gerado o arquivo de grupos rejeitados", category="danger")
-
-    return redirect(url_for('equipamento.grupo_listar', subgrupo_id=subgrupo_id, equipamento_id=equipamento_id))
-
-
-@equipamento_blueprint.route('/subgrupo_editar/<int:grupo_id>/<int:subgrupo_id>', methods=['GET', 'POST'])
-@login_required
-@has_view('Equipamento')
-def subgrupo_editar(grupo_id, subgrupo_id):
-    if subgrupo_id > 0:
-        # localiza a empresa do grupo
-        subgrupo = Subgrupo.query.filter(
-            current_user.empresa_id == Empresa.id,
-            Empresa.id == Grupo.empresa_id,
-            Grupo.id == Subgrupo.grupo_id,
-            Subgrupo.id == subgrupo_id
-        ).one_or_none()
-
-        # se grupo existir
-        if subgrupo:
-            form = SubgrupoForm(obj=subgrupo)
-            # Validação
-            if form.validate_on_submit():
-                subgrupo.alterar_atributos(form, grupo_id)
-                if subgrupo.salvar():
-                    flash("Subgrupo atualizado", category="success")
-                else:
-                    flash("Erro ao atualizar subgrupo", category="danger")
-            else:
-                flash_errors(form)
-        else:
-            flash("Subgrupo não localizado", category="danger")
-    else:
-        flash("Subgrupo não informado", category="danger")
-
-    return redirect(url_for("equipamento.agrupamento_listar", grupo_id=grupo_id, subgrupo_id=subgrupo_id))
-
-
-@equipamento_blueprint.route('/gerar_padrao_subgrupos/', methods=['GET', 'POST'])
-@login_required
-@has_view('Equipamento')
-def gerar_padrao_subgrupos():
+def gerar_padrao_agrupamento():
     csv_data = lista_para_csv([[x] for x in Subgrupo.titulos_doc], None)
-    nome = "tabela_base_subgrupo.csv"
+    nome = "tabela_base_agrupamento.csv"
 
     return Response(
         csv_data,
         content_type='text/csv',
-        headers={'Content-Disposition': f"attachment; filename={nome}"}
-    )
+        headers={'Content-Disposition': f"attachment; filename={nome}"})
 
 
-@equipamento_blueprint.route('/cadastrar_lote_subgrupos>/<int:equipamento_id>', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/cadastrar_lote_agrupamento/', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def cadastrar_lote_subgrupos(equipamento_id):
-    form = SubgrupoForm()
+def cadastrar_lote_agrupamento():
+    form = AgrupamentoForm()
 
     filestream = form.file.data
     filestream.seek(0)
-    df = pd.DataFrame(pd.read_csv(filestream, sep=";", names=Subgrupo.titulos_doc, encoding='latin-1'))
-
+    df = pd.DataFrame(pd.read_csv(filestream, sep=";", names=Subgrupo.titulos_geral_doc, encoding='latin-1'))
     # converter os valores Nan para Null
     df = df.replace({np.NAN: None})
+    # Colocar todos os valores em caixa alta
+    df = df.applymap(lambda x: x.upper() if isinstance(x, str) else x)
 
     # lista dos titulos obrigatórios
-    titulos_obrigatorio = [x for x in Subgrupo.titulos_doc if x.count('*')]
-    # lista dos equipamentos existentes
-    existentes = [x.nome for x in Subgrupo.query.filter(
-        current_user.empresa_id == Empresa.id,
-        Empresa.id == Grupo.empresa_id,
-        Grupo.id == Subgrupo.grupo_id
-    ).all()]
+    titulos_obrigatorio_grupo = [x for x in Grupo.titulos_doc if x.count('*')]
+    titulos_obrigatorio_subgrupo = [x for x in Subgrupo.titulos_doc if x.count('*')]
+
+    grupo_existente = [{'Grupo_nome': x.nome, 'Subgrupo_nome': ''}
+                       for x in Grupo.query.filter(current_user.empresa_id == Grupo.empresa_id).all()]
+
+    subgrupo_existente = [{'Grupo_nome': x.grupo.nome, 'Subgrupo_nome': x.nome}
+                          for x in Subgrupo.query.filter(current_user.empresa_id == Grupo.empresa_id,
+                                                         Grupo.id == Subgrupo.grupo_id).all()]
+
+    existentes = []
+    existentes.extend(grupo_existente)
+    existentes.extend(subgrupo_existente)
 
     rejeitados_texto = [['NOME', 'MOTIVO']]
     rejeitados = []
     aceitos_cod = []
     aceitos = []
+
     # percorre por todas as linhas
     for linha in range(df.shape[0]):
         # verifica se os campo obrigatórios foram preenchidos
-        for col_ob in titulos_obrigatorio:
-            # caso não seja
-            if not df.at[linha, col_ob]:
-                # salva na lista dos rejeitados devido ao não preenchimento obrigatório
-                rejeitados.append(df.at[linha, 'Código*'])
-                rejeitados_texto.append(
-                    [df.at[linha, 'Nome*'], "rejeitado pelo não preenchimento de algum campo obrigatório"])
-        # Verifica se não existe repetições dos já salvos no BD
-        if df.at[linha, 'Nome*'].upper() in existentes:
-            # salva na lista dos rejeitados devido a repetição
-            rejeitados.append(df.at[linha, 'Código*'])
-            rejeitados_texto.append([df.at[linha, 'Nome*'], "rejeitado por já existir no banco de dados"])
+        if df.at[linha, 'Tipo*'] == "GRUPO":
+            for col_ob in titulos_obrigatorio_grupo:
+                # caso não seja
+                if not df.at[linha, col_ob]:
+                    # salva na lista dos rejeitados devido ao não preenchimento obrigatório
+                    rejeitados.append(linha)
+                    rejeitados_texto.append(
+                        [df.at[linha, 'Grupo_nome*'],
+                         "rejeitado o grupo pelo não preenchimento de algum campo obrigatório"])
 
-        # Verifica se o grupo existe para a empresa
-        grupo = Grupo.query.filter(
-            current_user.empresa_id == Empresa.id,
-            Empresa.id == Grupo.empresa_id,
-            Grupo.nome == df.at[linha, 'Grupo*'].upper()).one_or_none()
-        if not grupo:
-            rejeitados.append(df.at[linha, 'Código*'])
-            rejeitados_texto.append([df.at[linha, 'Nome*'], "rejeitado devido ao grupo não existir"])
-
-        # verifica se não existe na lista atual
-        if df.at[linha, 'Nome*'] in aceitos_cod:
-            rejeitados.append(df.at[linha, 'Código*'])
-            rejeitados_texto.append([df.at[linha, 'Nome*'], "rejeitado devido a estar repetido"])
+        elif df.at[linha, 'Tipo*'] == "SUBGRUPO":
+            for col_ob in titulos_obrigatorio_subgrupo:
+                # caso não seja
+                if not df.at[linha, col_ob]:
+                    # salva na lista dos rejeitados devido ao não preenchimento obrigatório
+                    rejeitados.append(linha)
+                    rejeitados_texto.append(
+                        [df.at[linha, 'Subgrupo_nome*'],
+                         "rejeitado o subgrupo pelo não preenchimento de algum campo obrigatório"])
+        else:
+            rejeitados.append(linha)
+            rejeitados_texto.append(
+                [df.at[linha, 'Tipo*'],
+                 "rejeitado pelo não preenchimento do tipo correto"])
 
         # Verifica se não foi rejeitado
-        if df.at[linha, 'Nome*'] not in rejeitados:
-            # cria um subgrupo e popula ele
-            subgrupo = Subgrupo()
-            subgrupo.nome = df.at[linha, 'Nome*'].upper()
-            subgrupo.grupo_id = grupo.id
+        if linha not in rejeitados:
+            # Verifica se não existe repetições dos já salvos no BD
+            grupo_nome = df.at[linha, 'Grupo_nome*']
+            subgrupo_nome = df.at[linha, 'Subgrupo_nome*']
 
-            # insere nas listas dos aceitos
-            aceitos_cod.append(df.at[linha, 'Nome*'])
-            # insere o equipamento na lista
-            aceitos.append(subgrupo)
+            if df.at[linha, 'Tipo*'] == "GRUPO":
+                if any(grupo_nome == existente['Grupo_nome'] for existente in existentes):
+                    rejeitados.append(linha)
+                    rejeitados_texto.append(
+                        [df.at[linha, 'Grupo_nome*'], "rejeitado devido ao nome do grupo já existir no banco de dados"])
+
+                if any(grupo_nome == aceito_cod['Grupo_nome'] for aceito_cod in aceitos_cod):
+                    rejeitados.append(linha)
+                    rejeitados_texto.append(
+                        [df.at[linha, 'Grupo_nome*'], "rejeitado devido ao nome do grupo já existir na lista"])
+
+            if df.at[linha, 'Tipo*'] == "SUBGRUPO":
+                if any(grupo_nome == existente['Grupo_nome'] and subgrupo_nome == existente['Subgrupo_nome'] for
+                       existente in existentes):
+                    rejeitados.append(linha)
+                    rejeitados_texto.append(
+                        [df.at[linha, 'Grupo_nome*'],
+                         "rejeitado devido ao nome subgrupo já existir para um grupo no banco de dados"])
+
+                if any(grupo_nome == aceito_cod['Grupo_nome'] and subgrupo_nome == aceito_cod['Subgrupo_nome'] for
+                       aceito_cod in aceitos_cod):
+                    rejeitados.append(linha)
+                    rejeitados_texto.append(
+                        [df.at[linha, 'Grupo_nome*'], "rejeitado devido ao subgrupo já existir na lista"])
+
+                if not Grupo.query.filter(
+                        current_user.empresa_id == Empresa.id,
+                        Empresa.id == Grupo.empresa_id,
+                        Grupo.nome == df.at[linha, 'Grupo_nome*']).one_or_none():
+                    rejeitados.append(linha)
+                    rejeitados_texto.append([df.at[linha, 'Grupo_nome*'], "rejeitado devido ao grupo não existir"])
+
+        # Verifica se não foi rejeitado
+        if linha not in rejeitados:
+            if df.at[linha, 'Tipo*'] == "GRUPO":
+                grupo = Grupo()
+                grupo.nome = df.at[linha, 'Grupo_nome*'].upper()
+                grupo.empresa_id = current_user.empresa_id
+
+                aceitos.append(grupo)
+                # insere nas listas dos aceitos
+                aceitos_cod.append({'Grupo_nome': df.at[linha, 'Grupo_nome*'], 'Subgrupo_nome': ''})
+
+            if df.at[linha, 'Tipo*'] == "SUBGRUPO":
+                subgrupo = Subgrupo()
+                subgrupo.grupo_id = Grupo.query.filter(
+                    current_user.empresa_id == Empresa.id,
+                    Empresa.id == Grupo.empresa_id,
+                    Grupo.nome == df.at[linha, 'Grupo_nome*']).one_or_none().id
+                subgrupo.nome = df.at[linha, 'Subgrupo_nome*']
+
+                aceitos.append(subgrupo)
+                # insere nas listas dos aceitos
+                aceitos_cod.append({'Grupo_nome': df.at[linha, 'Grupo_nome*'],
+                                    'Subgrupo_nome': df.at[linha, 'Subgrupo_nome*']})
 
     # salva a lista de equipamentos no banco de dados
     if len(aceitos) > 0:
-        Subgrupo.salvar_lote(aceitos)
+        salvar_lote(aceitos)
 
-    flash(f"Total de subgrupos cadastrados: {len(aceitos)}, rejeitados:{len(rejeitados_texto)}", "success")
+    flash(f"Total de agrupamentos cadastrados: {len(aceitos)}, rejeitados:{len(rejeitados_texto)}", "success")
 
     # se a lista de rejeitados existir
     if len(rejeitados_texto) > 0:
@@ -799,16 +728,32 @@ def cadastrar_lote_subgrupos(equipamento_id):
         return Response(
             csv_data,
             content_type='text/csv',
-            headers={'Content-Disposition': 'attachment; filename=subgrupos_rejeitados.csv'})
+            headers={'Content-Disposition': 'attachment; filename=agrupamento_rejeitados.csv'})
 
-        # result, path = arquivo_padrao(nome_arquivo="Subgrupos_rejeitados", valores=rejeitados_texto)
-        # if result:
-        #     flash(f'Foi gerado o arquivo de subgrupos rejeitados no caminho: {path}', category="warning")
-        # else:
-        #     flash("Não foi gerado o arquivo de subgrupos rejeitados", category="danger")
+    return redirect(url_for("equipamento.agrupamento_listar", grupo_id=0, subgrupo_id=0))
 
-    return redirect(url_for('equipamento.subgrupo_listar', equipamento_id=equipamento_id))
 
+@equipamento_blueprint.route('/subgrupo_lista/<int:grupo_id>', methods=['GET', 'POST'])
+@login_required
+def subgrupo_lista(grupo_id: int):
+    """    Função que retorna lista de locais"""
+    subgrupos = Subgrupo.query.filter(
+        current_user.empresa_id == Grupo.empresa_id,
+        Grupo.id == Subgrupo.grupo_id,
+        Grupo.id == grupo_id).all()
+
+    # com base no identificador
+    subgrupoarray = []
+    subgrupovazio = {'id': 0, 'nome': ''}
+    subgrupoarray.append(subgrupovazio)
+
+    for subgrupo in subgrupos:
+        subgrupoobj = {'id': subgrupo.id, 'nome': subgrupo.nome}
+        subgrupoarray.append(subgrupoobj)
+    return jsonify({'subgrupo_lista': subgrupoarray})
+
+
+# LOCALIZAÇÃO ----------------------------------------------------------------------------------------
 
 @equipamento_blueprint.route('/localizacao_listar/', methods=['GET', 'POST'])
 @login_required
@@ -819,12 +764,9 @@ def localizacao_listar():
     pavimentos = Pavimento.query.filter_by(empresa_id=current_user.empresa_id).order_by(Pavimento.nome)
 
     form = LocalizacaoForm()
-    form_setor = SetorForm()
-    form_local = LocalForm()
-    form_pavimento = PavimentoForm()
     form.tipo.choices = ((0, ''), (1, 'Setor'), (2, 'Local'), (3, 'Pavimento'))
     return render_template("localizacao_listar.html", setores=setores, locais=locais, pavimentos=pavimentos,
-                           form=form, form_setor=form_setor, form_local=form_local, form_pavimento=form_pavimento)
+                           form=form)
 
 
 @equipamento_blueprint.route('/localizacao_editar/', methods=['GET', 'POST'])
@@ -834,27 +776,21 @@ def localizacao_editar():
     form = LocalizacaoForm()
 
     if form.validate_on_submit():
-        if form.tipo.data == 1:
-            nome = 'setor'
-            setor = Setor()
-            setor.alterar_atributos(form)
-            setor.salvar()
-        elif form.tipo.data == 2:
-            nome = 'local'
-            local = Local()
-            local.alterar_atributos(form)
-            local.salvar()
-        elif form.tipo.data == 3:
-            nome = 'pavimento'
-            pavimento = Pavimento()
-            pavimento.alterar_atributos(form)
-            pavimento.salvar()
+        tipo = form.tipo.data
+        models = {
+            1: ('setor', Setor),
+            2: ('local', Local),
+            3: ('pavimento', Pavimento)
+        }
+
+        if tipo in models:
+            nome, model_class = models[tipo]
+            model = model_class()
+            model.alterar_atributos(form)
+            model.salvar()
+            flash(f"Inserido o {nome} com sucesso", category="success")
         else:
             flash("Erro ao inserir pavimento", category="danger")
-            return redirect(url_for('equipamento.localizacao_listar'))
-        flash(f"Inserido o {nome} com sucesso", category="success")
-    else:
-        flash_errors(form)
 
     return redirect(url_for('equipamento.localizacao_listar'))
 
@@ -895,6 +831,125 @@ def gerar_csv_localizacao():
     )
 
 
+@equipamento_blueprint.route('/cadastrar_lote_localizacao/', methods=['GET', 'POST'])
+@login_required
+@has_view('Equipamento')
+def cadastrar_lote_localizacao():
+    form = LocalizacaoForm()
+
+    filestream = form.file.data
+    filestream.seek(0)
+    df = pd.DataFrame(pd.read_csv(filestream, sep=";", names=Setor.titulos_doc, encoding='latin-1'))
+    # converter os valores Nan para Null
+    df = df.replace({np.NAN: None})
+    # Colocar todos os valores em caixa alta
+    df = df.applymap(lambda x: x.upper() if isinstance(x, str) else x)
+
+    # lista dos titulos obrigatórios
+    titulos_obrigatorio = [x for x in Setor.titulos_doc if x.count('*')]
+
+    def obter_entidades(classe, campo, filtro):
+        entidades = [{'Nome': x.nome, 'Sigla': x.sigla} for x in classe.query.filter(filtro).all()]
+        return entidades
+
+    setor_existente = obter_entidades(Setor, 'nome', current_user.empresa_id == Setor.empresa_id)
+    local_existente = obter_entidades(Local, 'nome', current_user.empresa_id == Local.empresa_id)
+    pavimento_existente = obter_entidades(Pavimento, 'nome', current_user.empresa_id == Pavimento.empresa_id)
+
+    existentes = []
+    existentes.extend(setor_existente)
+    existentes.extend(local_existente)
+    existentes.extend(pavimento_existente)
+
+    rejeitados_texto = [['NOME', 'MOTIVO']]
+    rejeitados = []
+    aceitos_cod = []
+    aceitos = []
+    # percorre por todas as linhas
+    for linha in range(df.shape[0]):
+        # verifica se os campo obrigatórios foram preenchidos
+        for col_ob in titulos_obrigatorio:
+            # caso não seja
+            if not df.at[linha, col_ob]:
+                # salva na lista dos rejeitados devido ao não preenchimento obrigatório
+                rejeitados.append(linha)
+                rejeitados_texto.append(
+                    [df.at[linha, 'Nome*'], "rejeitado pelo não preenchimento de algum campo obrigatório"])
+
+        # Verifica se não foi rejeitado
+        if linha not in rejeitados:
+            # Verifica se não existe repetições dos já salvos no BD
+            if any(df.at[linha, 'Nome*'] == existente['Nome'] for existente in existentes):
+                rejeitados.append(linha)
+                rejeitados_texto.append(
+                    [df.at[linha, 'Nome*'], "rejeitado devido ao nome já existir no banco de dados"])
+
+            if any(df.at[linha, 'Sigla*'] == existente['Sigla'] for existente in existentes):
+                rejeitados.append(linha)
+                rejeitados_texto.append(
+                    [df.at[linha, 'Nome*'], "rejeitado devido a sigla já existir no banco de dados"])
+
+            # verifica se não existe na lista atual
+            if any(df.at[linha, 'Nome*'] == aceito_cod['Nome'] for aceito_cod in aceitos_cod):
+                rejeitados.append(linha)
+                rejeitados_texto.append([df.at[linha, 'Nome*'], "rejeitado devido ao nome estar repetido"])
+
+            # verifica se não existe na lista atual
+            if any(df.at[linha, 'Sigla*'] == aceito_cod['Sigla'] for aceito_cod in aceitos_cod):
+                rejeitados.append(linha)
+                rejeitados_texto.append([df.at[linha, 'Nome*'], "rejeitado devido a sigla estar repetida"])
+
+        # Verifica se não foi rejeitado
+        if linha not in rejeitados:
+            # Salvar
+            tipo_classe_map = {
+                "SETOR": Setor,
+                "LOCAL": Local,
+                "PAVIMENTO": Pavimento
+            }
+
+            tipo = df.at[linha, 'Tipo*']
+            if tipo in tipo_classe_map:
+                objeto = tipo_classe_map[tipo]()
+                objeto.nome = df.at[linha, 'Nome*']
+                objeto.sigla = df.at[linha, 'Sigla*']
+                objeto.empresa_id = current_user.empresa_id
+                # insere o equipamento na lista
+                aceitos.append(objeto)
+                # insere nas listas dos aceitos
+                aceitos_cod.append({'Nome': df.at[linha, 'Nome*'], 'Sigla': df.at[linha, 'Nome*']})
+
+    # salva a lista de localizacao no banco de dados
+    if len(aceitos) > 0:
+        salvar_lote(aceitos)
+
+    flash(f"Total de subgrupos cadastrados: {len(aceitos)}, rejeitados:{len(rejeitados_texto)}", "success")
+
+    # se a lista de rejeitados existir
+    if len(rejeitados_texto) > 0:
+        # publica ao usuário a lista dos rejeitados
+        csv_data = lista_para_csv(rejeitados_texto, None)
+        return Response(
+            csv_data,
+            content_type='text/csv',
+            headers={'Content-Disposition': 'attachment; filename=localizacao_rejeitados.csv'})
+
+    return redirect(url_for("equipamento.localizacao_listar"))
+
+
+@equipamento_blueprint.route('/gerar_padrao_localizacao/', methods=['GET', 'POST'])
+@login_required
+@has_view('Equipamento')
+def gerar_padrao_localizacao():
+    csv_data = lista_para_csv([[x] for x in Setor.titulos_doc], None)
+    nome = "tabela_base_localizacao.csv"
+
+    return Response(
+        csv_data,
+        content_type='text/csv',
+        headers={'Content-Disposition': f"attachment; filename={nome}"})
+
+
 @equipamento_blueprint.route('/setor_excluir/<int:setor_id>', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
@@ -908,37 +963,6 @@ def setor_excluir(setor_id):
             flash("Erro ao excluír o setor", category="danger")
     else:
         flash("Setor não cadastrado/atualizado", category="danger")
-    return redirect(url_for("equipamento.localizacao_listar"))
-
-
-@equipamento_blueprint.route('/setor_editar/<int:setor_id>', methods=['GET', 'POST'])
-@login_required
-@has_view('Equipamento')
-def setor_editar(setor_id):
-    if setor_id > 0:
-        # localiza a empresa do grupo
-        setor = Setor.query.filter(
-            current_user.empresa_id == Setor.empresa_id,
-            Setor.id == setor_id
-        ).one_or_none()
-
-        # se setor existir
-        if setor:
-            form = SetorForm(obj=setor)
-            # Validação
-            if form.validate_on_submit():
-                setor.alterar_atributos(form)
-                if setor.salvar():
-                    flash("Setor atualizado", category="success")
-                else:
-                    flash("Erro ao atualizar setor", category="danger")
-            else:
-                flash_errors(form)
-        else:
-            flash("Setor não localizado", category="danger")
-    else:
-        flash("Setor não informado", category="danger")
-
     return redirect(url_for("equipamento.localizacao_listar"))
 
 
@@ -958,37 +982,6 @@ def local_excluir(local_id):
     return redirect(url_for("equipamento.localizacao_listar"))
 
 
-@equipamento_blueprint.route('/local_editar/<int:local_id>', methods=['GET', 'POST'])
-@login_required
-@has_view('Equipamento')
-def local_editar(local_id):
-    if local_id > 0:
-        # localiza a empresa do grupo
-        local = Local.query.filter(
-            current_user.empresa_id == Local.empresa_id,
-            Local.id == local_id
-        ).one_or_none()
-
-        # se local existir
-        if local:
-            form = LocalForm(obj=local)
-            # Validação
-            if form.validate_on_submit():
-                local.alterar_atributos(form)
-                if local.salvar():
-                    flash("Local atualizado", category="success")
-                else:
-                    flash("Erro ao atualizar setor", category="danger")
-            else:
-                flash_errors(form)
-        else:
-            flash("Local não localizado", category="danger")
-    else:
-        flash("Local não informado", category="danger")
-
-    return redirect(url_for("equipamento.localizacao_listar"))
-
-
 @equipamento_blueprint.route('/pavimento_excluir/<int:pavimento_id>', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
@@ -1003,57 +996,6 @@ def pavimento_excluir(pavimento_id):
     else:
         flash("Pavimento não cadastrado/atualizado", category="danger")
     return redirect(url_for("equipamento.localizacao_listar"))
-
-
-@equipamento_blueprint.route('/pavimento_editar/<int:pavimento_id>', methods=['GET', 'POST'])
-@login_required
-@has_view('Equipamento')
-def pavimento_editar(pavimento_id):
-    if pavimento_id > 0:
-        # localiza a empresa do grupo
-        pavimento = Pavimento.query.filter(
-            current_user.empresa_id == Pavimento.empresa_id,
-            Pavimento.id == pavimento_id
-        ).one_or_none()
-
-        # se pavimento existir
-        if pavimento:
-            form = PavimentoForm(obj=pavimento)
-            # Validação
-            if form.validate_on_submit():
-                pavimento.alterar_atributos(form)
-                if pavimento.salvar():
-                    flash("Pavimento atualizado", category="success")
-                else:
-                    flash("Erro ao atualizar pavimento", category="danger")
-            else:
-                flash_errors(form)
-        else:
-            flash("Pavimento não localizado", category="danger")
-    else:
-        flash("Pavimento não informado", category="danger")
-
-    return redirect(url_for("equipamento.localizacao_listar"))
-
-
-@equipamento_blueprint.route('/subgrupo_lista/<int:grupo_id>', methods=['GET', 'POST'])
-@login_required
-def subgrupo_lista(grupo_id: int):
-    """    Função que retorna lista de locais"""
-    subgrupos = Subgrupo.query.filter(
-        current_user.empresa_id == Grupo.empresa_id,
-        Grupo.id == Subgrupo.grupo_id,
-        Grupo.id == grupo_id).all()
-
-    # com base no identificador
-    subgrupoarray = []
-    subgrupovazio = {'id': 0, 'nome': ''}
-    subgrupoarray.append(subgrupovazio)
-
-    for subgrupo in subgrupos:
-        subgrupoobj = {'id': subgrupo.id, 'nome': subgrupo.nome}
-        subgrupoarray.append(subgrupoobj)
-    return jsonify({'subgrupo_lista': subgrupoarray})
 
 
 @equipamento_blueprint.route('/localizacao_editar_elementos/', methods=['GET', 'POST'])
