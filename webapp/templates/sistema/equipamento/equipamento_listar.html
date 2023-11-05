@@ -57,13 +57,13 @@
             <table class="table">
                 <thead>
                 <tr>
-                    <th scope="col">ID</th>
                     <th scope="col">COD</th>
-                    <th scope="col">TAG</th>
                     <th scope="col">DESCRIÇÃO_CURTA</th>
                     <th scope="col">SUBGRUPO</th>
                     <th scope="col">GRUPO</th>
-                    <th scope="col">ATIVO</th>
+                    <th scope="col">TAG</th>
+                    <th scope="col"></th>
+                    <th scope="col"></th>
                     <th scope="col"></th>
                     <th scope="col"></th>
                 </tr>
@@ -72,12 +72,19 @@
                 <tbody id="myTable">
                 {% for equipamento in equipamentos %}
                 <tr>
-                    <th scope="row">{{ equipamento.id }}</th>
-                    <td>{{ equipamento.cod }}</td>
-                    <td>{{ equipamento.tag }}</td>
+                    <th scope="row">{{ equipamento.cod }}</th>
                     <td>{{ equipamento.descricao_curta }}</td>
                     <td>{{ equipamento.subgrupo.nome }}</td>
                     <td>{{ equipamento.subgrupo.grupo.nome }}</td>
+                    <td>{{ equipamento.tag }}</td>
+                    <td>
+                        <a href="{{ url_for('equipamento.equipamento_excluir', equipamento_id=equipamento.id) }}"
+                           onclick="return deleteItem();">
+                            <span data-tooltip="Excluir">
+                               <i class="bi-trash fs-6"></i>
+                            </span>
+                        </a>
+                    </td>
                     {% if equipamento.ativo == True %}
                     <td>
                         <a href="{{ url_for('equipamento.equipamento_ativar', equipamento_id=equipamento.id) }}">
@@ -115,6 +122,6 @@
 
 
 </body>
-<script src="/static/js/exportar_consulta.js" type="text/javascript"></script>
 <script src="/static/js/filtro_coluna.js" type="text/javascript"></script>
+<script src="/static/js/confirmacao_exclusao.js" type="text/javascript"></script>
 {% endblock %}

@@ -93,15 +93,15 @@ from datetime import datetime
 #     print(f"{datetime.now()}: teste")
 
 
-# def data_futura(tempo, unidade):
+# def data_futura(tempo, nome):
 #     """ Função que calcula e retorna uma data no futuro"""
 #     # Verifica se a base do tempo é dia
-#     if unidade in ["Diária", "Semanal"]:
+#     if nome in ["Diária", "Semanal"]:
 #         return datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) + \
 #                datetime.timedelta(days=tempo)
 #
 #     # Verifica se a base do tempo é mensal
-#     if unidade in ["Mensal", "Bimensal", "Trimensal", "Semestral", "Anual"]:
+#     if nome in ["Mensal", "Bimensal", "Trimensal", "Semestral", "Anual"]:
 #         return datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) + \
 #                relativedelta(months=tempo)
 #
@@ -228,4 +228,16 @@ from datetime import datetime
 #     return false;
 # }
 # </script>
+
+
+# import re
+#
+# def extrair_texto_entre_underscores(texto):
+#     padrao = r'_(.*?)_'
+#     correspondencias = re.findall(padrao, texto)
+#     return correspondencias
+#
+#
+# print(extrair_texto_entre_underscores("teste_id"))
+# print(extrair_texto_entre_underscores("und_teste_id"))
 

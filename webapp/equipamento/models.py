@@ -1,6 +1,6 @@
 import logging
 from webapp import db
-from webapp.utils.objetos import atributo_existe, atribuir_none_id
+from webapp.utils.objetos import atributo_existe, atribuir_none_id, extrairClasseTexto
 from flask_login import current_user
 from sqlalchemy import func
 from unidecode import unidecode
@@ -20,6 +20,23 @@ def verificar_existencia_localizacao_by_sigla(model, valor):
     return model.query.filter(model.sigla == valor,
                               model.empresa_id == current_user.empresa_id
                               ).one_or_none()
+
+
+def preencher_objeto_atributos_comvinculo(objeto_model, dicionario, df, linha):
+    """Função para preencher os atributos vinculados a outros objetos/tabelas"""
+    for classe_nome, atributo in dicionario.items():
+        # retirando o valor a ser consultado
+        valor = df.at[linha, classe_nome]
+        # buscando a classe
+        Classe = globals().get(extrairClasseTexto(classe_nome), None)
+        # fazendo as validações e preenchendo o objeto_model
+        if Classe:
+            objeto = Classe.query.filter_by(nome=valor).one_or_none()
+            valorfinal = objeto.id if objeto else 0
+            setattr(objeto_model, atributo, valorfinal)
+        else:
+            setattr(objeto_model, atributo, 0)
+    return objeto_model
 
 
 class Grupo(db.Model):
@@ -121,15 +138,14 @@ class Equipamento(db.Model):
     """    Classe do ativo    """
 
     # titulos para cadastro
-    titulos_doc = {'Codigo*': 'cod', 'Descricao_Curta*': 'descricao_curta', 'Tag*': 'tag',
-                   'Subgrupo*': 'subgrupo_id', 'Descricao_Longa': 'descricao_longa', 'Fabrica': 'fabricante',
-                   'Marca': 'marca', 'Modelo': 'modelo', 'Numero_Serie': 'ns', 'Largura': 'largura',
-                   'Comprimento': 'comprimento', 'Altura': 'altura', 'Peso': 'peso', 'Potencia': 'potencia',
-                   'Tensao': 'tensao', 'Ano_Fabricacao': 'data_fabricacao', 'Data_Aquisicao': 'data_aquisicao',
+    titulos_doc = {'Descricao_Curta*': 'descricao_curta', 'Subgrupo*': 'subgrupo_id', 'Codigo': 'cod', 'Tag': 'tag',
+                   'Descricao_Longa': 'descricao_longa', 'Fabrica': 'fabricante',
+                   'Marca': 'marca', 'Modelo': 'modelo', 'Numero_Serie': 'ns', 'Ano_Fabricacao': 'data_fabricacao',
+                   'Data_Aquisicao': 'data_aquisicao',
                    'Data_Instalacao': 'data_instalacao', 'Custo_Aquisicao': 'custo_aquisicao',
                    'Taxa_Depreciacao': 'depreciacao', 'Patrimonio': 'patrimonio', 'Localizacao': 'localizacao',
                    'Latitude': 'latitude', 'Longitude': 'longitude', 'Centro_Custo': 'centro_custo', 'Ativo': 'ativo',
-                   'Setor': 'setor_id', 'Local': 'local_id', 'Pavimento': 'pavimento_id',
+                   'Setor_nome': 'setor_id', 'Local_nome': 'local_id', 'Pavimento_nome': 'pavimento_id',
                    'Largura_valor': 'largura_valor', 'Largura_und': 'und_largura_id',
                    'Comprimento_valor': 'comprimento_valor', 'Comprimento_und': 'und_comprimento_id',
                    'Altura_valor': 'altura_valor', 'Altura_und': 'und_altura_id',
@@ -141,11 +157,37 @@ class Equipamento(db.Model):
                    'Tensao_valor': 'tensao_valor', 'Tensao_und': 'und_tensao_id'
                    }
 
+    titulos_valor = {'Descricao_Curta*': 'descricao_curta', 'Subgrupo*': 'subgrupo_id', 'Codigo': 'cod', 'Tag': 'tag',
+                     'Descricao_Longa': 'descricao_longa', 'Fabrica': 'fabricante',
+                     'Marca': 'marca', 'Modelo': 'modelo', 'Numero_Serie': 'ns', 'Custo_Aquisicao': 'custo_aquisicao',
+                     'Taxa_Depreciacao': 'depreciacao', 'Patrimonio': 'patrimonio', 'Localizacao': 'localizacao',
+                     'Latitude': 'latitude', 'Longitude': 'longitude', 'Centro_Custo': 'centro_custo',
+                     'Largura_valor': 'largura_valor', 'Comprimento_valor': 'comprimento_valor',
+                     'Altura_valor': 'altura_valor', 'Peso_valor': 'peso_valor', 'Vazao_valor': 'vazao_valor',
+                     'Volume_valor': 'volume_valor', 'Area_valor': 'area_valor', 'Potencia_valor': 'potencia_valor',
+                     'Tensao_valor': 'tensao_valor',
+                     }
+
+    titulos_id = {'Setor_nome': 'setor_id', 'Local_nome': 'local_id',
+                  'Pavimento_nome': 'pavimento_id', 'Largura_und': 'und_largura_id',
+                  'Comprimento_und': 'und_comprimento_id', 'Altura_und': 'und_altura_id', 'Peso_und': 'und_peso_id',
+                  'Vazao_und': 'und_vazao_id', 'Volume_und': 'und_volume_id', 'Area_und': 'und_area_id',
+                  'Potencia_und': 'und_potencia_id', 'Tensao_und': 'und_tensao_id'
+                  }
+
+    titulos_booleano = {'Ativo': 'ativo'
+                        }
+
+    titulos_data = {'Ano_Fabricacao': 'data_fabricacao',
+                    'Data_Aquisicao': 'data_aquisicao',
+                    'Data_Instalacao': 'data_instalacao',
+                    }
+
     titulos_csv = {'cod; descricao_curta; descricao_longa; fabricante; marca; modelo; ns; data_fabricacao; '
                    'data_aquisicao; data_instalacao; custo_aquisicao; depreciacao; tag; patrimonio; '
                    'latitude; longitude; centro_custo; ativo; subgrupo_nome; setor_nome; local_nome; pavimento_nome; '
                    'largura_valor; comprimento_valor; altura_valor; peso_valor; vazao_valor; volume_valor; area_valor; '
-                   'potencia_valor; tensao_valor; und_comprimento_unidade; und_largura_unidade; und_altura_unidade; '
+                   'potencia_valor; tensao_valor; und_comprimento_nome; und_largura_nome; und_altura_nome; '
                    'und_peso_nome; und_vazao_nome; und_volume_nome; und_area_nome; und_potencia_nome; und_tensao_nome'}
 
     __tablename__ = 'equipamento'
@@ -226,11 +268,11 @@ class Equipamento(db.Model):
                f'{atributo_existe(self, "setor", "nome")}; {atributo_existe(self, "local", "nome")}; ' \
                f'{atributo_existe(self, "pavimento", "nome")}; {self.largura_valor}; {self.comprimento_valor}; ' \
                f'{self.altura_valor}; {self.peso_valor}; {self.vazao_valor}; {self.volume_valor}; {self.area_valor}; ' \
-               f'{self.potencia_valor}; {self.tensao_valor}; {atributo_existe(self, "comprimento", "unidade")}; ' \
-               f'{atributo_existe(self, "largura", "unidade")}; {atributo_existe(self, "altura", "unidade")}; ' \
-               f'{atributo_existe(self, "peso", "unidade")}; {atributo_existe(self, "vazao", "unidade")}; ' \
-               f'{atributo_existe(self, "volume", "unidade")}; {atributo_existe(self, "area", "unidade")}; ' \
-               f'{atributo_existe(self, "potencia", "unidade")}; {atributo_existe(self, "tensaoeletrica", "unidade")}'
+               f'{self.potencia_valor}; {self.tensao_valor}; {atributo_existe(self, "comprimento", "nome")}; ' \
+               f'{atributo_existe(self, "largura", "nome")}; {atributo_existe(self, "altura", "nome")}; ' \
+               f'{atributo_existe(self, "peso", "nome")}; {atributo_existe(self, "vazao", "nome")}; ' \
+               f'{atributo_existe(self, "volume", "nome")}; {atributo_existe(self, "area", "nome")}; ' \
+               f'{atributo_existe(self, "potencia", "nome")}; {atributo_existe(self, "tensaoeletrica", "nome")}'
 
     def retornar_ativo(self):
         return self.ativo
@@ -259,7 +301,7 @@ class Equipamento(db.Model):
         self.longitude = form.longitude.data
         self.centro_custo = form.centro_custo.data.upper()
         self.ativo = form.ativo.data
-        self.subgrupo_id = form.subgrupo.data
+        self.subgrupo_id = atribuir_none_id(form.subgrupo.data)
         self.setor_id = atribuir_none_id(form.setor.data)
         self.local_id = atribuir_none_id(form.local.data)
         self.pavimento_id = atribuir_none_id(form.pavimento.data)
@@ -347,6 +389,17 @@ class Equipamento(db.Model):
                     str(posicao).zfill(5))
         else:
             return form.tag.data
+
+    def excluir(self) -> bool:
+        """    Função para retirar do banco de dados o objeto"""
+        try:
+            db.session.delete(self)
+            db.session.commit()
+            return True
+        except Exception as e:
+            log.error(f'Erro Deletar objeto no banco de dados: {self.__repr__()}:{e}')
+            db.session.rollback()
+            return False
 
 
 class Pavimento(db.Model):
@@ -508,12 +561,12 @@ class Volume(db.Model):
 
     __tablename__ = 'tipo_volume'
     id = db.Column(db.Integer(), primary_key=True)
-    unidade = db.Column(db.String(10), nullable=False)
+    nome = db.Column(db.String(10), nullable=False)
     descricao = db.Column(db.String(50), nullable=False)
     equipamento = db.relationship("Equipamento", back_populates="volume")
 
     def __repr__(self):
-        return f'<Volume: {self.id}-{self.unidade}>'
+        return f'<Volume: {self.id}-{self.nome}>'
 
 
 class Vazao(db.Model):
@@ -521,12 +574,12 @@ class Vazao(db.Model):
 
     __tablename__ = 'tipo_vazao'
     id = db.Column(db.Integer(), primary_key=True)
-    unidade = db.Column(db.String(10), nullable=False)
+    nome = db.Column(db.String(10), nullable=False)
     descricao = db.Column(db.String(50), nullable=False)
     equipamento = db.relationship("Equipamento", back_populates="vazao")
 
     def __repr__(self):
-        return f'<Vazao: {self.id}-{self.unidade}>'
+        return f'<Vazao: {self.id}-{self.nome}>'
 
 
 class Area(db.Model):
@@ -534,12 +587,12 @@ class Area(db.Model):
 
     __tablename__ = 'tipo_area'
     id = db.Column(db.Integer(), primary_key=True)
-    unidade = db.Column(db.String(10), nullable=False)
+    nome = db.Column(db.String(10), nullable=False)
     descricao = db.Column(db.String(50), nullable=False)
     equipamento = db.relationship("Equipamento", back_populates="area")
 
     def __repr__(self):
-        return f'<Area: {self.id}-{self.unidade}>'
+        return f'<Area: {self.id}-{self.nome}>'
 
 
 class Peso(db.Model):
@@ -547,12 +600,12 @@ class Peso(db.Model):
 
     __tablename__ = 'tipo_peso'
     id = db.Column(db.Integer(), primary_key=True)
-    unidade = db.Column(db.String(10), nullable=False)
+    nome = db.Column(db.String(10), nullable=False)
     descricao = db.Column(db.String(50), nullable=False)
     equipamento = db.relationship("Equipamento", back_populates="peso")
 
     def __repr__(self):
-        return f'<Peso: {self.id}-{self.unidade}>'
+        return f'<Peso: {self.id}-{self.nome}>'
 
 
 class Comprimento(db.Model):
@@ -560,11 +613,11 @@ class Comprimento(db.Model):
 
     __tablename__ = 'tipo_comprimento'
     id = db.Column(db.Integer(), primary_key=True)
-    unidade = db.Column(db.String(10), nullable=False)
+    nome = db.Column(db.String(10), nullable=False)
     descricao = db.Column(db.String(50), nullable=False)
 
     def __repr__(self):
-        return f'<Comprimento: {self.id}-{self.unidade}>'
+        return f'<Comprimento: {self.id}-{self.nome}>'
 
 
 class Potencia(db.Model):
@@ -572,12 +625,12 @@ class Potencia(db.Model):
 
     __tablename__ = 'tipo_potencia'
     id = db.Column(db.Integer(), primary_key=True)
-    unidade = db.Column(db.String(10), nullable=False)
+    nome = db.Column(db.String(10), nullable=False)
     descricao = db.Column(db.String(50), nullable=False)
     equipamento = db.relationship("Equipamento", back_populates="potencia")
 
     def __repr__(self):
-        return f'<Potencia: {self.id}-{self.unidade}>'
+        return f'<Potencia: {self.id}-{self.nome}>'
 
 
 class TensaoEletrica(db.Model):
@@ -585,9 +638,9 @@ class TensaoEletrica(db.Model):
 
     __tablename__ = 'tipo_tensao_eletrica'
     id = db.Column(db.Integer(), primary_key=True)
-    unidade = db.Column(db.String(10), nullable=False)
+    nome = db.Column(db.String(10), nullable=False)
     descricao = db.Column(db.String(50), nullable=False)
     equipamento = db.relationship("Equipamento", back_populates="tensaoeletrica")
 
     def __repr__(self):
-        return f'<Tensão Elétrica: {self.id}-{self.unidade}>'
+        return f'<Tensão Elétrica: {self.id}-{self.nome}>'

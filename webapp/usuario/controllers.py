@@ -397,6 +397,22 @@ def gerar_csv_usuario():
         headers={'Content-Disposition': 'attachment; filename=usuarios.csv'})
 
 
+@usuario_blueprint.route('/usuario_excluir/<int:usuario_id>', methods=['GET', 'POST'])
+@login_required
+@has_view('Usuário')
+def usuario_excluir(usuario_id):
+    usuario = Usuario.query.filter_by(id=usuario_id).one_or_none()
+
+    if usuario:
+        if usuario.excluir():
+            flash("Usuário excluído", category="success")
+        else:
+            flash("Erro ao excluir o usuário", category="danger")
+    else:
+        flash("Usuário não cadastrada", category="danger")
+    return redirect(url_for('usuario.usuario_listar'))
+
+
 @usuario_blueprint.route('/cadastrar_lote_usuarios>', methods=['GET', 'POST'])
 @login_required
 @has_view('Usuário')
@@ -407,7 +423,8 @@ def cadastrar_lote_usuarios():
     filestream = form.file.data
     filestream.seek(0)
     df = pd.DataFrame(pd.read_csv(filestream, sep=";", names=Usuario.titulos_doc, encoding='latin-1'))
-
+    # Colocar todos os valores em caixa alta
+    df = df.applymap(lambda x: x.upper() if isinstance(x, str) else x)
     # converter os valores Nan para Null
     df = df.replace({np.NAN: None})
 
@@ -428,18 +445,18 @@ def cadastrar_lote_usuarios():
             # caso não seja
             if not df.at[linha, col_ob]:
                 # salva na lista dos rejeitados devido ao não preenchimento obrigatório
-                rejeitados.append(df.at[linha, 'Nome*'])
+                rejeitados.append(linha)
                 rejeitados_texto.append(
                     [df.at[linha, 'Nome*'], "rejeitado pelo não preenchimento de algum campo obrigatório"])
 
         # verifica repetições no BD
         for usuario_ in existentes:
-            if usuario_.nome == df.at[linha, 'Nome*'].upper():
-                rejeitados.append(df.at[linha, 'Nome*'])
+            if usuario_.nome == df.at[linha, 'Nome*']:
+                rejeitados.append(linha)
                 rejeitados_texto.append(
                     [df.at[linha, 'Nome*'], "rejeitado devido Nome já existir no banco de dados"])
-            if usuario_.email == df.at[linha, 'Email*'].upper():
-                rejeitados.append(df.at[linha, 'Nome*'])
+            if usuario_.email == df.at[linha, 'Email*']:
+                rejeitados.append(linha)
                 rejeitados_texto.append(
                     [df.at[linha, 'Nome*'], "rejeitado devido Email já existir no banco de dados"])
 
@@ -447,22 +464,22 @@ def cadastrar_lote_usuarios():
         perfil = PerfilAcesso.query.filter_by(nome=df.at[linha, 'PerfilAcesso*'],
                                               empresa_id=current_user.empresa_id).one_or_none()
         if not perfil:
-            rejeitados.append(df.at[linha, 'Nome*'])
+            rejeitados.append(linha)
             rejeitados_texto.append(
                 [df.at[linha, 'Nome*'], "rejeitado devido PerfilAcesso não cadastrado"])
 
         # verifica se não existe na lista atual
         if df.at[linha, 'Nome*'] in aceitos_cod:
-            rejeitados.append(df.at[linha, 'Nome*'])
+            rejeitados.append(linha)
             rejeitados_texto.append([df.at[linha, 'Nome*'], "rejeitado devido ao Nome estar repetido"])
 
         # verifica se não existe na lista atual
         if df.at[linha, 'Email*'] in aceitos_email:
-            rejeitados.append(df.at[linha, 'Nome*'])
+            rejeitados.append(linha)
             rejeitados_texto.append([df.at[linha, 'Nome*'], "rejeitado devido ao Email estar repetido"])
 
         # Verifica se não foi rejeitado
-        if df.at[linha, 'Nome*'] not in rejeitados:
+        if linha not in rejeitados:
             # criar uma senha para o usuário
             senha = Senha()
             senha.alterar_senha(Senha.senha_aleatoria())
@@ -483,7 +500,7 @@ def cadastrar_lote_usuarios():
                     setattr(usuario_, v, valor)
                 else:
                     # Salva o atributo quando texto
-                    setattr(usuario_, v, valor.upper())
+                    setattr(usuario_, v, valor)
             # dados do usuário
             usuario_.empresa_id = current_user.empresa_id
             usuario_.senha_id = senha.id
@@ -498,7 +515,7 @@ def cadastrar_lote_usuarios():
     # salva a lista de equipamentos no banco de dados
     if len(aceitos) > 0:
         Usuario.salvar_lote(aceitos)
-    flash(f"Total de usuários cadastrados: {len(aceitos)}, rejeitados:{len(rejeitados_texto)}", "success")
+    flash(f"Total de usuários cadastrados: {len(aceitos)}, rejeitados:{len(rejeitados_texto) - 1}", "success")
 
     # se a lista de rejeitados existir
     if len(rejeitados_texto) > 0:
@@ -509,13 +526,6 @@ def cadastrar_lote_usuarios():
             csv_data,
             content_type='text/csv',
             headers={'Content-Disposition': 'attachment; filename=usuarios_rejeitados.csv'})
-
-        # resultado, nome, arquivo = arquivo_padrao(nome_arquivo="Usuários_rejeitados", valores=rejeitados_texto)
-        #
-        # # se não houver erro envia o arquivo
-        # if resultado:
-        #     return Response(arquivo, mimetype="text/csv",
-        #                     headers={"Content-disposition": f"attachment; filename={nome}"})
 
     return redirect(url_for("usuario.usuario_listar"))
 
@@ -656,7 +666,21 @@ def gerar_padrao_perfis():
         headers={'Content-Disposition': f"attachment; filename={nome}"}
     )
 
-    return redirect(url_for('usuario.perfil_listar'))
+
+@usuario_blueprint.route('/perfilacesso_excluir/<int:perfilacesso_id>', methods=['GET', 'POST'])
+@login_required
+@has_view('Usuário')
+def perfilacesso_excluir(perfilacesso_id):
+    perfilacesso = PerfilAcesso.query.filter_by(id=perfilacesso_id).one_or_none()
+
+    if perfilacesso:
+        if perfilacesso.excluir():
+            flash("Perfil de Acesso excluído", category="success")
+        else:
+            flash("Erro ao excluir o perfil de acesso", category="danger")
+    else:
+        flash("Perfil de acesso não cadastrado", category="danger")
+    return redirect(url_for('usuario.perfilacesso_listar'))
 
 
 @usuario_blueprint.route('/cadastrar_lote_perfis/>', methods=['GET', 'POST'])
@@ -668,7 +692,8 @@ def cadastrar_lote_perfis():
     filestream = form.file.data
     filestream.seek(0)
     df = pd.DataFrame(pd.read_csv(filestream, sep=";", names=PerfilAcesso.titulos_doc, encoding='latin-1'))
-
+    # Colocar todos os valores em caixa alta
+    df = df.applymap(lambda x: x.upper() if isinstance(x, str) else x)
     # converter os valores Nan para Null
     df = df.replace({np.NAN: None})
 
@@ -694,32 +719,36 @@ def cadastrar_lote_perfis():
             # caso não seja
             if not df.at[linha, col_ob]:
                 # salva na lista dos rejeitados devido ao não preenchimento obrigatório
-                rejeitados.append(df.at[linha, 'Nome*'])
+                rejeitados.append(linha)
                 rejeitados_texto.append(
                     [df.at[linha, 'Nome*'], "rejeitado pelo não preenchimento de algum campo obrigatório"])
+
+        if df.at[linha, 'Nome*'] in titulos_obrigatorio:
+            # rejeitado provavelmente é o título
+            rejeitados.append(linha)
 
         # Verifica se não existe repetições dos já salvos no BD
         if df.at[linha, 'Nome*'] in existentes:
             # salva na lista dos rejeitados devido a repetição
-            rejeitados.append(df.at[linha, 'Nome*'])
+            rejeitados.append(linha)
             rejeitados_texto.append([df.at[linha, 'Nome*'], "rejeitado por já existir no banco de dados"])
 
         # verifica se não existe na lista atual
         if df.at[linha, 'Nome*'] in aceitos_cod:
-            rejeitados.append(df.at[linha, 'Nome*'])
+            rejeitados.append(linha)
             rejeitados_texto.append([df.at[linha, 'Nome*'], "rejeitado devido a estar repetido"])
 
         # verifica o valor do campo ativo
         if df.at[linha, 'Ativo'] is not None:
-            if df.at[linha, 'Ativo'].upper() in ativos:
+            if df.at[linha, 'Ativo'] in ativos:
                 ativo = True
 
         # Verifica se não foi rejeitado
-        if df.at[linha, 'Nome*'] not in rejeitados:
+        if linha not in rejeitados:
             # cria um equipamento e popula ele
             perfil = PerfilAcesso()
-            perfil.nome = df.at[linha, 'Nome*'].upper()
-            perfil.descricao = df.at[linha, 'Descrição'].upper()
+            perfil.nome = df.at[linha, 'Nome*']
+            perfil.descricao = df.at[linha, 'Descrição']
             perfil.ativo = ativo
             perfil.empresa_id = current_user.empresa_id
             # insere nas listas dos aceitos
@@ -732,10 +761,10 @@ def cadastrar_lote_perfis():
         for aceito in aceitos:
             aceito.salvar()
 
-    flash(f"Total de perfis cadastrados: {len(aceitos)}, rejeitados:{len(rejeitados_texto)}", "success")
+    flash(f"Total de perfis cadastrados: {len(aceitos)}, rejeitados:{len(rejeitados_texto) - 1}", "success")
 
     # se a lista de rejeitados existir
-    if len(rejeitados_texto) > 0:
+    if len(rejeitados_texto) > 1:
         # publica ao usuário a lista dos rejeitados
         csv_data = lista_para_csv(rejeitados_texto, None)
 
@@ -743,13 +772,6 @@ def cadastrar_lote_perfis():
             csv_data,
             content_type='text/csv',
             headers={'Content-Disposition': 'attachment; filename=perfis_rejeitados.csv'})
-
-        # resultado, nome, arquivo = arquivo_padrao(nome_arquivo="Perfis_rejeitados", valores=rejeitados_texto)
-        #
-        # # se não houver erro envia o arquivo
-        # if resultado:
-        #     return Response(arquivo, mimetype="text/csv",
-        #                     headers={"Content-disposition": f"attachment; filename={nome}"})
 
     return redirect(url_for('usuario.perfil_listar'))
 

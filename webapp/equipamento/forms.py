@@ -103,10 +103,6 @@ class EquipamentoForm(Form):
                                render_kw={"placeholder": "Digite o centro de custo"})
     ativo = BooleanField('Ativo ', render_kw={"placeholder": "Digite se está ativo"})
 
-    setor = SelectField('Setor', choices=[], coerce=int)
-    local = SelectField('Local', choices=[], coerce=int)
-    pavimento = SelectField('Pavimento', choices=[], coerce=int)
-
     vazao_valor = DecimalField('Vazão', places=2, rounding=None, validators=[Optional()],
                                render_kw={"placeholder": "Digite a vazão"})
     volume_valor = DecimalField('Volume', places=2, rounding=None, validators=[Optional()],
@@ -126,18 +122,21 @@ class EquipamentoForm(Form):
     tensao_valor = DecimalField('Tensão', places=2, rounding=None, validators=[Optional()],
                                 render_kw={"placeholder": "Digite a tensão elétrica"})
 
-    und_vazao = SelectField('unidade', choices=[], coerce=int)
-    und_volume = SelectField('unidade', choices=[], coerce=int)
-    und_area = SelectField('unidade', choices=[], coerce=int)
-    und_altura = SelectField('unidade', choices=[], coerce=int)
-    und_largura = SelectField('unidade', choices=[], coerce=int)
-    und_comprimento = SelectField('unidade', choices=[], coerce=int)
-    und_peso = SelectField('unidade', choices=[], coerce=int)
-    und_potencia = SelectField('unidade', choices=[], coerce=int)
-    und_tensao = SelectField('unidade', choices=[], coerce=int)
+    setor = SelectField('Setor', choices=[], coerce=int, validate_choice=False)
+    local = SelectField('Local', choices=[], coerce=int, validate_choice=False)
+    pavimento = SelectField('Pavimento', choices=[], coerce=int, validate_choice=False)
+    und_vazao = SelectField('nome', choices=[], coerce=int, validate_choice=False)
+    und_volume = SelectField('nome', choices=[], coerce=int, validate_choice=False)
+    und_area = SelectField('nome', choices=[], coerce=int, validate_choice=False)
+    und_altura = SelectField('nome', choices=[], coerce=int, validate_choice=False)
+    und_largura = SelectField('nome', choices=[], coerce=int, validate_choice=False)
+    und_comprimento = SelectField('nome', choices=[], coerce=int, validate_choice=False)
+    und_peso = SelectField('nome', choices=[], coerce=int, validate_choice=False)
+    und_potencia = SelectField('nome', choices=[], coerce=int, validate_choice=False)
+    und_tensao = SelectField('nome', choices=[], coerce=int, validate_choice=False)
 
-    grupo = SelectField('Grupo', choices=[], coerce=int)
-    subgrupo = SelectField('Subgrupo', choices=[], coerce=int)
+    grupo = SelectField('Grupo', choices=[], coerce=int, validate_choice=False)
+    subgrupo = SelectField('Subgrupo', choices=[], coerce=int, validate_choice=False)
 
     # title = StringField('Nome do arquivo',  validators=[Optional(), Length(50)])
     file = FileField('Escolha um arquivo para o cadastro de equipamentos em Lote (4MB):', validators=[Optional()],

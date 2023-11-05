@@ -28,7 +28,7 @@ def upgrade():
     op.create_foreign_key(None, 'ordem_servico', 'usuario', ['solicitante_id'], ['id'])
     op.create_foreign_key(None, 'ordem_servico', 'equipamento', ['equipamento_id'], ['id'])
     op.create_foreign_key(None, 'perfil', 'empresa', ['empresa_id'], ['id'])
-    op.create_foreign_key(None, 'periodicidade', 'unidade', ['unidade_id'], ['id'])
+    op.create_foreign_key(None, 'periodicidade', 'nome', ['unidade_id'], ['id'])
     op.create_foreign_key(None, 'plano_manutencao', 'equipamento', ['equipamento_id'], ['id'])
     op.create_foreign_key(None, 'plano_manutencao', 'tipo_ordem', ['tipoordem_id'], ['id'])
     op.create_foreign_key(None, 'plano_manutencao', 'periodicidade', ['periodicidade_id'], ['id'])

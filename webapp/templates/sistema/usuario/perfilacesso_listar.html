@@ -28,7 +28,6 @@
             </a>
         </div>
 
-
     </div>
 
     <div class="row">
@@ -37,9 +36,10 @@
                 <thead>
                 <tr>
                     <th scope="col">NOME</th>
-                    <th scope="col">ATIVO</th>
                     <th scope="col">TOTAL DE TELAS</th>
                     <th scope="col">TOTAL DE USUÁRIOS</th>
+                    <th scope="col"></th>
+                    <th scope="col"></th>
                     <th scope="col"></th>
                 </tr>
                 </thead>
@@ -48,6 +48,18 @@
                 {% for perfil in perfisacesso %}
                 <tr>
                     <td>{{ perfil['perfilacesso'].nome }}</td>
+                    <td>{{ perfil['telas'] }}</td>
+                    <td>{{ perfil['total'] }}</td>
+
+                    <td>
+                        <a href="{{ url_for('usuario.perfilacesso_excluir', perfilacesso_id=perfil['perfilacesso'].id) }}"
+                           onclick="return deleteItem();">
+                            <span data-tooltip="Excluir">
+                               <i class="bi-trash fs-6"></i>
+                            </span>
+                        </a>
+                    </td>
+
 
                     {% if perfil['perfilacesso'].ativo == True %}
                     <td>
@@ -68,8 +80,7 @@
                     </td>
 
                     {% endif %}
-                    <td>{{ perfil['telas'] }}</td>
-                    <td>{{ perfil['total'] }}</td>
+
 
                     <td>
                         <a href="{{ url_for('usuario.perfilacesso_editar', perfilacesso_id=perfil['perfilacesso'].id) }}">

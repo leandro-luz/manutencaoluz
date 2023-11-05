@@ -12,8 +12,8 @@ app.app_context().push()
 
 # print("Excluindo todas as tabelas")
 # db.drop_all()
-# print("Criando todas as tabelas")
-# db.create_all()
+print("Criando todas as tabelas")
+db.create_all()
 
 telas_lista = [
     {'posicao': 1, 'nome': 'Interessado', 'icon': 'bi-card-list', 'url': 'empresa.interessado_listar'},
@@ -375,13 +375,13 @@ unidade_lista = [
 ]
 
 periodicidade_lista = [
-    {'nome': 'DIÁRIA', 'tempo': 1, 'unidade': 'dia'},
-    {'nome': 'SEMANAL', 'tempo': 7, 'unidade': 'dia'},
-    {'nome': 'MENSAL', 'tempo': 1, 'unidade': 'mês'},
-    {'nome': 'BIMENSAL', 'tempo': 2, 'unidade': 'mês'},
-    {'nome': 'TRIMENSAL', 'tempo': 3, 'unidade': 'mês'},
-    {'nome': 'SEMESTRAL', 'tempo': 6, 'unidade': 'mês'},
-    {'nome': 'ANUAL', 'tempo': 12, 'unidade': 'ano'}]
+    {'nome': 'DIÁRIA', 'tempo': 1, 'nome': 'dia'},
+    {'nome': 'SEMANAL', 'tempo': 7, 'nome': 'dia'},
+    {'nome': 'MENSAL', 'tempo': 1, 'nome': 'mês'},
+    {'nome': 'BIMENSAL', 'tempo': 2, 'nome': 'mês'},
+    {'nome': 'TRIMENSAL', 'tempo': 3, 'nome': 'mês'},
+    {'nome': 'SEMESTRAL', 'tempo': 6, 'nome': 'mês'},
+    {'nome': 'ANUAL', 'tempo': 12, 'nome': 'ano'}]
 
 planosmanutencao_lista = [
     {'nome': 'Inspeção Diária Gerador', 'codigo': 'gera0001', 'ativo': True,
@@ -538,51 +538,51 @@ tramitacao_lista = [
 ]
 
 volume_lista = [
-    {'unidade': 'l', 'descricao': 'Litro'},
-    {'unidade': 'ml', 'descricao': 'Mililitro'},
-    {'unidade': 'm³', 'descricao': 'Metro cúbico'},
-    {'unidade': 'km³', 'descricao': 'Kilometro cúbico'},
+    {'nome': 'l', 'descricao': 'Litro'},
+    {'nome': 'ml', 'descricao': 'Mililitro'},
+    {'nome': 'm³', 'descricao': 'Metro cúbico'},
+    {'nome': 'km³', 'descricao': 'Kilometro cúbico'},
 ]
 
 vazao_lista = [
-    {'unidade': 'L/seg', 'descricao': 'Litros por segundo'},
-    {'unidade': 'L/min', 'descricao': 'Litros por minuto'},
-    {'unidade': 'L/hr', 'descricao': 'Litros por hora'},
-    {'unidade': 'M³/seg', 'descricao': 'Metros cúbicos por segundo'},
-    {'unidade': 'M³/min', 'descricao': 'Metros cúbicos por minuto'},
-    {'unidade': 'M³/hr', 'descricao': 'Metros cúbicos por hora'},
+    {'nome': 'L/seg', 'descricao': 'Litros por segundo'},
+    {'nome': 'L/min', 'descricao': 'Litros por minuto'},
+    {'nome': 'L/hr', 'descricao': 'Litros por hora'},
+    {'nome': 'M³/seg', 'descricao': 'Metros cúbicos por segundo'},
+    {'nome': 'M³/min', 'descricao': 'Metros cúbicos por minuto'},
+    {'nome': 'M³/hr', 'descricao': 'Metros cúbicos por hora'},
 ]
 
 area_lista = [
-    {'unidade': 'cm²', 'descricao': 'Centímetro ao quadrado'},
-    {'unidade': 'm²', 'descricao': 'Metro ao quadrado'},
-    {'unidade': 'km²', 'descricao': 'Kilometro ao quadrado'},
-    {'unidade': 'ha', 'descricao': 'Hectare'},
+    {'nome': 'cm²', 'descricao': 'Centímetro ao quadrado'},
+    {'nome': 'm²', 'descricao': 'Metro ao quadrado'},
+    {'nome': 'km²', 'descricao': 'Kilometro ao quadrado'},
+    {'nome': 'ha', 'descricao': 'Hectare'},
 ]
 
 peso_lista = [
-    {'unidade': 'g', 'descricao': 'Grama'},
-    {'unidade': 'kg', 'descricao': 'Kilograma'},
-    {'unidade': 'ton', 'descricao': 'Tonelada'},
+    {'nome': 'g', 'descricao': 'Grama'},
+    {'nome': 'kg', 'descricao': 'Kilograma'},
+    {'nome': 'ton', 'descricao': 'Tonelada'},
 ]
 
 comprimento_lista = [
-    {'unidade': 'mm', 'descricao': 'Milímetro'},
-    {'unidade': 'cm', 'descricao': 'Centímetro'},
-    {'unidade': 'm', 'descricao': 'Metro'},
-    {'unidade': 'km', 'descricao': 'Kilometro'},
+    {'nome': 'mm', 'descricao': 'Milímetro'},
+    {'nome': 'cm', 'descricao': 'Centímetro'},
+    {'nome': 'm', 'descricao': 'Metro'},
+    {'nome': 'km', 'descricao': 'Kilometro'},
 ]
 
 potencia_lista = [
-    {'unidade': 'VA', 'descricao': 'Volts-Ampere'},
-    {'unidade': 'kVA', 'descricao': 'Kilo Volts-Ampere'},
-    {'unidade': 'kW', 'descricao': 'Kilo Watts'},
+    {'nome': 'VA', 'descricao': 'Volts-Ampere'},
+    {'nome': 'kVA', 'descricao': 'Kilo Volts-Ampere'},
+    {'nome': 'kW', 'descricao': 'Kilo Watts'},
 ]
 
 tensao_lista = [
-    {'unidade': 'mV', 'descricao': 'Milívolts'},
-    {'unidade': 'V', 'descricao': 'Volts'},
-    {'unidade': 'kV', 'descricao': 'Kilovolts'},
+    {'nome': 'mV', 'descricao': 'Milívolts'},
+    {'nome': 'V', 'descricao': 'Volts'},
+    {'nome': 'kV', 'descricao': 'Kilovolts'},
 
 ]
 
@@ -631,11 +631,11 @@ criar_tipo_binarios(tipo_binario_lista)
 
 criar_tipo_status_ordem(tipo_status_ordem_lista)
 
-criar_equipamento(equipamento_lista)
-criar_atividades(atividades_lista)
-criar_planosmanutencao(planosmanutencao_lista)
-criar_tipo_situacao_ordem(tipo_situacao_ordem_lista)
-criar_tipo_situacao_ordem_perfil_manutentor(situacao_tipo_ordem_perfil_manutentor_lista)
-criar_fluxo_ordem(fluxo_ordem_lista)
-criar_ordem_servico(ordem_servico_lista)
-criar_tramitacao(tramitacao_lista)
+# criar_equipamento(equipamento_lista)
+# criar_atividades(atividades_lista)
+# criar_planosmanutencao(planosmanutencao_lista)
+# criar_tipo_situacao_ordem(tipo_situacao_ordem_lista)
+# criar_tipo_situacao_ordem_perfil_manutentor(situacao_tipo_ordem_perfil_manutentor_lista)
+# criar_fluxo_ordem(fluxo_ordem_lista)
+# criar_ordem_servico(ordem_servico_lista)
+# criar_tramitacao(tramitacao_lista)

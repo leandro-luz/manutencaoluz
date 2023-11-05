@@ -6,10 +6,11 @@ from flask import render_template, Blueprint, redirect, url_for, flash, Response
 from flask_login import current_user, login_required
 from webapp.empresa.models import Empresa
 from webapp.equipamento.models import Equipamento, Grupo, Subgrupo, Pavimento, Setor, Local, Area, Volume, Vazao, \
-    Comprimento, Peso, Potencia, TensaoEletrica
+    Comprimento, Peso, Potencia, TensaoEletrica, preencher_objeto_atributos_comvinculo
 from webapp.equipamento.forms import EquipamentoForm, GrupoForm, SubgrupoForm, LocalizacaoForm, AgrupamentoForm
 from webapp.usuario import has_view
-from webapp.utils.objetos import salvar_lote
+from webapp.utils.objetos import salvar_lote, preencher_objeto_atributos_semvinculo, \
+    preencher_objeto_atributos_booleanos, preencher_objeto_atributos_datas
 from webapp.utils.files import lista_para_csv
 from webapp.utils.erros import flash_errors
 
@@ -65,7 +66,7 @@ def equipamento_editar(equipamento_id):
             grupo_id = equipamento.subgrupo.grupo_id
             subgrupo_id = equipamento.subgrupo_id
             # Atualizar ou Ler dados
-            if form.subgrupo.data:
+            if form.grupo.data:
                 g_d = form.grupo.data
                 sg_d = form.subgrupo.data
                 st_d = form.setor.data
@@ -125,6 +126,12 @@ def equipamento_editar(equipamento_id):
         Empresa.id == current_user.empresa_id).order_by(
         Grupo.nome)
 
+    subgrupos = Subgrupo.query.filter(
+        Subgrupo.grupo_id == Grupo.id,
+        Grupo.empresa_id == Empresa.id,
+        Empresa.id == current_user.empresa_id).order_by(
+        Subgrupo.nome)
+
     # Listas
     setores = Setor.query.filter_by(empresa_id=current_user.empresa_id).order_by(Setor.nome)
     locais = Local.query.filter_by(empresa_id=current_user.empresa_id).order_by(Local.nome)
@@ -134,16 +141,16 @@ def equipamento_editar(equipamento_id):
     form.local.choices = [(0, '')] + [(lo.id, lo.nome) for lo in locais]
     form.pavimento.choices = [(0, '')] + [(pv.id, pv.nome) for pv in pavimentos]
     form.grupo.choices = [(0, '')] + [(g.id, g.nome) for g in grupos]
-    form.subgrupo.choices = [(0, '')]
-    form.und_area.choices = [(0, '')] + [(ar.id, ar.unidade) for ar in Area.query.all()]
-    form.und_vazao.choices = [(0, '')] + [(va.id, va.unidade) for va in Vazao.query.all()]
-    form.und_volume.choices = [(0, '')] + [(vol.id, vol.unidade) for vol in Volume.query.all()]
-    form.und_altura.choices = [(0, '')] + [(co.id, co.unidade) for co in Comprimento.query.all()]
-    form.und_largura.choices = [(0, '')] + [(co.id, co.unidade) for co in Comprimento.query.all()]
-    form.und_comprimento.choices = [(0, '')] + [(co.id, co.unidade) for co in Comprimento.query.all()]
-    form.und_peso.choices = [(0, '')] + [(pe.id, pe.unidade) for pe in Peso.query.all()]
-    form.und_potencia.choices = [(0, '')] + [(po.id, po.unidade) for po in Potencia.query.all()]
-    form.und_tensao.choices = [(0, '')] + [(te.id, te.unidade) for te in TensaoEletrica.query.all()]
+    form.subgrupo.choices = [(0, '')] + [(sg.id, sg.nome) for sg in subgrupos]
+    form.und_area.choices = [(0, '')] + [(ar.id, ar.nome) for ar in Area.query.all()]
+    form.und_vazao.choices = [(0, '')] + [(va.id, va.nome) for va in Vazao.query.all()]
+    form.und_volume.choices = [(0, '')] + [(vol.id, vol.nome) for vol in Volume.query.all()]
+    form.und_altura.choices = [(0, '')] + [(co.id, co.nome) for co in Comprimento.query.all()]
+    form.und_largura.choices = [(0, '')] + [(co.id, co.nome) for co in Comprimento.query.all()]
+    form.und_comprimento.choices = [(0, '')] + [(co.id, co.nome) for co in Comprimento.query.all()]
+    form.und_peso.choices = [(0, '')] + [(pe.id, pe.nome) for pe in Peso.query.all()]
+    form.und_potencia.choices = [(0, '')] + [(po.id, po.nome) for po in Potencia.query.all()]
+    form.und_tensao.choices = [(0, '')] + [(te.id, te.nome) for te in TensaoEletrica.query.all()]
 
     form.grupo.data = g_d
     form.subgrupo.data = sg_d
@@ -225,6 +232,22 @@ def gerar_csv_equipamentos():
     )
 
 
+@equipamento_blueprint.route('/equipamento_excluir/<int:equipamento_id>', methods=['GET', 'POST'])
+@login_required
+@has_view('Equipamento')
+def equipamento_excluir(equipamento_id):
+    equipamento = Equipamento.query.filter_by(id=equipamento_id, empresa_id=current_user.empresa_id).one_or_none()
+
+    if equipamento:
+        if equipamento.excluir():
+            flash("Equipamento excluído", category="success")
+        else:
+            flash("Erro ao excluir o equipamento", category="danger")
+    else:
+        flash("Equipamento não cadastrado", category="danger")
+    return redirect(url_for('equipamento.equipamento_listar'))
+
+
 @equipamento_blueprint.route('/cadastrar_lote_equipamentos/', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
@@ -235,7 +258,8 @@ def cadastrar_lote_equipamentos():
     filestream = form.file.data
     filestream.seek(0)
     df = pd.DataFrame(pd.read_csv(filestream, sep=";", names=Equipamento.titulos_doc, encoding='latin-1'))
-
+    # Colocar todos os valores em caixa alta
+    df = df.applymap(lambda x: x.upper() if isinstance(x, str) else x)
     # converter os valores Nan para Null
     df = df.replace({np.NAN: None})
 
@@ -249,10 +273,11 @@ def cadastrar_lote_equipamentos():
         Subgrupo.id == Equipamento.subgrupo_id
     ).all()]
 
-    rejeitados_texto = [['CÓDIGO', 'MOTIVO']]
+    rejeitados_texto = [['Descricao_Curta', 'MOTIVO']]
     rejeitados = []
     aceitos_cod = []
     aceitos = []
+
     # percorre por todas as linhas
     for linha in range(df.shape[0]):
         # verifica se os campo obrigatórios foram preenchidos
@@ -260,50 +285,57 @@ def cadastrar_lote_equipamentos():
             # caso não seja
             if not df.at[linha, col_ob]:
                 # salva na lista dos rejeitados devido ao não preenchimento obrigatório
-                rejeitados.append(df.at[linha, 'Código*'])
+                rejeitados.append(linha)
                 rejeitados_texto.append(
-                    [df.at[linha, 'Código*'], "rejeitado pelo não preenchimento de algum campo obrigatório"])
+                    [df.at[linha, 'Descricao_Curta*'], "rejeitado pelo não preenchimento de algum campo obrigatório"])
+
+        # Verifica se o titulo não está no arquivo em lote
+        if df.at[linha, 'Descricao_Curta*'] == 'DESCRICAO_CURTA*':
+            # provavelmente é o titulo
+            rejeitados.append(linha)
 
         # Verifica se não existe repetições dos já salvos no BD
-        if df.at[linha, 'Código*'].upper() in existentes:
+        if df.at[linha, 'Descricao_Curta*'] in existentes:
             # salva na lista dos rejeitados devido a repetição
-            rejeitados.append(df.at[linha, 'Código*'])
-            rejeitados_texto.append([df.at[linha, 'Código*'], "rejeitado por já existir no banco de dados"])
+            rejeitados.append(linha)
+            rejeitados_texto.append([df.at[linha, 'Descricao_Curta*'], "rejeitado por já existir no banco de dados"])
 
         # Verifica se o subgrupo existe para a empresa
         subgrupo = Subgrupo.query.filter(
             current_user.empresa_id == Empresa.id,
             Empresa.id == Grupo.empresa_id,
             Grupo.id == Subgrupo.grupo_id,
-            Subgrupo.nome == df.at[linha, 'Subgrupo*'].upper()).one_or_none()
+            Subgrupo.nome == df.at[linha, 'Subgrupo*']).one_or_none()
         if not subgrupo:
-            rejeitados.append(df.at[linha, 'Código*'])
-            rejeitados_texto.append([df.at[linha, 'Código*'], "rejeitado devido ao subgrupo não existir"])
+            rejeitados.append(linha)
+            rejeitados_texto.append([df.at[linha, 'Descricao_Curta*'], "rejeitado devido ao subgrupo não existir"])
 
         # verifica se não existe na lista atual
-        if df.at[linha, 'Código*'] in aceitos_cod:
-            rejeitados.append(df.at[linha, 'Código*'])
-            rejeitados_texto.append([df.at[linha, 'Código*'], "rejeitado devido a estar repetido"])
+        if df.at[linha, 'Descricao_Curta*'] in aceitos_cod:
+            rejeitados.append(linha)
+            rejeitados_texto.append([df.at[linha, 'Descricao_Curta*'], "rejeitado devido a estar repetido"])
+
+        # cria um equipamento e popula ele
+        equipamento = Equipamento()
 
         # Verifica se não foi rejeitado
-        if df.at[linha, 'Código*'] not in rejeitados:
-            # altera o valor do subgrupo de nome para id na tabela
-            df.at[linha, 'Subgrupo*'] = subgrupo.id
+        if linha not in rejeitados:
+            # preeche os atributos diretamente
+            equipamento = preencher_objeto_atributos_semvinculo(equipamento, equipamento.titulos_valor, df, linha)
+            # pesquisa os valores booleanos
+            equipamento = preencher_objeto_atributos_booleanos(equipamento, equipamento.titulos_booleano, df, linha)
+            # pesquisa os valores pelos objetos
+            equipamento = preencher_objeto_atributos_comvinculo(equipamento, equipamento.titulos_id, df, linha)
+            # verificar valores com data
+            equipamento = preencher_objeto_atributos_datas(equipamento, equipamento.titulos_data, df, linha)
+            # vincula a empresa no equipamento
+            equipamento.subgrupo_id = subgrupo.id
+            equipamento.empresa_id = current_user.empresa_id
 
-            # cria um equipamento e popula ele
-            equipamento = Equipamento()
-            for k, v in equipamento.titulos_doc.items():
-                # recupere o valor
-                valor = df.at[linha, k]
-                if str(valor).isnumeric() or valor is None:
-                    # Salva o atributo se o valor e numerico ou nulo
-                    setattr(equipamento, v, valor)
-                else:
-                    # Salva o atributo quando texto
-                    setattr(equipamento, v, valor.upper())
-
+        # Verifica se não foi rejeitado
+        if linha not in rejeitados:
             # insere nas listas dos aceitos
-            aceitos_cod.append(df.at[linha, 'Código*'])
+            aceitos_cod.append(df.at[linha, 'Descricao_Curta*'])
             # insere o equipamento na lista
             aceitos.append(equipamento)
 
@@ -311,10 +343,10 @@ def cadastrar_lote_equipamentos():
     if len(aceitos) > 0:
         salvar_lote(aceitos)
 
-    flash(f"Total de equipamentos cadastrados: {len(aceitos)}, rejeitados:{len(rejeitados_texto)}", "success")
+    flash(f"Total de equipamentos cadastrados: {len(aceitos)}, rejeitados:{len(rejeitados_texto) - 2}", "success")
 
     # se a lista de rejeitados existir
-    if len(rejeitados_texto) > 0:
+    if len(rejeitados_texto) > 2:
         # publica ao usuário a lista dos rejeitados
         csv_data = lista_para_csv(rejeitados_texto, None)
 
@@ -322,13 +354,6 @@ def cadastrar_lote_equipamentos():
             csv_data,
             content_type='text/csv',
             headers={'Content-Disposition': 'attachment; filename=equipamentos_rejeitados.csv'})
-
-        # result, path = arquivo_padrao(nome_arquivo="Equipamentos_rejeitados", valores=rejeitados_texto)
-        # if result:
-        #     flash(f'Foi gerado o arquivo de equipamentos rejeitados no caminho: {path}', category="warning")
-        # else:
-        #     flash("Não foi gerado o arquivo de equipamentos rejeitados", category="danger")
-
     return redirect(url_for("equipamento.equipamento_listar"))
 
 
@@ -599,10 +624,10 @@ def cadastrar_lote_agrupamento():
     filestream = form.file.data
     filestream.seek(0)
     df = pd.DataFrame(pd.read_csv(filestream, sep=";", names=Subgrupo.titulos_geral_doc, encoding='latin-1'))
-    # converter os valores Nan para Null
-    df = df.replace({np.NAN: None})
     # Colocar todos os valores em caixa alta
     df = df.applymap(lambda x: x.upper() if isinstance(x, str) else x)
+    # converter os valores Nan para Null
+    df = df.replace({np.NAN: None})
 
     # lista dos titulos obrigatórios
     titulos_obrigatorio_grupo = [x for x in Grupo.titulos_doc if x.count('*')]
@@ -694,7 +719,7 @@ def cadastrar_lote_agrupamento():
         if linha not in rejeitados:
             if df.at[linha, 'Tipo*'] == "GRUPO":
                 grupo = Grupo()
-                grupo.nome = df.at[linha, 'Grupo_nome*'].upper()
+                grupo.nome = df.at[linha, 'Grupo_nome*']
                 grupo.empresa_id = current_user.empresa_id
 
                 aceitos.append(grupo)
@@ -840,10 +865,10 @@ def cadastrar_lote_localizacao():
     filestream = form.file.data
     filestream.seek(0)
     df = pd.DataFrame(pd.read_csv(filestream, sep=";", names=Setor.titulos_doc, encoding='latin-1'))
-    # converter os valores Nan para Null
-    df = df.replace({np.NAN: None})
     # Colocar todos os valores em caixa alta
     df = df.applymap(lambda x: x.upper() if isinstance(x, str) else x)
+    # converter os valores Nan para Null
+    df = df.replace({np.NAN: None})
 
     # lista dos titulos obrigatórios
     titulos_obrigatorio = [x for x in Setor.titulos_doc if x.count('*')]

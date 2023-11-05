@@ -544,9 +544,9 @@ def criar_locais(lista: List[dict]) -> List[Local]:
 
 def criar_area(lista: List[dict]) -> List[Area]:
     # Criando uma lista de novos tipodatas para serem adicionados
-    novas_areas = [Area(unidade=item['unidade'],
+    novas_areas = [Area(nome=item['nome'],
                         descricao=item['descricao'])
-                   for item in lista if item['unidade'] not in {a.unidade: a.id for a in Area.query.all()}]
+                   for item in lista if item['nome'] not in {a.nome: a.id for a in Area.query.all()}]
 
     try:
         # Adicionando os novos contratos na sessão e realizando o commit
@@ -566,9 +566,9 @@ def criar_area(lista: List[dict]) -> List[Area]:
 
 def criar_volume(lista: List[dict]) -> List[Volume]:
     # Criando uma lista de novos tipodatas para serem adicionados
-    novos_volumes = [Volume(unidade=item['unidade'],
+    novos_volumes = [Volume(nome=item['nome'],
                             descricao=item['descricao'])
-                     for item in lista if item['unidade'] not in {a.unidade: a.id for a in Volume.query.all()}]
+                     for item in lista if item['nome'] not in {a.nome: a.id for a in Volume.query.all()}]
 
     try:
         # Adicionando os novos contratos na sessão e realizando o commit
@@ -588,9 +588,9 @@ def criar_volume(lista: List[dict]) -> List[Volume]:
 
 def criar_vazao(lista: List[dict]) -> List[Vazao]:
     # Criando uma lista de novos tipodatas para serem adicionados
-    novas_vazoes = [Vazao(unidade=item['unidade'],
+    novas_vazoes = [Vazao(nome=item['nome'],
                           descricao=item['descricao'])
-                    for item in lista if item['unidade'] not in {a.unidade: a.id for a in Vazao.query.all()}]
+                    for item in lista if item['nome'] not in {a.nome: a.id for a in Vazao.query.all()}]
 
     try:
         # Adicionando os novos contratos na sessão e realizando o commit
@@ -610,9 +610,9 @@ def criar_vazao(lista: List[dict]) -> List[Vazao]:
 
 def criar_peso(lista: List[dict]) -> List[Peso]:
     # Criando uma lista de novos tipodatas para serem adicionados
-    novo_pesos = [Peso(unidade=item['unidade'],
+    novo_pesos = [Peso(nome=item['nome'],
                        descricao=item['descricao'])
-                  for item in lista if item['unidade'] not in {a.unidade: a.id for a in Peso.query.all()}]
+                  for item in lista if item['nome'] not in {a.nome: a.id for a in Peso.query.all()}]
 
     try:
         # Adicionando os novos contratos na sessão e realizando o commit
@@ -632,10 +632,10 @@ def criar_peso(lista: List[dict]) -> List[Peso]:
 
 def criar_comprimento(lista: List[dict]) -> List[Comprimento]:
     # Criando uma lista de novos tipodatas para serem adicionados
-    novos_comprimentos = [Comprimento(unidade=item['unidade'],
+    novos_comprimentos = [Comprimento(nome=item['nome'],
                                       descricao=item['descricao'])
                           for item in lista if
-                          item['unidade'] not in {a.unidade: a.id for a in Comprimento.query.all()}]
+                          item['nome'] not in {a.nome: a.id for a in Comprimento.query.all()}]
 
     try:
         # Adicionando os novos contratos na sessão e realizando o commit
@@ -655,10 +655,10 @@ def criar_comprimento(lista: List[dict]) -> List[Comprimento]:
 
 def criar_potencia(lista: List[dict]) -> List[Potencia]:
     # Criando uma lista de novos tipodatas para serem adicionados
-    novas_potencias = [Potencia(unidade=item['unidade'],
+    novas_potencias = [Potencia(nome=item['nome'],
                                 descricao=item['descricao'])
                        for item in lista if
-                       item['unidade'] not in {a.unidade: a.id for a in Potencia.query.all()}]
+                       item['nome'] not in {a.nome: a.id for a in Potencia.query.all()}]
 
     try:
         # Adicionando os novos contratos na sessão e realizando o commit
@@ -678,10 +678,10 @@ def criar_potencia(lista: List[dict]) -> List[Potencia]:
 
 def criar_tensao(lista: List[dict]) -> List[TensaoEletrica]:
     # Criando uma lista de novos tipodatas para serem adicionados
-    novas_tensoes = [TensaoEletrica(unidade=item['unidade'],
+    novas_tensoes = [TensaoEletrica(nome=item['nome'],
                                     descricao=item['descricao'])
                      for item in lista if
-                     item['unidade'] not in {a.unidade: a.id for a in TensaoEletrica.query.all()}]
+                     item['nome'] not in {a.nome: a.id for a in TensaoEletrica.query.all()}]
 
     try:
         # Adicionando os novos contratos na sessão e realizando o commit
@@ -814,7 +814,7 @@ def criar_periodicidades(lista: List[dict]) -> List[Periodicidade]:
     # Criando a lista de novas periodicidades a serem adicionadas
     novas_periodicidades = [Periodicidade(nome=item['nome'],
                                           tempo=item['tempo'],
-                                          unidade_id=unidades[item['unidade']])
+                                          unidade_id=unidades[item['nome']])
                             for item in lista if item['nome'] not in [p.nome
                                                                       for p in Periodicidade.query.all()]]
 

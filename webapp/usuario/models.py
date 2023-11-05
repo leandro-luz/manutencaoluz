@@ -23,7 +23,7 @@ class PerfilAcesso(db.Model):
     # nome do arquivo para cadastro em lote
     nome_doc = 'padrão_perfil_acesso'
     # titulos para cadastro
-    titulos_doc = {'Nome*': 'nome', 'Descricao': 'descricao', 'Ativo': 'ativo'}
+    titulos_doc = {'Nome*': 'nome', 'Descrição': 'descricao', 'Ativo': 'ativo'}
 
     titulos_csv = {'nome; descricao; ativo'}
 
@@ -283,6 +283,17 @@ class Usuario(db.Model):
             return True
         except Exception as e:
             log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
+            db.session.rollback()
+            return False
+
+    def excluir(self) -> bool:
+        """    Função para retirar do banco de dados o objeto"""
+        try:
+            db.session.delete(self)
+            db.session.commit()
+            return True
+        except Exception as e:
+            log.error(f'Erro Deletar objeto no banco de dados: {self.__repr__()}:{e}')
             db.session.rollback()
             return False
 

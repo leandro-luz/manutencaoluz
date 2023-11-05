@@ -344,7 +344,7 @@ class PlanoManutencao(db.Model):
         self.data_inicio = self.data_futura(new,
                                             self.data_inicio,
                                             self.periodicidade.tempo,
-                                            self.periodicidade.unidade.nome)
+                                            self.periodicidade.nome.nome)
 
     @staticmethod
     def data_futura(new, data, tempo, unidade):

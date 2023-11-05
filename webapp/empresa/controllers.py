@@ -281,7 +281,7 @@ def cadastrar_lote_empresas():
     for col in colunas_importada:
         df[colunas_base[col]] = df_inicial[col]
 
-    pd.set_option('display.max_columns', None)
+    # pd.set_option('display.max_columns', None)
     # Colocar todos os valores em caixa alta
     df = df.applymap(lambda x: x.upper() if isinstance(x, str) else x)
     # converter os valores Nan para Null

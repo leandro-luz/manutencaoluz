@@ -1,5 +1,6 @@
 import logging
 from webapp import db
+from dateutil.parser import parse
 
 logging.basicConfig(format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
 logging.getLogger().setLevel(logging.DEBUG)
@@ -33,3 +34,53 @@ def salvar_lote(lote):
         log.error(f'Erro salvar ao tentar salvar o lote:{e}')
         db.session.rollback()
     return False
+
+
+def preencher_objeto_atributos_semvinculo(objeto_model, dicionario, df, linha):
+    """Função para preencher os atributos não vinculados a outros objetos/tabelas, sem consultar"""
+    for chave, atributo in dicionario.items():
+        # recupere o valor
+        valor = df.at[linha, chave]
+        if str(valor).isnumeric() or valor is None:
+            # Salva o atributo se o valor e numerico ou nulo
+            setattr(objeto_model, atributo, valor)
+        else:
+            # Salva o atributo quando texto
+            setattr(objeto_model, atributo, valor)
+    return objeto_model
+
+
+def preencher_objeto_atributos_booleanos(objeto_model, dicionario, df, linha):
+    """Função para preencher os atributos não vinculados a outros objetos/tabelas, sem consultar"""
+    ativos = ['SIM', 'OK', 'POSITIVO', 'VERDADEIRO', 1, '1', 'TRUE', True, 'Ativo']
+    for chave, atributo in dicionario.items():
+        # Recupere o valor e valide
+        valor = df.at[linha, chave]
+        ativo = valor in ativos if valor is not None else False
+        # Preenche o objeto
+        setattr(objeto_model, atributo, ativo)
+    return objeto_model
+
+
+def extrairClasseTexto(texto):
+    lista = texto.split("_")
+    if len(lista) == 2:
+        return str(lista[0]).capitalize()
+    else:
+        return str(lista[1]).capitalize()
+
+
+def preencher_objeto_atributos_datas(objeto_model, dicionario, df, linha):
+    """Função para preencher os atributos não vinculados a outros objetos/tabelas, sem consultar"""
+    for chave, atributo in dicionario.items():
+        valor = df.at[linha, chave]
+
+        try:
+            # Tenta fazer o parse da data
+            data = parse(valor)
+            setattr(objeto_model, atributo, data)
+        except ValueError:
+            # Se não for uma data válida, defina como None ou outro valor padrão
+            setattr(objeto_model, atributo, None)  # ou 0 ou qualquer outro valor padrão
+
+    return objeto_model

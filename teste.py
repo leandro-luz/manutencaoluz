@@ -33,17 +33,17 @@ from sendgrid.helpers.mail import Mail
 
 
 #
-# def data_futura(tempo, unidade):
+# def data_futura(tempo, nome):
 #     """ Função que calcula e retorna uma data no futuro"""
 #     # Fator basico
 #     fator = 1
-#     # Verifica qual a unidade de tempo
-#     if unidade == "Mensal" or  \
-#             unidade == "Bimensal" or  \
-#             unidade == "Trimensal" or  \
-#             unidade == "Semestral":
+#     # Verifica qual a nome de tempo
+#     if nome == "Mensal" or  \
+#             nome == "Bimensal" or  \
+#             nome == "Trimensal" or  \
+#             nome == "Semestral":
 #         fator = 30
-#     if unidade == "Anual":
+#     if nome == "Anual":
 #         fator  = 365
 #
 #     # retorna a data futura
