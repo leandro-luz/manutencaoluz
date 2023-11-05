@@ -213,7 +213,6 @@ class Equipamento(db.Model):
     centro_custo = db.Column(db.String(50), nullable=True)
     ativo = db.Column(db.Boolean, nullable=False, default=True)
 
-    empresa_id = db.Column(db.Integer(), db.ForeignKey("empresa.id"), nullable=False)
     subgrupo_id = db.Column(db.Integer(), db.ForeignKey("subgrupo.id"), nullable=False)
     setor_id = db.Column(db.Integer(), db.ForeignKey("setor.id"), nullable=True)
     local_id = db.Column(db.Integer(), db.ForeignKey("local.id"), nullable=True)
@@ -240,7 +239,6 @@ class Equipamento(db.Model):
     und_potencia_id = db.Column(db.Integer(), db.ForeignKey("tipo_potencia.id"), nullable=True)
     und_tensao_id = db.Column(db.Integer(), db.ForeignKey("tipo_tensao_eletrica.id"), nullable=True)
 
-    empresa = db.relationship("Empresa", back_populates="equipamento")
     subgrupo = db.relationship("Subgrupo", back_populates="equipamento")
     planomanutencao = db.relationship("PlanoManutencao", back_populates="equipamento", cascade="all, delete-orphan")
     ordemservico = db.relationship("OrdemServico", back_populates="equipamento", cascade="all, delete-orphan")

@@ -131,7 +131,6 @@ class Empresa(db.Model):
     pavimento = db.relationship("Pavimento", back_populates="empresa", cascade="all, delete-orphan")
     setor = db.relationship("Setor", back_populates="empresa", cascade="all, delete-orphan")
     local = db.relationship("Local", back_populates="empresa", cascade="all, delete-orphan")
-    equipamento = db.relationship("Equipamento", back_populates="empresa", cascade="all, delete-orphan")
 
     supplier = db.relationship("Supplier", back_populates="empresa")
 

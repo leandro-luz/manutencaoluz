@@ -330,7 +330,6 @@ def cadastrar_lote_equipamentos():
             equipamento = preencher_objeto_atributos_datas(equipamento, equipamento.titulos_data, df, linha)
             # vincula a empresa no equipamento
             equipamento.subgrupo_id = subgrupo.id
-            equipamento.empresa_id = current_user.empresa_id
 
         # Verifica se não foi rejeitado
         if linha not in rejeitados:
