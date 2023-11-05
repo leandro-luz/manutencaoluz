@@ -213,7 +213,7 @@ class Equipamento(db.Model):
     centro_custo = db.Column(db.String(50), nullable=True)
     ativo = db.Column(db.Boolean, nullable=False, default=True)
 
-    subgrupo_id = db.Column(db.Integer(), db.ForeignKey("subgrupo.id"), nullable=False)
+    subgrupo_id = db.Column(db.Integer(), db.ForeignKey("subgrupo.id"), nullable=True)
     setor_id = db.Column(db.Integer(), db.ForeignKey("setor.id"), nullable=True)
     local_id = db.Column(db.Integer(), db.ForeignKey("local.id"), nullable=True)
     pavimento_id = db.Column(db.Integer(), db.ForeignKey("pavimento.id"), nullable=True)
