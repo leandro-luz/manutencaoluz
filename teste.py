@@ -212,23 +212,25 @@ import pandas as pd
 # for a in df.columns:
 #     print(a)
 
-import datetime
+# from datetime import datetime, timezone, timedelta
+#
+# data_e_hora_atuais = datetime.now()
+# fuso_horario = timezone('America/Sao_Paulo')
+# print(fuso_horario)
+#
 import pytz
+import datetime
 
-def converter_para_utc(data_hora_local):
-    # Obtém o fuso horário de São Paulo
-    sao_paulo_tz = pytz.timezone('America/Sao_Paulo')
+def data_atual_utc():
+    """Função que retorna a data atual corrigindo para o UTC"""
+    local_timezone = 'America/Sao_Paulo'
+    data_atual = datetime.datetime.now()
+    try:
+        tz = pytz.timezone(local_timezone)
+        utc_offset = tz.utcoffset(data_atual).total_seconds()/3600
 
-    # Certifique-se de que a data e hora local esteja ciente do fuso horário de São Paulo
-    data_hora_local = sao_paulo_tz.localize(data_hora_local)
+        # Retornar a data corrigida
+        return data_atual + datetime.timedelta(hours=utc_offset)
+    except pytz.UnknownTimeZoneError:
+        return data_atual
 
-    # Converte a data e hora local para o UTC
-    data_hora_utc = data_hora_local.astimezone(pytz.UTC)
-
-    return data_hora_utc
-
-# Exemplo de uso:
-
-data_hora_local = datetime.datetime.now()  # Substitua com a data e hora desejadas
-data_hora_utc = converter_para_utc(data_hora_local)
-print("Data e hora no UTC:", data_hora_utc)

@@ -4,7 +4,7 @@ from webapp import db
 from webapp.plano_manutencao.models import ListaAtividade, PlanoManutencao
 from webapp.usuario.models import PerfilManutentorUsuario
 from webapp.utils.objetos import atributo_existe
-from webapp.utils.tools import data_utc
+from webapp.utils.tools import data_atual_utc
 from sqlalchemy import func
 from flask_login import current_user
 from flask import flash
@@ -240,7 +240,7 @@ class OrdemServico(db.Model):
         """     Função para atribuir valores para ordem a partir de um formulário       """
         if new:
             self.codigo = OrdemServico.gerar_codigo_ordem()
-            self.data_abertura = data_utc()  # datetime.datetime.now()
+            self.data_abertura = data_atual_utc()  # datetime.datetime.now()
             self.data_prevista = dta_prevista
             self.solicitante_id = current_user.id
             self.tiposituacaoordem_id = TipoSituacaoOrdem.retornar_id_situacao("AGAP")
@@ -252,7 +252,7 @@ class OrdemServico(db.Model):
     def alterar_atributos_by_plano(self, plano):
         """     Função para atribuir valores para ordem a partir de um plano de manutenção  """
         self.codigo = OrdemServico.gerar_codigo_ordem()
-        self.data_abertura = data_utc()  # datetime.datetime.now()
+        self.data_abertura = data_atual_utc()  # datetime.datetime.now()
         self.solicitante_id = None
         self.tiposituacaoordem_id = TipoSituacaoOrdem.retornar_id_situacao("AGAP")
         self.tipostatusordem_id = TipoStatusOrdem.retornar_id_status("PEND")
@@ -266,7 +266,7 @@ class OrdemServico(db.Model):
 
     def alterar_atributos_by_ordem(self, ordem, plano):
         self.codigo = OrdemServico.gerar_codigo_ordem()
-        self.data_abertura = data_utc()  # datetime.datetime.now()
+        self.data_abertura = data_atual_utc()  # datetime.datetime.now()
         self.solicitante_id = None
         self.tiposituacaoordem_id = TipoSituacaoOrdem.retornar_id_situacao("AGAP")
         self.tipostatusordem_id = TipoStatusOrdem.retornar_id_status("PEND")
