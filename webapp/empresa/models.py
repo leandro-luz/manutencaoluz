@@ -79,12 +79,25 @@ class Empresa(db.Model):
                    'Tipo*': 'tipo', 'CEP*': 'cep', 'Logradouro*': 'logradouro', 'Numero*': 'numero',
                    'Bairro*': 'bairro', 'Municipio*': 'municipio', 'UF*': 'uf',
                    'Email*': 'email', 'Telefone*': 'telefone', 'Contrato*': 'contrato_id',
-                   'Data_Abertura': 'data_abertura',
-                   'Situacao': 'situacao', 'Porte': 'porte', 'Natureza_Juridica': 'natureza_juridica',
+                   'Situacao': 'situacao', 'Porte': 'porte', 'Data_Abertura': 'data_abertura',
+                   'Natureza_Juridica': 'natureza_juridica',
                    'CNAE_P_Codigo': 'cnae_principal', 'CNAE_P_Texto': 'cnae_principal_texto',
                    'Inscricao_Estadual': 'inscricao_estadual', 'Inscricao_Municipal': 'inscricao_municipal',
-                   'Localizacao': 'localizacao', 'Complemento': 'complemento', 'Nome_Responsavel': 'nome_responsavel',
-                   'Ativo': 'ativo'}
+                   'Localizacao': 'localizacao', 'Complemento': 'complemento', 'Nome_Responsavel': 'nome_responsavel'
+                   }
+
+    titulos_valor = {'CNPJ*': 'cnpj', 'Razao_Social*': 'razao_social', 'Nome_Fantasia*': 'nome_fantasia',
+                     'Tipo*': 'tipo', 'CEP*': 'cep', 'Logradouro*': 'logradouro', 'Numero*': 'numero',
+                     'Bairro*': 'bairro', 'Municipio*': 'municipio', 'UF*': 'uf',
+                     'Email*': 'email', 'Telefone*': 'telefone', 'Contrato*': 'contrato_id',
+                     'Situacao': 'situacao', 'Porte': 'porte',
+                     'Natureza_Juridica': 'natureza_juridica',
+                     'CNAE_P_Codigo': 'cnae_principal', 'CNAE_P_Texto': 'cnae_principal_texto',
+                     'Inscricao_Estadual': 'inscricao_estadual', 'Inscricao_Municipal': 'inscricao_municipal',
+                     'Localizacao': 'localizacao', 'Complemento': 'complemento', 'Nome_Responsavel': 'nome_responsavel'
+                     }
+
+    titulos_data = {'Data_Abertura': 'data_abertura'}
 
     titulos_csv = {'cnpj; razao_social; nome_fantasia; data_abertura; situacao; tipo; '
                    + 'nome_responsavel; porte; natureza_juridica; cnae_principal; cnae_principal_texto; '

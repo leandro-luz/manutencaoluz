@@ -15,6 +15,8 @@ from webapp.utils.email import send_email
 from webapp.utils.tools import create_token, verify_token
 from webapp.utils.erros import flash_errors
 from webapp.utils.files import lista_para_csv
+from webapp.utils.objetos import salvar_lote, preencher_objeto_atributos_semvinculo, \
+    preencher_objeto_atributos_booleanos, preencher_objeto_atributos_datas
 
 usuario_blueprint = Blueprint(
     'usuario',
@@ -487,21 +489,14 @@ def cadastrar_lote_usuarios():
             senha.alterar_data_expiracao()
             senha.salvar()
 
-            # altera o valor do perfil de nome para id na tabela
-            df.at[linha, 'PerfilAcesso*'] = perfil.id
+            # preeche os atributos diretamente
+            usuario_ = preencher_objeto_atributos_semvinculo(usuario_, usuario_.titulos_doc, df, linha)
 
             # cria um equipamento e popula ele
             usuario_ = Usuario()
-            for k, v in usuario_.titulos_doc.items():
-                # recupere o valor
-                valor = df.at[linha, k]
-                if str(valor).isnumeric() or valor is None:
-                    # Salva o atributo se o valor e numerico ou nulo
-                    setattr(usuario_, v, valor)
-                else:
-                    # Salva o atributo quando texto
-                    setattr(usuario_, v, valor)
+
             # dados do usuário
+            usuario_.perfilacesso_id = perfil.id
             usuario_.empresa_id = current_user.empresa_id
             usuario_.senha_id = senha.id
             usuario_.data_assinatura = datetime.datetime.now()

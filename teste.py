@@ -183,26 +183,26 @@ from pathlib import Path
 import pandas as pd
 
 # create a sample dataframe
-df = pd.DataFrame({
-    'Name': ['Alice', 'Bob', 'Charlie', 'David'],
-    'Age': [25, 30, 35, 40],
-    'Salary': [50000, 60000, 70000, 80000]
-})
-colunas_importada = df.columns
-
-
-colunas_base = {'Name': 'name', 'Nota': 'nota', 'Age': 'age', 'Endereco': 'endereco', 'Salary': 'salary'}
-
-nomes = []
-for i in colunas_base:
-    nomes.append(colunas_base[i])
-
-df_final = pd.DataFrame(columns=nomes)
-
-for col in colunas_importada:
-    df_final[colunas_base[col]] = df[col]
-
-print(df_final)
+# df = pd.DataFrame({
+#     'Name': ['Alice', 'Bob', 'Charlie', 'David'],
+#     'Age': [25, 30, 35, 40],
+#     'Salary': [50000, 60000, 70000, 80000]
+# })
+# colunas_importada = df.columns
+#
+#
+# colunas_base = {'Name': 'name', 'Nota': 'nota', 'Age': 'age', 'Endereco': 'endereco', 'Salary': 'salary'}
+#
+# nomes = []
+# for i in colunas_base:
+#     nomes.append(colunas_base[i])
+#
+# df_final = pd.DataFrame(columns=nomes)
+#
+# for col in colunas_importada:
+#     df_final[colunas_base[col]] = df[col]
+#
+# print(df_final)
 
 # nomes=['Name','Nota','Age','Endereco','Salary']
 # df2 = pd.DataFrame(columns=nomes)
@@ -211,3 +211,24 @@ print(df_final)
 #
 # for a in df.columns:
 #     print(a)
+
+import datetime
+import pytz
+
+def converter_para_utc(data_hora_local):
+    # Obtém o fuso horário de São Paulo
+    sao_paulo_tz = pytz.timezone('America/Sao_Paulo')
+
+    # Certifique-se de que a data e hora local esteja ciente do fuso horário de São Paulo
+    data_hora_local = sao_paulo_tz.localize(data_hora_local)
+
+    # Converte a data e hora local para o UTC
+    data_hora_utc = data_hora_local.astimezone(pytz.UTC)
+
+    return data_hora_utc
+
+# Exemplo de uso:
+
+data_hora_local = datetime.datetime.now()  # Substitua com a data e hora desejadas
+data_hora_utc = converter_para_utc(data_hora_local)
+print("Data e hora no UTC:", data_hora_utc)

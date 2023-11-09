@@ -13,6 +13,8 @@ from webapp.utils.email import send_email
 from webapp.utils.tools import create_token, verify_token
 from webapp.utils.erros import flash_errors
 from webapp.utils.files import lista_para_csv
+from webapp.utils.objetos import salvar_lote, preencher_objeto_atributos_semvinculo, \
+    preencher_objeto_atributos_booleanos, preencher_objeto_atributos_datas
 import pandas as pd
 import numpy as np
 
@@ -338,22 +340,18 @@ def cadastrar_lote_empresas():
                     [df.at[linha, 'cnpj'], df.at[linha, 'contrato_nome'],
                      "rejeitado devido ao Contrato nao existir"])
             else:
-                # altera o valor do contrato
-                df.at[linha, 'contrato_id'] = contrato.id
                 # cria um equipamento e popula ele
                 empresa = Empresa()
 
-                for k, v in empresa.titulos_doc.items():
-                    # recupere o valor
-                    valor = df.at[linha, v]
-                    if str(valor).isnumeric() or valor is None:
-                        # Salva o atributo se o valor e numerico ou nulo
-                        setattr(empresa, v, valor)
-                    else:
-                        # Salva o atributo quando texto
-                        setattr(empresa, v, valor)
+                # preeche os atributos diretamente
+                empresa = preencher_objeto_atributos_semvinculo(empresa, empresa.titulos_valor, df, linha)
+                # verificar valores com data
+                empresa = preencher_objeto_atributos_datas(empresa, empresa.titulos_data, df, linha)
+
                 # setando as empresas como cliente
                 empresa.tipoempresa_id = tipoempresa.id
+                empresa.contrato_id = contrato.id
+
                 # insere nas listas dos aceitos
                 aceitos_cod.append(df.at[linha, 'cnpj'])
                 # insere o equipamento na lista
