@@ -1,40 +1,40 @@
 {% extends "sistema_base.html" %}
 {% block body %}
-    <body>
+<body>
 
-    <h2> LISTA DOS FORNECEDORES </h2>
-    <a href="{{ url_for('supplier.supplier_edit', id=0) }}">
-        Adicionar
-    </a>
+<h2> LISTA DOS FORNECEDORES </h2>
+<a href="{{ url_for('supplier.supplier_edit', id=0) }}">
+    Adicionar
+</a>
 
-    <input class="form-control" id="myInput" type="text" placeholder="Filtrar.."><br>
+<input class="form-control" id="myInput" type="text" placeholder="Filtrar.."><br>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th scope="col">NOME</th>
-                <th scope="col"></th>
-            </tr>
-        </thead>
+<table class="table">
+    <thead>
+    <tr>
+        <th scope="col">NOME</th>
+        <th scope="col"></th>
+    </tr>
+    </thead>
 
-        <tbody id="myTable">
-            {% for supplier in suppliers %}
-                <tr>
-                    <td>{{ supplier.nome }}</td>
-                    <td>
-                        <a href="{{ url_for('supplier.supplier_edit', id=supplier.id) }}">
+    <tbody id="myTable">
+    {% for supplier in suppliers %}
+    <tr>
+        <td>{{ supplier.nome }}</td>
+        <td>
+            <a href="{{ url_for('supplier.supplier_edit', id=supplier.id) }}">
                             <span data-tooltip="Informações">
                                 <i class="bi-caret-right fs-6"></i>
                             </span>
-                        </a>
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
 
-    <a href="{{url_for('sistema.index')}}">Voltar</a>
+<a href="{{url_for('sistema.index')}}">Voltar</a>
 
-    </body>
+</body>
 <script type="text/javascript" src="/static/js/filtro_coluna.js"></script>
 {% endblock %}

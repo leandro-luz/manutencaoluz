@@ -1,13 +1,8 @@
-import logging
 from webapp import db
 from webapp.utils.objetos import atributo_existe, atribuir_none_id, extrairClasseTexto
 from flask_login import current_user
 from sqlalchemy import func
 from unidecode import unidecode
-
-logging.basicConfig(format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
-logging.getLogger().setLevel(logging.DEBUG)
-log = logging.getLogger(__name__)
 
 
 def verificar_existencia_localizacao_by_nome(model, valor):
@@ -63,28 +58,6 @@ class Grupo(db.Model):
         self.nome = form.nome.data.upper()
         self.empresa_id = current_user.empresa_id
 
-    def salvar(self) -> bool:
-        """    Função para salvar no banco de dados o objeto"""
-        try:
-            db.session.add(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
-
-    def excluir(self) -> bool:
-        """    Função para retirar do banco de dados o objeto"""
-        try:
-            db.session.delete(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro Deletar objeto no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
-
 
 class Subgrupo(db.Model):
     """    Classe de sistemas nos ativos   """
@@ -110,28 +83,6 @@ class Subgrupo(db.Model):
         """    Função para alterar os atributos do objeto    """
         self.nome = form.nome.data.upper()
         self.grupo_id = grupo_id
-
-    def salvar(self) -> bool:
-        """    Função para salvar no banco de dados o objeto"""
-        try:
-            db.session.add(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
-
-    def excluir(self) -> bool:
-        """    Função para retirar do banco de dados o objeto"""
-        try:
-            db.session.delete(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro Deletar objeto no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
 
 
 class Equipamento(db.Model):
@@ -331,17 +282,6 @@ class Equipamento(db.Model):
         else:
             self.alterar_ativo(True)
 
-    def salvar(self) -> bool:
-        """    Função para salvar no banco de dados o objeto"""
-        try:
-            db.session.add(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
-
     def gerar_codigo(self, form, new):
         """Função que gera automático o código do equipamento"""
         if new:
@@ -388,16 +328,23 @@ class Equipamento(db.Model):
         else:
             return form.tag.data
 
-    def excluir(self) -> bool:
-        """    Função para retirar do banco de dados o objeto"""
-        try:
-            db.session.delete(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro Deletar objeto no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
+    @staticmethod
+    def localizar_equipamento_by_id(empresa_id, equipamento_id):
+        return Equipamento.query.filter(
+            Grupo.empresa_id == empresa_id,
+            Grupo.id == Subgrupo.grupo_id,
+            Subgrupo.id == Equipamento.subgrupo_id,
+            Equipamento.id == equipamento_id
+        ).one_or_none()
+
+    @staticmethod
+    def localizar_equipamento_by_nome(empresa_id, equipamento_descricao_curta):
+        return Equipamento.query.filter(
+            Grupo.empresa_id == empresa_id,
+            Grupo.id == Subgrupo.grupo_id,
+            Subgrupo.id == Equipamento.subgrupo_id,
+            Equipamento.descricao_curta == equipamento_descricao_curta
+        ).one_or_none()
 
 
 class Pavimento(db.Model):
@@ -429,28 +376,6 @@ class Pavimento(db.Model):
             self.sigla = form.sigla.data.upper()
         self.empresa_id = current_user.empresa_id
 
-    def salvar(self) -> bool:
-        """    Função para salvar no banco de dados o objeto"""
-        try:
-            db.session.add(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
-
-    def excluir(self) -> bool:
-        """    Função para retirar do banco de dados o objeto"""
-        try:
-            db.session.delete(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro Deletar objeto no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
-
 
 class Setor(db.Model):
     """    Classe de grupo de ativos    """
@@ -480,28 +405,6 @@ class Setor(db.Model):
             self.sigla = form.sigla.data.upper()
         self.empresa_id = current_user.empresa_id
 
-    def salvar(self) -> bool:
-        """    Função para salvar no banco de dados o objeto"""
-        try:
-            db.session.add(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
-
-    def excluir(self) -> bool:
-        """    Função para retirar do banco de dados o objeto"""
-        try:
-            db.session.delete(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro Deletar objeto no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
-
 
 class Local(db.Model):
     """    Classe de grupo de ativos    """
@@ -530,28 +433,6 @@ class Local(db.Model):
         if form.sigla.data:
             self.sigla = form.sigla.data.upper()
         self.empresa_id = current_user.empresa_id
-
-    def salvar(self) -> bool:
-        """    Função para salvar no banco de dados o objeto"""
-        try:
-            db.session.add(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
-
-    def excluir(self) -> bool:
-        """    Função para retirar do banco de dados o objeto"""
-        try:
-            db.session.delete(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro Deletar objeto no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
 
 
 class Volume(db.Model):

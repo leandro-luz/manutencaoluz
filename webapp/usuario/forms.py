@@ -3,6 +3,7 @@ from wtforms import StringField, PasswordField, BooleanField, SubmitField, Selec
 from wtforms.validators import InputRequired, Length, EqualTo, Email, Regexp, Optional
 from webapp.usuario.models import Usuario, TelaPerfilAcesso, PerfilManutentorUsuario, PerfilAcesso
 from webapp.empresa.models import Empresa
+from webapp.utils.objetos import salvar
 from flask import flash
 from flask_login import current_user
 
@@ -46,7 +47,7 @@ class LoginForm(Form):
                 valor = usuario.senha.contador_acesso_temporario + 1
                 if valor <= 3:
                     usuario.senha.alterar_contador_accesso_temporario()
-                    usuario.senha.salvar()
+                    salvar(usuario.senha)
                     flash(f'Usuário está com a senha temporária, permitido mais {3 - valor} acesso(s)',
                           category="warning")
                 elif valor > 3:

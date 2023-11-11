@@ -12,8 +12,8 @@ app.app_context().push()
 
 # print("Excluindo todas as tabelas")
 # db.drop_all()
-print("Criando todas as tabelas")
-db.create_all()
+# print("Criando todas as tabelas")
+# db.create_all()
 
 telas_lista = [
     {'posicao': 1, 'nome': 'Interessado', 'icon': 'bi-card-list', 'url': 'empresa.interessado_listar'},
@@ -27,9 +27,9 @@ telas_lista = [
     {'posicao': 8, 'nome': 'Almoxarifado', 'icon': 'bi-box-seam', 'url': 'sistema.almoxarifado'},
     {'posicao': 9, 'nome': 'Ferramentas', 'icon': 'bi-tools', 'url': 'sistema.ferramentas'},
     {'posicao': 10, 'nome': 'EPI_EPC', 'icon': 'bi-umbrella-fill', 'url': 'sistema.epi'},
-    {'posicao': 11, 'nome': 'Programação', 'icon': 'bi-calendar3', 'url': 'sistema.programação'},
+    {'posicao': 11, 'nome': 'Programação', 'icon': 'bi-calendar3', 'url': 'sistema.programacao'},
     {'posicao': 12, 'nome': 'Fornecedor', 'icon': 'bi-truck', 'url': 'supplier.supplier_list'},
-    {'posicao': 13, 'nome': 'Orçamento', 'icon': 'bi-cash', 'url': 'sistema.orçamento'},
+    {'posicao': 13, 'nome': 'Orçamento', 'icon': 'bi-cash', 'url': 'sistema.orcamento'},
     {'posicao': 14, 'nome': 'Indicadores', 'icon': 'bi-graph-up', 'url': 'sistema.indicador'},
 
 ]

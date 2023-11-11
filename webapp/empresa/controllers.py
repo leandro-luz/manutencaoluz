@@ -13,10 +13,12 @@ from webapp.utils.email import send_email
 from webapp.utils.tools import create_token, verify_token
 from webapp.utils.erros import flash_errors
 from webapp.utils.files import lista_para_csv
-from webapp.utils.objetos import salvar_lote, preencher_objeto_atributos_semvinculo, \
+from webapp.utils.objetos import salvar, excluir, preencher_objeto_atributos_semvinculo, \
     preencher_objeto_atributos_booleanos, preencher_objeto_atributos_datas
 import pandas as pd
 import numpy as np
+from webapp.utils.tools import data_atual_utc
+from webapp.sistema.models import LogsEventos
 
 empresa_blueprint = Blueprint(
     'empresa',
@@ -30,6 +32,7 @@ empresa_blueprint = Blueprint(
 @login_required
 @has_view('Empresa')
 def empresa_listar() -> str:
+    LogsEventos.registrar("evento", empresa_listar.__name__)
     """    Retorna a lista de empresas vinculada a empresa do usuario     """
     empresas = Empresa.query.filter_by(empresa_gestora_id=current_user.empresa_id)  # retorna uma lista com base no _
 
@@ -40,27 +43,30 @@ def empresa_listar() -> str:
 @login_required
 @has_view('Empresa')
 def empresa_cliente() -> str:
+    LogsEventos.registrar("evento", empresa_cliente.__name__)
     """    Retorna a lista de empresas vinculada a empresa do usuario     """
-    empresa = Empresa.query.filter_by(id=1).one_or_none()
-    empresas = {empresa.nome_fantasia: lista_clientes(current_user.empresa_id)}
+    empresa = Empresa.localizar_empresa_by_id(1)
+    empresas = {empresa.nome_fantasia: Empresa.lista_clientes(current_user.empresa_id)}
 
     return render_template('empresa_cliente.html', empresas=empresas)
 
 
-def lista_clientes(id_):
-    clientes = Empresa.query.filter(
-        Empresa.id != 1,
-        Empresa.empresa_gestora_id == id_).all()
-
-    return [{cliente.nome_fantasia: lista_clientes(cliente.id)} for cliente in clientes]
+# def lista_clientes(id_):
+#     clientes = Empresa.query.filter(
+#         Empresa.id != 1,
+#         Empresa.empresa_gestora_id == id_).all()
+#
+#     return [{cliente.nome_fantasia: lista_clientes(cliente.id)} for cliente in clientes]
 
 
 @empresa_blueprint.route('/empresa_ativar/<int:empresa_id>', methods=['GET', 'POST'])
 @login_required
 @has_view('Empresa')
 def empresa_ativar(empresa_id):
+    LogsEventos.registrar("evento", empresa_ativar.__name__, empresa_id=empresa_id)
     """    Função que ativa/desativa uma empresa    """
-    empresa = Empresa.query.filter_by(id=empresa_id).one_or_none()  # instância uma empresa com base no identificador
+
+    empresa = Empresa.localizar_empresa_by_id(empresa_id)
     if empresa:  # se a empresa existir
         ativo = empresa.ativo
 
@@ -72,7 +78,7 @@ def empresa_ativar(empresa_id):
                 return redirect(url_for('empresa.empresa_listar'))
 
         empresa.ativar_desativar()  # ativa/inativa a empresa
-        if empresa.salvar():  # salva no banco de dados a alteração
+        if salvar(empresa):  # salva no banco de dados a alteração
             if ativo:
                 flash("Empresa desativada com sucesso", category="success")
             else:
@@ -89,10 +95,13 @@ def empresa_ativar(empresa_id):
 @login_required
 @has_view('Empresa')
 def empresa_excluir(empresa_id):
-    empresa = Empresa.query.filter_by(id=empresa_id).one_or_none()
+    LogsEventos.registrar("evento", empresa_excluir.__name__, empresa_id=empresa_id)
+    """Função para excluir uma empresa"""
 
+    # localizar uma empresa
+    empresa = Empresa.localizar_empresa_by_id(empresa_id)
     if empresa:
-        if empresa.excluir():
+        if excluir(empresa):
             flash("Empresa excluída", category="success")
         else:
             flash("Erro ao excluir a empresa", category="danger")
@@ -105,15 +114,12 @@ def empresa_excluir(empresa_id):
 @login_required
 @has_view('Empresa')
 def empresa_editar(empresa_id):
+    LogsEventos.registrar("evento", empresa_editar.__name__, empresa_id=empresa_id)
     """   Função que altera os valores    """
-    if empresa_id > 0:  # se o identificador foi passado como parâmetro
-        # --------- LER
-        # localiza a empresa
-        empresa = Empresa.query.filter(
-            Empresa.id == empresa_id,
-            Empresa.empresa_gestora_id == current_user.empresa_id
-        ).one_or_none()
 
+    if empresa_id > 0:
+        # localiza a empresa
+        empresa = Empresa.localizar_empresa_by_id(empresa_id)
         # se empresa existir
         if empresa:
             form = EmpresaForm(obj=empresa)  # instânciar o formulário
@@ -151,7 +157,7 @@ def empresa_editar(empresa_id):
     # --------- VALIDAÇÕES E AÇÕES
     if form.validate_on_submit():
         empresa.alterar_atributos(form, current_user.empresa_id, tipoempresa.id, new)
-        if empresa.salvar():
+        if salvar(empresa):
             if new:
                 empresa = Empresa.query.filter(Empresa.cnpj == form.cnpj.data,
                                                Empresa.empresa_gestora_id == current_user.empresa_id).one_or_none()
@@ -184,7 +190,7 @@ def new_admin(empresa: [Empresa], enviar_email):
     for valor in lista:
         # cadastro da regra
         perfilacesso = PerfilAcesso(nome=valor['nome'], descricao=valor['descricao'], empresa_id=empresa.id, ativo=True)
-        if not perfilacesso.salvar():
+        if not salvar(perfilacesso):
             flash("Erro ao salvar o perfil", category="danger")
             break
 
@@ -193,7 +199,7 @@ def new_admin(empresa: [Empresa], enviar_email):
         for telacontrato in telascontrato:
             # cadastro de perfisacesso para o administrador
             telaperfilacesso = TelaPerfilAcesso(perfilacesso_id=perfilacesso.id, tela_id=telacontrato.tela_id)
-            if not telaperfilacesso.salvar():
+            if not salvar(telaperfilacesso):
                 flash("Erro ao salvar a tela no perfil", category="danger")
                 break
 
@@ -208,7 +214,7 @@ def new_admin(empresa: [Empresa], enviar_email):
             senha.alterar_senha(Senha.password_adminluz())
             senha.alterar_data_expiracao()
             senha.alterar_senha_temporaria(False)
-        if not senha.salvar():
+        if not salvar(senha):
             flash("Erro ao salvar a senha do usuário", category="danger")
             break
 
@@ -219,7 +225,7 @@ def new_admin(empresa: [Empresa], enviar_email):
                                       email=valor['email'], empresa_id=empresa.id,
                                       perfilacesso_id=perfilacesso.id, senha_id=senha.id)
 
-        if usuario.salvar():
+        if salvar(usuario):
             # Se está permitido o envio do email pelo usuario e ignora o email para adminstracao
             if enviar_email and valor['enviar_email']:
                 # envia o email com as informações de login
@@ -238,6 +244,7 @@ def new_admin(empresa: [Empresa], enviar_email):
 @login_required
 @has_view('Empresa')
 def gerar_padrao_empresas():
+    LogsEventos.registrar("evento", gerar_padrao_empresas.__name__)
     # Gera o arquivo csv dos tabela padrão para cadastro em lote
     csv_data = lista_para_csv([[x] for x in Empresa.titulos_doc], None)
     nome = "tabela_base_empresa.csv"
@@ -253,6 +260,7 @@ def gerar_padrao_empresas():
 @login_required
 @has_view('Empresa')
 def gerar_csv_empresas():
+    LogsEventos.registrar("evento", gerar_csv_empresas.__name__)
     # Gera o arquivo csv com os titulos
     csv_data = lista_para_csv([[x] for x in Empresa.query.filter_by(empresa_gestora_id=current_user.empresa_id)],
                               Empresa.titulos_csv)
@@ -268,6 +276,7 @@ def gerar_csv_empresas():
 @login_required
 @has_view('Equipamento')
 def cadastrar_lote_empresas():
+    LogsEventos.registrar("evento", cadastrar_lote_empresas.__name__)
     form = EmpresaForm()
 
     # filename = secure_filename(form.file.data.filename)
@@ -361,7 +370,7 @@ def cadastrar_lote_empresas():
     if len(aceitos) > 0:
         for empresa in aceitos:
             # salvar a empresa no Banco de dados
-            if empresa.salvar():
+            if salvar(empresa):
                 # registra os usuários para as empresas
                 new_admin(empresa, False)
     flash(f"Total de empresas cadastrados: {len(aceitos)}, rejeitados:{len(total) - len(aceitos)}", "success")
@@ -386,7 +395,7 @@ def solicitar():
     if form.validate_on_submit():
         interessado = Interessado()
         interessado.alterar_atributos(form)
-        if interessado.salvar():
+        if salvar(interessado):
             flash("Informações enviadas com sucesso, em breve vamos lhe atender", category="success")
         else:
             flash("Interessado não registrado", category="danger")
@@ -400,6 +409,7 @@ def solicitar():
 @login_required
 @has_view('Empresa')
 def interessado_listar() -> str:
+    LogsEventos.registrar("evento", interessado_listar.__name__)
     """    Função que retorna uma lista com interessados     """
     # retorna uma lista de interessados
     interessados = Interessado.query.order_by(Interessado.data_solicitacao.desc())
@@ -410,6 +420,7 @@ def interessado_listar() -> str:
 @login_required
 @has_view('Empresa')
 def enviar_link(interessado_id):
+    LogsEventos.registrar("evento", enviar_link.__name__, interessado_id=interessado_id)
     interessado = Interessado.query.filter_by(id=interessado_id).one_or_none()
     if interessado:
         token = create_token(interessado.id, interessado.email)
@@ -497,10 +508,10 @@ def empresa_registrar(token):
 @login_required
 @has_view('Empresa')
 def empresa_acessar(empresa_id):
+    LogsEventos.registrar("evento", empresa_acessar.__name__, empresa_id=empresa_id)
     """Função para acesso rápido a empresa subsidiária"""
 
-    empresa = Empresa.query.filter_by(id=empresa_id).one_or_none()
-
+    empresa = Empresa.localizar_empresa_by_id(empresa_id)
     if empresa:
         if empresa_id != current_user.empresa_id:
             usuario = Usuario.query.filter(

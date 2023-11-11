@@ -46,7 +46,7 @@
                     <th scope="col">TIPO</th>
                     <th scope="col">PERIODICIDADE</th>
                     <th scope="col">EQUIPAMENTO</th>
-                    <th scope="col">ATIVO</th>
+                    <th scope="col"></th>
                     <th scope="col"></th>
                 </tr>
                 </thead>
@@ -59,7 +59,14 @@
                     <td>{{ plano.tipoordem.nome }}</td>
                     <td>{{ plano.periodicidade.nome }}</td>
                     <td>{{ plano.equipamento.descricao_curta }}</td>
-
+                    <td>
+                        <a href="{{ url_for('plano_manutencao.plano_excluir', plano_id=plano.id) }}"
+                           onclick="return deleteItem();">
+                            <span data-tooltip="Excluir">
+                               <i class="bi-trash fs-6"></i>
+                            </span>
+                        </a>
+                    </td>
                     {% if plano.ativo == True %}
                     <td>
                         <a href="{{ url_for('plano_manutencao.plano_ativar', plano_id=plano.id) }}">
@@ -98,7 +105,7 @@
 
 </body>
 
-<script src="/static/js/exportar_consulta.js" type="text/javascript"></script>
 <script src="/static/js/filtro_coluna.js" type="text/javascript"></script>
+<script src="/static/js/confirmacao_exclusao.js" type="text/javascript"></script>
 
 {% endblock %}

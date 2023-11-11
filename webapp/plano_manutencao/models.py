@@ -1,15 +1,14 @@
-import logging
 import datetime
+
 from dateutil.relativedelta import relativedelta
-from webapp import db
-# from webapp.ordem_servico.models import TipoOrdem
-from webapp.equipamento.models import Equipamento
 from sqlalchemy import func
 from unidecode import unidecode
 
-logging.basicConfig(format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
-logging.getLogger().setLevel(logging.DEBUG)
-log = logging.getLogger(__name__)
+from webapp import db
+from webapp.equipamento.models import Equipamento
+from webapp.sistema.models import LogsEventos
+from webapp.utils.objetos import atributo_existe
+from webapp.utils.tools import data_atual_utc
 
 
 class TipoData(db.Model):
@@ -79,35 +78,13 @@ class ListaAtividade(db.Model):
 
     def alterar_atributos(self):
         """    Função para alterar os atributos do objeto    """
-        self.data = datetime.datetime.now()
+        self.data = data_atual_utc()
         self.nome = self.data.strftime("%Y%m%d%H%M%S")
 
     def alterar_observacao(self, observacao):
         """Função para alterar o campo observação"""
         self.observacao = observacao
         self.salvar()
-
-    def salvar(self) -> bool:
-        """    Função para salvar no banco de dados o objeto"""
-        try:
-            db.session.add(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
-
-    def excluir(self) -> bool:
-        """    Função para retirar do banco de dados o objeto"""
-        try:
-            db.session.delete(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro Deletar objeto no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
 
     def clone(self):
         d = dict(self.__dict__)
@@ -132,7 +109,7 @@ class ListaAtividade(db.Model):
             else:
                 # Criar uma copia do lista antiga
                 listaatividade_nova = listaatividade_antiga.clone()
-                listaatividade_nova.data = datetime.datetime.now()
+                listaatividade_nova.data = data_atual_utc()
             listaatividade_nova.salvar()
             # retorna o id da nova lista
             valor = listaatividade_nova.id
@@ -182,28 +159,6 @@ class Atividade(db.Model):
         self.tipoparametro_id = form.tipoparametro_id.data
         self.listaatividade_id = form.listaatividade_id.data
 
-    def salvar(self) -> bool:
-        """    Função para salvar no banco de dados o objeto"""
-        try:
-            db.session.add(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
-
-    def excluir(self) -> bool:
-        """    Função para retirar do banco de dados o objeto"""
-        try:
-            db.session.delete(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro Deletar objeto no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
-
     @staticmethod
     def clone(listaantiga_id, listanova_id):
         """     Função para criar os clones das atividades de uma nova lista de atividades"""
@@ -226,7 +181,7 @@ class Atividade(db.Model):
             db.session.add_all(atividades_novas)
             db.session.commit()
         except Exception as e:
-            log.error(f'Erro salvar no banco de dados:{e}')
+            LogsEventos.registrar("erro", clone.__name__, erro=e)
             db.session.rollback()
 
 
@@ -234,18 +189,27 @@ class PlanoManutencao(db.Model):
     """    Classe de Plano de Manutenção   """
 
     # titulos para cadastro
-    titulos_doc = {'Nome*': 'nome', 'Codigo*': 'codigo', 'Tipo_Ordem*': 'tipoordem_id',
+    titulos_doc = {'Nome*': 'nome', 'Codigo': 'codigo', 'Total_Tecnicos*': 'total_tecnico',
+                   'Tempo_Estimado*': 'tempo_estimado', 'Tipo_Ordem*': 'tipoordem_id',
                    'Tipo_Data_Inicial*': 'tipodata_id', 'Data_Inicio*': 'data_inicio',
-                   'Periodicidade*': 'periodicidade_id', 'Equipamento_cod*': 'equipamento_id'}
+                   'Periodicidade*': 'periodicidade_id', 'Equipamento_descricao_curta*': 'equipamento_id'}
 
-    titulos_csv = {'nome; codigo; data_inicio; ativo; total_tecnico; tempo_estimado; revisao;'
+    titulos_csv = {'nome; codigo; data_inicio; ativo; total_tecnico; tempo_estimado;'
                    'tipodata_nome; periodicidade_nome; equipamento_descricao_curta; tipoordem_nome'}
+
+    titulos_valor = {'Nome*': 'nome', 'Codigo': 'codigo', 'Total_Tecnicos*': 'total_tecnico',
+                     'Tempo_Estimado*': 'tempo_estimado'}
+
+    titulos_id = {'Tipo_Ordem*': 'tipoordem_id', 'Tipo_Data_Inicial*': 'tipodata_id',
+                  'Periodicidade*': 'periodicidade_id', 'Equipamento_descricao_curta*': 'equipamento_id'}
+
+    titulos_data = {'Data_Inicio*': 'data_inicio'}
 
     __tablename__ = 'plano_manutencao'
 
     id = db.Column(db.Integer(), primary_key=True)
     nome = db.Column(db.String(50), nullable=False, index=True)
-    codigo = db.Column(db.String(50), nullable=False, index=True)
+    codigo = db.Column(db.String(50), nullable=True)
     data_inicio = db.Column(db.DateTime(), nullable=False)
     ativo = db.Column(db.Boolean, nullable=False, default=False)
     total_tecnico = db.Column(db.Integer(), nullable=False)
@@ -266,8 +230,11 @@ class PlanoManutencao(db.Model):
 
     def __repr__(self):
         return f'{self.nome}; {self.codigo}; {self.data_inicio}; {self.ativo}; {self.total_tecnico}; ' \
-               f'{self.tempo_estimado}; {self.revisao}; {self.tipodata.nome}; {self.periodicidade.nome}; ' \
-               f'{self.equipamento.descricao_curta}; {self.tipoordem.nome}'
+               f'{self.tempo_estimado}; ' \
+               f'{atributo_existe(self, "tipodata", "nome")}; ' \
+               f'{atributo_existe(self, "periodicidade", "nome")}; ' \
+               f'{atributo_existe(self, "equipamento", "descricao_curta")}; ' \
+               f'{atributo_existe(self, "tipoordem", "nome")}'
 
     def alterar_atributos(self, form, new):
         """    Função para alterar os atributos do objeto    """
@@ -297,18 +264,6 @@ class PlanoManutencao(db.Model):
         else:
             self.alterar_ativo(True)
 
-    def salvar(self) -> bool:
-        """    Função para salvar no banco de dados o objeto"""
-        try:
-            db.session.add(self)
-            db.session.commit()
-
-            return True
-        except Exception as e:
-            log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
-
     def gerar_codigo(self, form, new):
         """Função que gera automático o código do equipamento"""
 
@@ -327,18 +282,6 @@ class PlanoManutencao(db.Model):
                     str(posicao).zfill(4))
         else:
             return form.codigo.data
-
-    @staticmethod
-    def salvar_lote(lote):
-        """Função para salvar em lote"""
-        try:
-            db.session.add_all(lote)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro salvar ao tentar salvar o lote:{e}')
-            db.session.rollback()
-        return False
 
     def alterar_data_prevista(self, new):
         self.data_inicio = self.data_futura(new,

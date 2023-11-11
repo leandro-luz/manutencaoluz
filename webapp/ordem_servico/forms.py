@@ -5,6 +5,7 @@ from wtforms.validators import InputRequired, Length, Optional
 from flask import flash
 from flask_login import current_user
 
+
 class OrdemServicoForm(Form):
     descricao = StringField('Descrição', validators=[InputRequired(), Length(max=50)],
                             render_kw={"placeholder": "Descrição da atividade"})

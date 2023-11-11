@@ -1,9 +1,10 @@
+from flask import flash
+from flask_login import current_user
 from flask_wtf import FlaskForm as Form
 from wtforms import StringField, SelectField, SubmitField, BooleanField, IntegerField
 from wtforms.validators import InputRequired, Length, NumberRange
-from flask_login import current_user
-from flask import flash
-from webapp.contrato.models import Contrato, Telacontrato
+
+from webapp.contrato.models import Contrato
 
 
 class ContratoForm(Form):

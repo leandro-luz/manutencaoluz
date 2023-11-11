@@ -4,7 +4,9 @@
 
 <p>Caríssimo(a) {{ usuario.nome }},</p>
 <br>
-<p>Para redefinir a sua resenha<a href="{{ url_for('usuario.verificar_token_solicitar_senha', token=token, _external=True) }}">Clique aqui</a>.</p>
+<p>Para redefinir a sua resenha<a
+        href="{{ url_for('usuario.verificar_token_solicitar_senha', token=token, _external=True) }}">Clique aqui</a>.
+</p>
 <p>Uma outra forma para redefinir, é copiar o link abaixo e colar na sua barra de endereço</p>
 <p><small>"{{ url_for('usuario.verificar_token_solicitar_senha', token=token, _external=True) }}"</small></p>
 <p>Se você não solicitou a redefinição de senha, favor ignore esta mensagem.</p>

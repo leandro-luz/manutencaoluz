@@ -78,20 +78,20 @@
                     <tbody id="myTable3">
                     {% for nova_t in novas_tramitacoes %}
                     {% if not nova_t.sigla == 'CONC' %}
-                    <tr>
-                        <form action="{{ url_for('ordem_servico.tramitacao', ordem_id=ordem.id,
-                    tipo_situacao_id=nova_t.id) }}"
-                              id="form_atividade_2" method="POST" onsubmit="return coletar_valores_atividade(true);">
-                            {{form_listaatividade.csrf_token}}
 
+                    <form action="{{ url_for('ordem_servico.tramitacao', ordem_id=ordem.id,
+                    tipo_situacao_id=nova_t.id) }}"
+                          id="form_atividade_2" method="POST" onsubmit="return coletar_valores_atividade(true);">
+                        {{form_listaatividade.csrf_token}}
+                        <tr>
                             <td>
                                 <button class="btn btn-info" type="submit">{{ nova_t.nome }}</button>
                             </td>
 
                             <td> {{form_listaatividade.observacao}}</td>
+                        </tr>
+                    </form>
 
-                        </form>
-                    </tr>
                     {% endif %}
                     {% endfor %}
                     </tbody>

@@ -5,7 +5,8 @@
 <p>Caríssimo(a) {{ usuario.nome }},</p>
 <br>
 <p>Bem vindo ao <b>Manutenção Luz</b>!</p>
-<p>Para confirmar seu novo email, por favor <a href="{{ url_for('usuario.trocar_email', token=token, _external=True) }}">clique aqui</a>.</p>
+<p>Para confirmar seu novo email, por favor <a
+        href="{{ url_for('usuario.trocar_email', token=token, _external=True) }}">clique aqui</a>.</p>
 <p>Uma outra forma para confirmar, é copiar o link abaixo e colar na sua barra de endereço</p>
 <p><small>"{{ url_for('usuario.trocar_email', token=token, _external=True) }}"</small></p>
 <br>

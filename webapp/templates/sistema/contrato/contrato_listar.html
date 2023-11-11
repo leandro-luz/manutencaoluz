@@ -39,9 +39,10 @@
                 <thead>
                 <tr>
                     <th scope="col">NOME</th>
-                    <th scope="col">ATIVO</th>
                     <th scope="col">TOTAL TELAS</th>
                     <th scope="col">TOTAL EMPRESAS</th>
+                    <th scope="col"></th>
+                    <th scope="col"></th>
                     <th scope="col"></th>
                 </tr>
                 </thead>
@@ -50,7 +51,16 @@
                 {% for contrato in contratos %}
                 <tr>
                     <td>{{ contrato['contrato'].nome }}</td>
-
+                    <td>{{ contrato['telas'] }}</td>
+                    <td>{{ contrato['total'] }}</td>
+                    <td>
+                        <a href="{{ url_for('contrato.contrato_excluir', contrato_id=contrato['contrato'].id) }}"
+                           onclick="return deleteItem();">
+                            <span data-tooltip="Excluir">
+                               <i class="bi-trash fs-6"></i>
+                            </span>
+                        </a>
+                    </td>
                     {% if contrato['contrato'].ativo == True %}
                     <td>
                         <a href="{{ url_for('contrato.contrato_ativar', contrato_id=contrato['contrato'].id) }}">
@@ -68,9 +78,6 @@
                         </a>
                     </td>
                     {% endif %}
-                    <td>{{ contrato['telas'] }}</td>
-                    <td>{{ contrato['total'] }}</td>
-
                     <td>
                         <a href="{{ url_for('contrato.contrato_editar', contrato_id=contrato['contrato'].id) }}">
                             <span data-tooltip="Informações">
@@ -88,9 +95,8 @@
     </div>
 </div>
 
-
 </body>
 
 <script src="/static/js/filtro_coluna.js" type="text/javascript"></script>
-
+<script src="/static/js/confirmacao_exclusao.js" type="text/javascript"></script>
 {% endblock %}

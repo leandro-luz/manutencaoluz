@@ -1,17 +1,20 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
 from flask import (render_template, Blueprint, redirect, url_for, flash, request, Response)
 from flask_login import current_user, login_required
+
 from webapp.empresa.models import Empresa
+from webapp.equipamento.models import Equipamento, Grupo, Subgrupo
+from webapp.ordem_servico.models import OrdemServico, TipoSituacaoOrdem, TipoOrdem
+from webapp.plano_manutencao.forms import PlanoForm, AtividadeForm, ListaAtividadeForm
 from webapp.plano_manutencao.models import PlanoManutencao, TipoData, Periodicidade, Atividade, TipoBinario, \
     TipoParametro, ListaAtividade
-from webapp.ordem_servico.models import OrdemServico, TipoSituacaoOrdem
-from webapp.equipamento.models import Equipamento, Grupo, Subgrupo
-from webapp.plano_manutencao.forms import PlanoForm, AtividadeForm, ListaAtividadeForm
+from webapp.sistema.models import LogsEventos
 from webapp.usuario import has_view
-from webapp.ordem_servico.models import TipoOrdem
-from webapp.utils.files import arquivo_padrao, lista_para_csv
 from webapp.utils.erros import flash_errors
+from webapp.utils.files import lista_para_csv
+from webapp.utils.objetos import preencher_objeto_atributos_semvinculo, preencher_objeto_atributos_datas, salvar, \
+    excluir
 
 plano_manutencao_blueprint = Blueprint(
     'plano_manutencao',
@@ -25,6 +28,7 @@ plano_manutencao_blueprint = Blueprint(
 @login_required
 @has_view('Plano de Manutenção')
 def listaatividade_preenchida(ordem_id):
+    LogsEventos.registrar("evento", listaatividade_preenchida.__name__, ordem_id=ordem_id)
     # Localiza a ordem de serviço e verifica se existe
     ordem = OrdemServico.query.filter_by(id=ordem_id).one_or_none()
     if ordem:
@@ -47,11 +51,13 @@ def listaatividade_preenchida(ordem_id):
 @login_required
 @has_view('Plano de Manutenção')
 def atividade_editar(plano_id, listaatividade_id, atividade_id, tipo):
+    LogsEventos.registrar("evento", atividade_editar.__name__, plano_id=plano_id, listaatividade_id=listaatividade_id,
+                          atividade_id=atividade_id, tipo=tipo)
     lista_new = False
     listaatividade = ListaAtividade()
     atividade = Atividade()
     form_atividade = AtividadeForm()
-    totalOS = 0
+    total = 0
     atualizar_revisao = False
 
     if atividade_id > 0:
@@ -59,12 +65,7 @@ def atividade_editar(plano_id, listaatividade_id, atividade_id, tipo):
         atividade = Atividade.query.filter_by(id=atividade_id).one_or_none()
         if atividade:
             if tipo == "excluir":
-                if atividade.excluir():
-                    # if totalOS == 0:
-                    #     flash("Atividade excluída com sucesso!", category="warning")
-                    #     return redirect(url_for("plano_manutencao.plano_editar", plano_id=plano_id))
-                    # else:
-
+                if excluir(atividade):
                     lista_new = True
                 else:
                     flash("Erro ao excluir a atividades", category="danger")
@@ -88,13 +89,13 @@ def atividade_editar(plano_id, listaatividade_id, atividade_id, tipo):
         if listaatividade:
 
             # calcula o total de ordens vinculadas a esta lista
-            totalOS = ListaAtividade.query.filter(
+            total = ListaAtividade.query.filter(
                 ListaAtividade.nome == listaatividade.nome,
                 OrdemServico.listaatividade_id == ListaAtividade.id
             ).count()
 
             # se não houver ordens de serviços vinculadas a lista
-            if totalOS == 0:
+            if total == 0:
                 # vincula a lista de atividade na atividade,
                 form_atividade.listaatividade_id.data = listaatividade_id
             else:
@@ -106,7 +107,7 @@ def atividade_editar(plano_id, listaatividade_id, atividade_id, tipo):
     # Cria uma nova listaatividade
     if listaatividade_id == 0 or lista_new:
         listaatividade_id_nova = 0
-        if totalOS > 0:
+        if total > 0:
             # Gera as copias das atividades caso exista OS vinculadas nesta nova lista
             listaatividade_id_nova = ListaAtividade.copiar_lista(listaatividade_id, True)
             listaatividade = ListaAtividade.query.filter_by(id=listaatividade_id_nova).one_or_none()
@@ -134,9 +135,9 @@ def atividade_editar(plano_id, listaatividade_id, atividade_id, tipo):
                     plano.alterar_lista(listaatividade.id, True)
 
                 # Calcula a quantidade de atividades na lista
-                totalATV = Atividade.query.filter_by(listaatividade_id=listaatividade.id).count()
+                total_atv = Atividade.query.filter_by(listaatividade_id=listaatividade.id).count()
                 # se não houver atividades o plano ficará inativo
-                if totalATV == 0:
+                if total_atv == 0:
                     plano.ativar_desativar()
                     plano.salvar()
                     flash("Plano de Manutenção Inativado por falta de atividades!", category="warning")
@@ -170,6 +171,9 @@ def atividade_editar(plano_id, listaatividade_id, atividade_id, tipo):
 @login_required
 @has_view('Plano de Manutenção')
 def listaatividade_editar(ordem_id, listaatividade_id, tramitacao_sigla):
+    LogsEventos.registrar("evento", listaatividade_editar.__name__, ordem_id=ordem_id,
+                          listaatividade_id=listaatividade_id,
+                          tramitacao_sigla=tramitacao_sigla)
     form_listaatividade = ListaAtividadeForm()
 
     # verifica a existência da ordem de serviço
@@ -262,6 +266,7 @@ def listaatividade_editar(ordem_id, listaatividade_id, tramitacao_sigla):
 @login_required
 @has_view('Plano de Manutenção')
 def plano_listar():
+    LogsEventos.registrar("evento", plano_listar.__name__)
     """Retorna a lista dos planos de manutenção"""
     planos = PlanoManutencao.query.filter(
         current_user.empresa_id == Empresa.id,
@@ -276,6 +281,7 @@ def plano_listar():
 @login_required
 @has_view('Plano de Manutenção')
 def plano_ativar(plano_id):
+    LogsEventos.registrar("evento", plano_ativar.__name__, plano_id=plano_id)
     plano = PlanoManutencao.query.filter_by(id=plano_id).one_or_none()
     # Verifica se o plano está cadastrado
     if plano:
@@ -333,6 +339,7 @@ def plano_ativar(plano_id):
 @login_required
 @has_view('Plano de Manutenção')
 def plano_editar(plano_id):
+    LogsEventos.registrar("evento", plano_editar.__name__, plano_id=plano_id)
     new = True
     atividades = []
     listaatividade_id = 0
@@ -434,19 +441,23 @@ def plano_editar(plano_id):
 @login_required
 @has_view('Plano de Manutenção')
 def gerar_padrao_planos_manutencao():
-    result, path = arquivo_padrao(nome_arquivo=PlanoManutencao.nome_doc,
-                                  valores=[[x] for x in PlanoManutencao.titulos_doc])
-    if result:
-        flash(f'Foi gerado o arquivo padrão no caminho: {path}', category="success")
-    else:
-        flash("Não foi gerado o arquivo padrão", category="danger")
-    return redirect(url_for("plano_manutencao.plano_listar"))
+    LogsEventos.registrar("evento", gerar_padrao_planos_manutencao.__name__)
+
+    """Função que gera o arquivo padrão para o cadastro em lote"""
+    csv_data = lista_para_csv([[x] for x in PlanoManutencao.titulos_doc], None)
+    nome = "tabela_base_plano_manutencao.csv"
+
+    return Response(
+        csv_data,
+        content_type='text/csv',
+        headers={'Content-Disposition': f"attachment; filename={nome}"})
 
 
 @plano_manutencao_blueprint.route('/gerar_csv_planos/', methods=['GET', 'POST'])
 @login_required
 @has_view('Plano de Manutenção')
 def gerar_csv_planos():
+    LogsEventos.registrar("evento", gerar_csv_planos.__name__)
     # Gera o arquivo csv com os titulos
 
     csv_data = lista_para_csv([[x] for x in PlanoManutencao.query.filter(
@@ -463,122 +474,147 @@ def gerar_csv_planos():
     )
 
 
+@plano_manutencao_blueprint.route('/plano_excluir/<int:plano_id>', methods=['GET', 'POST'])
+@login_required
+@has_view('Equipamento')
+def plano_excluir(plano_id):
+    LogsEventos.registrar("evento", plano_excluir.__name__, plano_id=plano_id)
+
+    plano = PlanoManutencao.query.filter(
+        current_user.empresa_id == Empresa.id,
+        Empresa.id == Grupo.empresa_id,
+        Grupo.id == Subgrupo.grupo_id,
+        Subgrupo.id == Equipamento.subgrupo_id,
+        Equipamento.id == PlanoManutencao.equipamento_id,
+        PlanoManutencao.id == plano_id
+    ).one_or_none()
+
+    if plano:
+        if excluir(plano):
+            flash("Plano de Manutenção excluído", category="success")
+        else:
+            flash("Erro ao excluir o Plano de Manutenção", category="danger")
+    else:
+        flash("Plano não cadastrado não cadastrado", category="danger")
+
+    return redirect(url_for('plano_manutencao.plano_listar'))
+
+
 @plano_manutencao_blueprint.route('/cadastrar_lote_planos_manutencao/', methods=['GET', 'POST'])
 @login_required
 @has_view('Plano de Manutenção')
 def cadastrar_lote_planos_manutencao():
+    LogsEventos.registrar("evento", cadastrar_lote_planos_manutencao.__name__)
+
     form = PlanoForm()
 
     # filename = secure_filename(form.file.data.filename)
     filestream = form.file.data
     filestream.seek(0)
     df = pd.DataFrame(pd.read_csv(filestream, sep=";", names=PlanoManutencao.titulos_doc, encoding='latin-1'))
-
+    # Colocar todos os valores em caixa alta
+    df = df.applymap(lambda x: x.upper() if isinstance(x, str) else x)
     # converter os valores Nan para Null
     df = df.replace({np.NAN: None})
 
     # lista dos titulos obrigatórios
     titulos_obrigatorio = [x for x in PlanoManutencao.titulos_doc if x.count('*')]
     # lista dos equipamentos existentes
-    existentes = [x.codigo for x in PlanoManutencao.query.filter(
+    existentes = [x.nome for x in PlanoManutencao.query.filter(
         current_user.empresa_id == Empresa.id,
         Empresa.id == Grupo.empresa_id,
         Grupo.id == Subgrupo.grupo_id,
         Subgrupo.id == Equipamento.subgrupo_id,
         Equipamento.id == PlanoManutencao.equipamento_id).all()]
 
-    rejeitados_texto = [['CÓDIGO', 'MOTIVO']]
+    rejeitados_texto = [['NOME', 'MOTIVO']]
     rejeitados = []
     aceitos_cod = []
     aceitos = []
     # percorre por todas as linhas
     for linha in range(df.shape[0]):
-        # verifica se os campo obrigatórios foram preenchidos
-        for col_ob in titulos_obrigatorio:
-            # caso não seja
-            if not df.at[linha, col_ob]:
-                # salva na lista dos rejeitados devido ao não preenchimento obrigatório
-                rejeitados.append(df.at[linha, 'Código*'])
-                rejeitados_texto.append(
-                    [df.at[linha, 'Código*'], "rejeitado pelo não preenchimento de algum campo obrigatório"])
+        # Verifica se o titulo não está no arquivo em lote
+        if df.at[linha, 'Nome*'] == 'NOME*':
+            continue
+        else:
+            # verifica se os campo obrigatórios foram preenchidos
+            for col_ob in titulos_obrigatorio:
+                # caso não seja
+                if not df.at[linha, col_ob]:
+                    # salva na lista dos rejeitados devido ao não preenchimento obrigatório
+                    rejeitados.append(linha)
+                    rejeitados_texto.append(
+                        [df.at[linha, 'Nome*'], "rejeitado pelo não preenchimento de algum campo obrigatório"])
 
         # Verifica se não existe repetições dos já salvos no BD
-        if df.at[linha, 'Código*'].upper() in existentes:
+        if df.at[linha, 'Nome*'] in existentes:
             # salva na lista dos rejeitados devido a repetição
-            rejeitados.append(df.at[linha, 'Código*'])
-            rejeitados_texto.append([df.at[linha, 'Código*'], "rejeitado por já existir no banco de dados"])
+            rejeitados.append(linha)
+            rejeitados_texto.append([df.at[linha, 'Nome*'], "rejeitado por já existir no banco de dados"])
 
         # Verifica se o equipamento existe para a empresa
-        equipamento = Equipamento.query.filter(
-            current_user.empresa_id == Empresa.id,
-            Empresa.id == Grupo.empresa_id,
-            Grupo.id == Subgrupo.grupo_id,
-            Subgrupo.id == Equipamento.subgrupo_id,
-            Equipamento.cod == df.at[linha, 'Equipamento_cod*'].upper()).one_or_none()
+        equipamento = Equipamento.localizar_equipamento_by_nome(current_user.empresa_id,
+                                                                df.at[linha, 'Equipamento_descricao_curta*'])
         if not equipamento:
-            rejeitados.append(df.at[linha, 'Código*'])
-            rejeitados_texto.append([df.at[linha, 'Código*'], "rejeitado devido ao equipamento não existir"])
+            rejeitados.append(linha)
+            rejeitados_texto.append([df.at[linha, 'Nome*'], "rejeitado devido ao equipamento não existir"])
 
         periodicidade = Periodicidade.query.filter(
-            Periodicidade.nome == df.at[linha, 'Periodicidade*'].upper()).one_or_none()
+            Periodicidade.nome == df.at[linha, 'Periodicidade*']).one_or_none()
         if not periodicidade:
-            rejeitados.append(df.at[linha, 'Código*'])
-            rejeitados_texto.append([df.at[linha, 'Código*'], "rejeitado devido a periodicidade não existir"])
+            rejeitados.append(linha)
+            rejeitados_texto.append([df.at[linha, 'Nome*'], "rejeitado devido a periodicidade não existir"])
 
         tipo_data = TipoData.query.filter(
             TipoData.nome == df.at[linha, 'Tipo_Data_Inicial*']).one_or_none()
         if not tipo_data:
-            rejeitados.append(df.at[linha, 'Código*'])
-            rejeitados_texto.append([df.at[linha, 'Código*'], "rejeitado devido ao tipo_data_inicial não existir"])
+            rejeitados.append(linha)
+            rejeitados_texto.append([df.at[linha, 'Nome*'], "rejeitado devido ao tipo_data_inicial não existir"])
 
         tipo_ordem = TipoOrdem.query.filter(
-            TipoOrdem.nome == df.at[linha, 'Tipo_Ordem*'].upper()).one_or_none()
+            TipoOrdem.nome == df.at[linha, 'Tipo_Ordem*']).one_or_none()
         if not tipo_ordem:
-            rejeitados.append(df.at[linha, 'Código*'])
-            rejeitados_texto.append([df.at[linha, 'Código*'], "rejeitado devido ao tipo_ordem não existir"])
+            rejeitados.append(linha)
+            rejeitados_texto.append([df.at[linha, 'Nome*'], "rejeitado devido ao tipo_ordem não existir"])
 
         # verifica se não existe na lista atual
-        if df.at[linha, 'Código*'] in aceitos_cod:
-            rejeitados.append(df.at[linha, 'Código*'])
-            rejeitados_texto.append([df.at[linha, 'Código*'], "rejeitado devido a estar repetido"])
+        if df.at[linha, 'Nome*'] in aceitos_cod:
+            rejeitados.append(linha)
+            rejeitados_texto.append([df.at[linha, 'Nome*'], "rejeitado devido a estar repetido"])
 
         # Verifica se não foi rejeitado
-        if df.at[linha, 'Código*'] not in rejeitados:
-            # altera o valor do equipamento,periodicidade,tipo_data,tipo_ordem de nome para id na tabela
-            df.at[linha, 'Equipamento_cod*'] = equipamento.id
-            df.at[linha, 'Periodicidade*'] = periodicidade.id
-            df.at[linha, 'Tipo_Data_Inicial*'] = tipo_data.id
-            df.at[linha, 'Tipo_Ordem*'] = tipo_ordem.id
-
+        if linha not in rejeitados:
             # cria um plano_manutenção e popula ele
             plano = PlanoManutencao()
-            for k, v in plano.titulos_doc.items():
-                # recupere o valor
-                valor = df.at[linha, k]
-                if str(valor).isnumeric() or valor is None:
-                    # Salva o atributo se o valor e numerico ou nulo
-                    setattr(plano, v, valor)
-                else:
-                    # Salva o atributo quando texto
-                    setattr(plano, v, valor.upper())
+            # preeche os atributos diretamente
+            plano = preencher_objeto_atributos_semvinculo(plano, plano.titulos_valor, df, linha)
+            # preeche os atributos de datas
+            plano = preencher_objeto_atributos_datas(plano, plano.titulos_data, df, linha)
+            # altera o valor do equipamento,periodicidade,tipo_data,tipo_ordem de nome para id na tabela
+            plano.equipamento_id = equipamento.id
+            plano.periodicidade_id = periodicidade.id
+            plano.tipodata_id = tipo_data.id
+            plano.tipoordem_id = tipo_ordem.id
+
             # insere nas listas dos aceitos
-            aceitos_cod.append(df.at[linha, 'Código*'])
+            aceitos_cod.append(df.at[linha, 'Nome*'])
             # insere o equipamento na lista
             aceitos.append(plano)
 
     # salva a lista de equipamentos no banco de dados
     if len(aceitos) > 0:
-        Equipamento.salvar_lote(aceitos)
+        salvar(aceitos)
 
-    flash(f"Total de plano cadastrados: {len(aceitos)}, rejeitados:{len(rejeitados_texto)}", "success")
+    flash(f"Total de plano cadastrados: {len(aceitos)}, rejeitados:{len(rejeitados_texto) - 1}", "success")
 
     # se a lista de rejeitados existir
-    if len(rejeitados_texto) > 0:
+    if len(rejeitados_texto) > 1:
         # publica ao usuário a lista dos rejeitados
-        result, path = arquivo_padrao(nome_arquivo="Planos_Manutenção_rejeitados", valores=rejeitados_texto)
-        if result:
-            flash(f'Foi gerado o arquivo dos planos de manutenções rejeitados no caminho: {path}', category="warning")
-        else:
-            flash("Não foi gerado o arquivo dos planos de manutenções rejeitados", category="danger")
+        csv_data = lista_para_csv(rejeitados_texto, None)
+
+        return Response(
+            csv_data,
+            content_type='text/csv',
+            headers={'Content-Disposition': 'attachment; filename=planosmanutencao_rejeitados.csv'})
 
     return redirect(url_for('plano_manutencao.plano_listar'))

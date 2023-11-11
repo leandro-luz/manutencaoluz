@@ -25,7 +25,7 @@ login_manager.anonymous_user = BlogAnonymous
 
 
 def criar_modulo(app, **kwargs) -> None:
-    """    Cria o módulo para controlador Auth - controlde de acessos    """
+    """    Cria o módulo para controlador Auth - controle de de acessos    """
     bcrypt.init_app(app)
     login_manager.init_app(app)
     jwt.init_app(app)
@@ -44,7 +44,9 @@ def has_view(name):
                     abort(403)
             else:
                 return redirect(url_for('usuario.logout'))
+
         return functools.update_wrapper(wraps, f)
+
     return real_decorator
 
 

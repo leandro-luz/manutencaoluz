@@ -1,6 +1,5 @@
 import datetime
 import config
-import logging
 import string
 import random
 from flask import flash
@@ -11,10 +10,8 @@ from webapp.contrato.models import Tela, Telacontrato
 from flask_login import current_user
 from flask_jwt_extended import create_access_token, get_jwt_identity
 from webapp.utils.tools import password_random
-
-logging.basicConfig(format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
-logging.getLogger().setLevel(logging.DEBUG)
-log = logging.getLogger(__name__)
+from webapp.utils.tools import data_atual_utc
+from webapp.utils.objetos import salvar, excluir
 
 
 class PerfilAcesso(db.Model):
@@ -48,29 +45,6 @@ class PerfilAcesso(db.Model):
         else:
             self.ativo = True
 
-    def salvar(self) -> bool:
-        """    Função para salvar no banco de dados o objeto"""
-        try:
-            db.session.add(self)
-            db.session.commit()
-
-            return True
-        except Exception as e:
-            log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
-
-    def excluir(self) -> bool:
-        """    Função para retirar do banco de dados o objeto"""
-        try:
-            db.session.delete(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro Deletar objeto no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
-
     def alterar_atributos(self, form, empresa_id):
         self.nome = form.nome.data.upper()
         self.descricao = form.descricao.data.upper()
@@ -80,7 +54,7 @@ class PerfilAcesso(db.Model):
     def inativar_by_id(perfilacesso_id):
         perfilacesso = PerfilAcesso.query.filter_by(id=perfilacesso_id).one_or_none()
         perfilacesso.ativo = False
-        perfilacesso.salvar()
+        salvar(perfilacesso)
 
     @staticmethod
     def listar_regras_by_empresa(empresa_id: int):
@@ -120,28 +94,6 @@ class PerfilManutentorUsuario(db.Model):
         """Função para alterar os atributos"""
         self.perfilmanutentor_id = form.perfilmanutentor.data
         self.usuario_id = usuario_id
-
-    def salvar(self) -> bool:
-        """    Função para salvar no banco de dados o objeto    """
-        try:
-            db.session.add(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
-
-    def excluir(self) -> bool:
-        """    Função para retirar do banco de dados o objeto"""
-        try:
-            db.session.delete(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro Deletar objeto no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
 
     def ativar_desativar(self):
         """Função para ativar e desativar"""
@@ -185,7 +137,7 @@ class Senha(db.Model):
 
     def alterar_data_expiracao(self):
         """Função para alterar a data de expiração"""
-        self.data_expiracao = datetime.datetime.now() + datetime.timedelta(90)
+        self.data_expiracao = data_atual_utc() + datetime.timedelta(90)
 
     def alterar_contador_accesso_temporario(self):
         """Função para incrementar o contador de acesso"""
@@ -199,21 +151,10 @@ class Senha(db.Model):
         # self.contador_acesso_temporario = 0
         self.alterar_data_expiracao()
 
-    def salvar(self) -> bool:
-        """    Função para salvar no banco de dados o objeto    """
-        try:
-            db.session.add(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
-
     def verificar_data_expiracao(self) -> bool:
         """Função para verificar se a data está expirada"""
         limite = datetime.timedelta(30)
-        valor = self.data_expiracao - datetime.datetime.now()
+        valor = self.data_expiracao - data_atual_utc()
 
         if valor.days < 1:
             flash("A senha está expirada!", category="danger")
@@ -273,41 +214,7 @@ class Usuario(db.Model):
         self.empresa_id = empresa_id
         self.perfilacesso_id = perfilacesso_id
         self.ativo = True
-        self.data_assinatura = datetime.datetime.now()
-
-    def salvar(self) -> bool:
-        """    Função para salvar no banco de dados o objeto    """
-        try:
-            db.session.add(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
-
-    def excluir(self) -> bool:
-        """    Função para retirar do banco de dados o objeto"""
-        try:
-            db.session.delete(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro Deletar objeto no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
-
-    @staticmethod
-    def salvar_lote(lote):
-        """Função para salvar em lote"""
-        try:
-            db.session.add_all(lote)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro salvar ao tentar salvar o lote:{e}')
-            db.session.rollback()
-        return False
+        self.data_assinatura = data_atual_utc()
 
     # # @cache.memoize(60)
     def tela_permitida(self, nome: str) -> bool:
@@ -331,7 +238,7 @@ class Usuario(db.Model):
         self.ativo = ativo
 
     def ping(self):
-        self.data_ultima_entrada = datetime.datetime.now()
+        self.data_ultima_entrada = data_atual_utc()
         db.session.add(self)
         db.session.commit()
 
@@ -376,7 +283,7 @@ class Usuario(db.Model):
         self.ativo = form.ativo.data
 
         if new:
-            self.data_assinatura = datetime.datetime.now()
+            self.data_assinatura = data_atual_utc()
 
     def ativar_desativar(self):
         """Função para ativar e desativar"""
@@ -433,7 +340,7 @@ class Usuario(db.Model):
             # Inativa o usuário
             for usuario in usuarios:
                 usuario.ativo = False
-                usuario.salvar()
+                salvar(usuario)
 
 
 class TelaPerfilAcesso(db.Model):
@@ -449,28 +356,6 @@ class TelaPerfilAcesso(db.Model):
 
     def __repr__(self) -> str:
         return f'<TelaPerfilAcesso: {self.id}-{self.perfilacesso_id}-{self.tela_id}>'
-
-    def salvar(self) -> bool:
-        """    Função para salvar no banco de dados o objeto    """
-        try:
-            db.session.add(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
-
-    def excluir(self) -> bool:
-        """    Função para retirar do banco de dados o objeto"""
-        try:
-            db.session.delete(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro Deletar objeto no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
 
     def alterar_atributos(self, form, perfilacesso_id):
         """Função para alterar os atributos"""
@@ -488,7 +373,7 @@ class TelaPerfilAcesso(db.Model):
     def excluir_by_id(telaperfilacesso_id):
         """Função que inativa uma telaperfilacesso pelo id"""
         telaperfilacesso = TelaPerfilAcesso.query.filter_by(id=telaperfilacesso_id).one_or_none()
-        telaperfilacesso.excluir()
+        excluir(telaperfilacesso)
 
     @staticmethod
     def retornar_name_tela(id_):
@@ -520,7 +405,7 @@ class TelaPerfilAcesso(db.Model):
                 telaperfilacesso.ativo = True  # deixa ativa a tela
             else:  # o perfil não é administrador
                 telaperfilacesso.ativo = False  # deixa desativada a tela
-        if telaperfilacesso.salvar():
+        if salvar(telaperfilacesso):
             flash("Tela do perfil não cadastrada", category="danger")
 
     @staticmethod

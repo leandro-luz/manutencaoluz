@@ -24,16 +24,37 @@ def atribuir_none_id(valor):
         return valor
 
 
-def salvar_lote(lote):
-    """Função para salvar em lote"""
+def salvar(objetos) -> bool:
+    """Função para salvar objetos no banco de dados"""
     try:
-        db.session.add_all(lote)
+        if isinstance(objetos, list):
+            db.session.add_all(objetos)
+        else:
+            db.session.add(objetos)
+
         db.session.commit()
         return True
     except Exception as e:
-        log.error(f'Erro salvar ao tentar salvar o lote:{e}')
+        log.error(f'Erro ao salvar no banco de dados: {e}')
         db.session.rollback()
-    return False
+        return False
+
+
+def excluir(objetos) -> bool:
+    """Função para excluir objetos no banco de dados"""
+    try:
+        if isinstance(objetos, list):
+            for objeto in objetos:
+                db.session.delete(objeto)
+        else:
+            db.session.delete(objetos)
+
+        db.session.commit()
+        return True
+    except Exception as e:
+        log.error(f'Erro ao excluir no banco de dados: {e}')
+        db.session.rollback()
+        return False
 
 
 def preencher_objeto_atributos_semvinculo(objeto_model, dicionario, df, linha):

@@ -1,5 +1,4 @@
 import datetime
-import logging
 from webapp import db
 from webapp.plano_manutencao.models import ListaAtividade, PlanoManutencao
 from webapp.usuario.models import PerfilManutentorUsuario
@@ -8,10 +7,6 @@ from webapp.utils.tools import data_atual_utc
 from sqlalchemy import func
 from flask_login import current_user
 from flask import flash
-
-logging.basicConfig(format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
-logging.getLogger().setLevel(logging.DEBUG)
-log = logging.getLogger(__name__)
 
 
 class TipoOrdem(db.Model):
@@ -116,23 +111,12 @@ class TramitacaoOrdem(db.Model):
     def __repr__(self) -> str:
         return f'<Tramitação da Ordem: {self.id}-{self.tiposituacaoordem.sigla}-{self.usuario.nome}>'
 
-    def salvar(self) -> bool:
-        """    Função para salvar no banco de dados o objeto"""
-        try:
-            db.session.add(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
-
     def alterar_atributos(self, ordem_id, tipo_situacao_id):
         """Função para alterar os atributos"""
         self.ordemservico_id = ordem_id
         self.tiposituacaoordem_id = tipo_situacao_id
         self.usuario_id = current_user.id
-        self.data = datetime.datetime.now()
+        self.data = data_atual_utc()
 
         # Criando o objeto OrdemServiço
         ordem = OrdemServico.query.filter_by(id=ordem_id).one_or_none()
@@ -154,12 +138,12 @@ class TramitacaoOrdem(db.Model):
 
         # Gera um incremento no tempo para que as tramitações fiquem na ordem
         if situacao.sigla in ["AGAP", "AGFI", "ENCE"]:
-            self.data = datetime.datetime.now() + datetime.timedelta(seconds=1)
+            self.data = data_atual_utc() + datetime.timedelta(seconds=1)
 
         # Verifica estara aguardando fiscalização dará por encerrada
         if situacao.sigla == "ENCE":
             # Caso seja, colocará a data de fechamento da OrdemServico
-            ordem.data_fechamento = datetime.datetime.now()
+            ordem.data_fechamento = data_atual_utc()
 
         if ordem.salvar():
             flash("Ordem de Serviço Atualizada", category="success")
@@ -184,7 +168,7 @@ class TramitacaoOrdem(db.Model):
         tramitacao.usuario_id = current_user.id
         tramitacao.tiposituacaoordem_id = tiposituacao.id
         tramitacao.observacao = texto
-        tramitacao.data = datetime.datetime.now()
+        tramitacao.data = data_atual_utc()
         tramitacao.salvar()
 
 
@@ -225,22 +209,11 @@ class OrdemServico(db.Model):
                f'{atributo_existe(self, "usuario", "nome")};{self.tipoordem.nome};' \
                f'{PlanoManutencao.retornar_codigo_plano(self.planomanutencao_id)};{self.reservico}'
 
-    def salvar(self) -> bool:
-        """    Função para salvar no banco de dados o objeto"""
-        try:
-            db.session.add(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
-
-    def alterar_atributos(self, form, new, dta_prevista=datetime.datetime.now()):
+    def alterar_atributos(self, form, new, dta_prevista=data_atual_utc()):
         """     Função para atribuir valores para ordem a partir de um formulário       """
         if new:
             self.codigo = OrdemServico.gerar_codigo_ordem()
-            self.data_abertura = data_atual_utc()  # datetime.datetime.now()
+            self.data_abertura = data_atual_utc()
             self.data_prevista = dta_prevista
             self.solicitante_id = current_user.id
             self.tiposituacaoordem_id = TipoSituacaoOrdem.retornar_id_situacao("AGAP")
@@ -252,7 +225,7 @@ class OrdemServico(db.Model):
     def alterar_atributos_by_plano(self, plano):
         """     Função para atribuir valores para ordem a partir de um plano de manutenção  """
         self.codigo = OrdemServico.gerar_codigo_ordem()
-        self.data_abertura = data_atual_utc()  # datetime.datetime.now()
+        self.data_abertura = data_atual_utc()
         self.solicitante_id = None
         self.tiposituacaoordem_id = TipoSituacaoOrdem.retornar_id_situacao("AGAP")
         self.tipostatusordem_id = TipoStatusOrdem.retornar_id_status("PEND")
@@ -266,7 +239,7 @@ class OrdemServico(db.Model):
 
     def alterar_atributos_by_ordem(self, ordem, plano):
         self.codigo = OrdemServico.gerar_codigo_ordem()
-        self.data_abertura = data_atual_utc()  # datetime.datetime.now()
+        self.data_abertura = data_atual_utc()
         self.solicitante_id = None
         self.tiposituacaoordem_id = TipoSituacaoOrdem.retornar_id_situacao("AGAP")
         self.tipostatusordem_id = TipoStatusOrdem.retornar_id_status("PEND")

@@ -1,10 +1,11 @@
-import logging
-from pathlib import Path
-from csv import writer
-import pandas as pd
-import numpy as np
 import csv
+import logging
 from io import StringIO
+from pathlib import Path
+
+import pandas as pd
+
+from webapp.sistema.models import LogsEventos
 
 logging.basicConfig(format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
 logging.getLogger().setLevel(logging.DEBUG)
@@ -28,7 +29,7 @@ def arquivo_padrao(nome_arquivo, valores):
         arquivo = df.to_csv(index=False)
         return True, nome, arquivo
     except Exception as e:
-        log.error(f'Erro ao gerar o arquivo: {nome_arquivo}-{e}')
+        LogsEventos.registrar("erro", arquivo_padrao.__name__, erro=e)
         return False
 
 

@@ -1,8 +1,11 @@
+import logging
 from threading import Thread
+
 from flask import current_app, render_template
 from flask_mail import Message
+
 from webapp import mail
-import logging
+from webapp.sistema.models import LogsEventos
 from .decorator import async_
 
 logging.basicConfig(format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
@@ -28,5 +31,5 @@ def send_email(to, subject, template, **kwargs) -> bool:
         send_async_email(app, msg)
         return True
     except Exception as e:
-        log.error(f'Erro ao tentar enviar email {to} : {e}')
+        LogsEventos.registrar("erro", send_email.__name__, erro=e)
         return False

@@ -15,8 +15,10 @@ from webapp.utils.email import send_email
 from webapp.utils.tools import create_token, verify_token
 from webapp.utils.erros import flash_errors
 from webapp.utils.files import lista_para_csv
-from webapp.utils.objetos import salvar_lote, preencher_objeto_atributos_semvinculo, \
+from webapp.utils.objetos import salvar, excluir, preencher_objeto_atributos_semvinculo, \
     preencher_objeto_atributos_booleanos, preencher_objeto_atributos_datas
+from webapp.utils.tools import data_atual_utc
+from webapp.sistema.models import LogsEventos
 
 usuario_blueprint = Blueprint(
     'usuario',
@@ -65,6 +67,7 @@ def login():
 @usuario_blueprint.route('/logout', methods=['GET', 'POST'])
 @login_required
 def logout():
+    LogsEventos.registrar("evento", logout.__name__)
     logout_user()
     return redirect(url_for('main.index'))
 
@@ -73,6 +76,7 @@ def logout():
 @usuario_blueprint.route('/trocar_senha', methods=['GET', 'POST'])
 @login_required
 def trocar_senha():
+    LogsEventos.registrar("evento", trocar_senha.__name__)
     """    Função para alteração de senha de acesso do usuário logado   """
 
     # verifica se o usuario está ativo
@@ -86,7 +90,7 @@ def trocar_senha():
         if senha:
             # realiza as alterações
             senha.alterar_atributos(form)
-            if senha.salvar():
+            if salvar(senha):
                 # enviar email com a senha atualizada
                 send_email(current_user.email,
                            'Alteração de Senha',
@@ -156,7 +160,7 @@ def alterar_senha_token(token):
             senha = Senha.query.filter_by(id=user_id).one_or_none()
             if senha:
                 senha.alterar_atributos(form)
-                if senha.salvar():
+                if salvar(senha):
                     # enviar email com a senha atualizada
                     send_email(usuario_.email,
                                'Alteração de Senha',
@@ -180,6 +184,7 @@ def alterar_senha_token(token):
 @usuario_blueprint.route('/trocar_email', methods=['GET', 'POST'])
 @login_required
 def solicitar_troca_email():
+    LogsEventos.registrar("evento", solicitar_troca_email.__name__)
     form = AlterarEmailForm()
     token = ""
 
@@ -208,12 +213,13 @@ def solicitar_troca_email():
 @usuario_blueprint.route('/trocar_email/<token>')
 @login_required
 def trocar_email(token):
+    LogsEventos.registrar("evento", trocar_email.__name__)
     result, email = verify_token("email", token)
     if result:
         usuario_ = Usuario.query.filter_by(id=current_user.id).one_or_none()
         if usuario_:
             usuario_.alterar_email(email)
-            if usuario_.salvar():
+            if salvar(usuario_):
                 flash("Email atualizado", category="success")
             else:
                 flash("Email não atualizado", category="danger")
@@ -227,6 +233,7 @@ def trocar_email(token):
 @usuario_blueprint.route('/usuario_ativar/<int:usuario_id>')
 @login_required
 def usuario_ativar(usuario_id):
+    LogsEventos.registrar("evento", usuario_ativar.__name__, usuario_id=usuario_id)
     """    Função que ativa/inativa um usuário"""
     # retorna o usuário com o identificador
     usuario_ = Usuario.query.filter_by(id=usuario_id).one_or_none()
@@ -243,7 +250,7 @@ def usuario_ativar(usuario_id):
         usuario_.ativar_desativar()
         # grava as informações no banco de dados
 
-        if usuario_.salvar():
+        if salvar(usuario_):
             if ativo:
                 flash("Usuário desativado", category="success")
             else:
@@ -258,6 +265,7 @@ def usuario_ativar(usuario_id):
 @usuario_blueprint.route('/user/<int:usuario_id>', methods=['GET', 'POST'])
 @login_required
 def usuario(usuario_id):
+    LogsEventos.registrar("evento", usuario.__name__, usuario_id=usuario_id)
     # verifica se o usuario está ativo
     if not current_user.ativo:
         return redirect(url_for('usuario.logout'))
@@ -273,6 +281,7 @@ def usuario(usuario_id):
 @login_required
 @has_view('Usuário')
 def usuario_listar() -> str:
+    LogsEventos.registrar("evento", usuario_listar.__name__)
     """    Função que retorna uma lista de usuários    """
     # retorna uma lista de usuários da empresa, exceto os adminluz(administradores de sistema)
     usuarios = Usuario.query.filter_by(empresa_id=current_user.empresa_id). \
@@ -285,6 +294,7 @@ def usuario_listar() -> str:
 @login_required
 @has_view('Usuário')
 def usuario_editar(usuario_id):
+    LogsEventos.registrar("evento", usuario_editar.__name__, usuario_id=usuario_id)
     """    Função atualiza as informações do usuário    """
     if usuario_id > 0:  # se o identificador foi passado com parâmetro
         # --------- ATUALIZAR
@@ -343,13 +353,13 @@ def usuario_editar(usuario_id):
             password_ = Senha()
             password_.alterar_senha(Senha.senha_aleatoria())
             password_.alterar_data_expiracao()
-            password_.salvar()
+            salvar(password_)
             usuario_.senha_id = password_.id
 
         # grava as informações do formulário no objeto usuário
         usuario_.alterar_atributos(form, current_user.empresa_id, new)
 
-        if usuario_.salvar():
+        if salvar(usuario_):
             if new:
                 usuario_ = Usuario.query.filter_by(nome=form.nome.data).one_or_none()
                 # envia o email com as informações de login
@@ -374,6 +384,7 @@ def usuario_editar(usuario_id):
 @login_required
 @has_view('Usuário')
 def gerar_padrao_usuario():
+    LogsEventos.registrar("evento", gerar_padrao_usuario.__name__)
     # Gera o arquivo csv dos tabela padrão para cadastro em lote
     csv_data = lista_para_csv([[x] for x in Usuario.titulos_doc], None)
     nome = "tabela_base_usuario.csv"
@@ -389,6 +400,7 @@ def gerar_padrao_usuario():
 @login_required
 @has_view('Usuário')
 def gerar_csv_usuario():
+    LogsEventos.registrar("evento", gerar_csv_usuario.__name__)
     # Gera o arquivo csv com os titulos
     csv_data = lista_para_csv([[x] for x in Usuario.query.filter_by(empresa_id=current_user.empresa_id)],
                               Usuario.titulos_csv)
@@ -403,10 +415,11 @@ def gerar_csv_usuario():
 @login_required
 @has_view('Usuário')
 def usuario_excluir(usuario_id):
+    LogsEventos.registrar("evento", usuario_excluir.__name__, usuario_id=usuario_id)
     usuario = Usuario.query.filter_by(id=usuario_id).one_or_none()
 
     if usuario:
-        if usuario.excluir():
+        if excluir(usuario):
             flash("Usuário excluído", category="success")
         else:
             flash("Erro ao excluir o usuário", category="danger")
@@ -419,6 +432,7 @@ def usuario_excluir(usuario_id):
 @login_required
 @has_view('Usuário')
 def cadastrar_lote_usuarios():
+    LogsEventos.registrar("evento", cadastrar_lote_usuarios.__name__)
     form = EditarUsuarioForm()
 
     # filename = secure_filename(form.file.data.filename)
@@ -487,7 +501,7 @@ def cadastrar_lote_usuarios():
             senha.alterar_senha(Senha.senha_aleatoria())
             senha.alterar_expiravel(True)
             senha.alterar_data_expiracao()
-            senha.salvar()
+            salvar(senha)
 
             # preeche os atributos diretamente
             usuario_ = preencher_objeto_atributos_semvinculo(usuario_, usuario_.titulos_doc, df, linha)
@@ -499,7 +513,7 @@ def cadastrar_lote_usuarios():
             usuario_.perfilacesso_id = perfil.id
             usuario_.empresa_id = current_user.empresa_id
             usuario_.senha_id = senha.id
-            usuario_.data_assinatura = datetime.datetime.now()
+            usuario_.data_assinatura = data_atual_utc()
 
             # insere nas listas dos aceitos
             aceitos_cod.append(df.at[linha, 'Nome*'])
@@ -509,7 +523,7 @@ def cadastrar_lote_usuarios():
 
     # salva a lista de equipamentos no banco de dados
     if len(aceitos) > 0:
-        Usuario.salvar_lote(aceitos)
+        salvar(aceitos)
     flash(f"Total de usuários cadastrados: {len(aceitos)}, rejeitados:{len(rejeitados_texto) - 1}", "success")
 
     # se a lista de rejeitados existir
@@ -529,6 +543,7 @@ def cadastrar_lote_usuarios():
 @login_required
 @has_view('Usuário')
 def perfilacesso_listar():
+    LogsEventos.registrar("evento", perfilacesso_listar.__name__)
     lista_perfis = [{'perfilacesso': perfilacesso,
                      'total': Usuario.query.filter(Usuario.empresa_id == Empresa.id,
                                                    Usuario.perfilacesso_id == perfilacesso.id,
@@ -546,6 +561,7 @@ def perfilacesso_listar():
 @login_required
 @has_view('Usuário')
 def perfilacesso_editar(perfilacesso_id):
+    LogsEventos.registrar("evento", perfilacesso_editar.__name__, perfilacesso_id=perfilacesso_id)
     usuarios = []
     if perfilacesso_id > 0:
         # Atualizar
@@ -597,7 +613,7 @@ def perfilacesso_editar(perfilacesso_id):
     # Validação
     if form.validate_on_submit():
         perfilacesso.alterar_atributos(form, current_user.empresa.id)
-        if perfilacesso.salvar():
+        if salvar(perfilacesso):
             # Mensagens
             if perfilacesso_id > 0:
                 flash("PerfilAcesso atualizado", category="success")
@@ -616,6 +632,7 @@ def perfilacesso_editar(perfilacesso_id):
 @login_required
 @has_view('Usuário')
 def perfilacesso_ativar(perfilacesso_id):
+    LogsEventos.registrar("evento", perfilacesso_ativar.__name__, perfilacesso_id=perfilacesso_id)
     """    Função que ativa/desativa um perfil    """
     # instância um perfil com base no identificador
     perfilacesso = PerfilAcesso.query.filter_by(id=perfilacesso_id).one_or_none()
@@ -633,7 +650,7 @@ def perfilacesso_ativar(perfilacesso_id):
         # ativa/inativa o perfil
         perfilacesso.ativar_desativar()
         # salva no banco de dados a alteração
-        if perfilacesso.salvar():
+        if salvar(perfilacesso):
             if ativo:
                 # Busca os usuarios vinculados ao perfilacesso e inativa eles
                 Usuario.inativar_by_perfilacesso(perfilacesso_id)
@@ -652,6 +669,7 @@ def perfilacesso_ativar(perfilacesso_id):
 @login_required
 @has_view('Usuário')
 def gerar_padrao_perfis():
+    LogsEventos.registrar("evento", gerar_padrao_perfis.__name__)
     csv_data = lista_para_csv([[x] for x in PerfilAcesso.titulos_doc], None)
     nome = "tabela_base_perfis.csv"
 
@@ -666,10 +684,11 @@ def gerar_padrao_perfis():
 @login_required
 @has_view('Usuário')
 def perfilacesso_excluir(perfilacesso_id):
+    LogsEventos.registrar("evento", perfilacesso_excluir.__name__, perfilacesso_id=perfilacesso_id)
     perfilacesso = PerfilAcesso.query.filter_by(id=perfilacesso_id).one_or_none()
 
     if perfilacesso:
-        if perfilacesso.excluir():
+        if excluir(perfilacesso):
             flash("Perfil de Acesso excluído", category="success")
         else:
             flash("Erro ao excluir o perfil de acesso", category="danger")
@@ -682,6 +701,7 @@ def perfilacesso_excluir(perfilacesso_id):
 @login_required
 @has_view('Usuário')
 def cadastrar_lote_perfis():
+    LogsEventos.registrar("evento", cadastrar_lote_perfis.__name__)
     form = PerfilAcessoForm()
 
     filestream = form.file.data
@@ -754,7 +774,7 @@ def cadastrar_lote_perfis():
     # salva a lista de equipamentos no banco de dados
     if len(aceitos) > 0:
         for aceito in aceitos:
-            aceito.salvar()
+            salvar(aceito)
 
     flash(f"Total de perfis cadastrados: {len(aceitos)}, rejeitados:{len(rejeitados_texto) - 1}", "success")
 
@@ -775,6 +795,7 @@ def cadastrar_lote_perfis():
 @login_required
 @has_view('Usuário')
 def telaperfilacesso_listar(perfilacesso_id):
+    LogsEventos.registrar("evento", telaperfilacesso_listar.__name__, perfilacesso_id=perfilacesso_id)
     telasperfilacesso_liberadas = TelaPerfilAcesso.query.filter_by(perfilacesso_id=perfilacesso_id).all()
 
     #  lista(id e nome) de todas as telas liberadas para uso
@@ -802,6 +823,7 @@ def telaperfilacesso_listar(perfilacesso_id):
 @login_required
 @has_view('Usuário')
 def telaperfilacesso_editar(perfilacesso_id):
+    LogsEventos.registrar("evento", telaperfilacesso_editar.__name__, perfilacesso_id=perfilacesso_id)
     perfilacesso = PerfilAcesso.query.filter_by(id=perfilacesso_id).one_or_none()
     form = TelaPerfilForm()
 
@@ -809,7 +831,7 @@ def telaperfilacesso_editar(perfilacesso_id):
         if form.validate_on_submit():
             telaperfilacesso = TelaPerfilAcesso()
             telaperfilacesso.alterar_atributos(form, perfilacesso_id)
-            if telaperfilacesso.salvar():
+            if salvar(telaperfilacesso):
                 flash("Tela do perfil cadastrada", category="success")
             else:
                 flash("Erro ao cadastrar perfil", category="danger")
@@ -826,11 +848,13 @@ def telaperfilacesso_editar(perfilacesso_id):
 @login_required
 @has_view('Usuário')
 def telaperfilacesso_excluir(telaperfilacesso_id, perfilacesso_id):
+    LogsEventos.registrar("evento", telaperfilacesso_excluir.__name__, telaperfilacesso_id=telaperfilacesso_id,
+                          perfilacesso_id=perfilacesso_id)
     # verifica se a telaperfilacesso existe
     telaperfilacesso = TelaPerfilAcesso.query.filter_by(id=telaperfilacesso_id).one_or_none()
     if telaperfilacesso:
         # realiza a exclusão da telaperfilacesso
-        if telaperfilacesso.excluir():
+        if excluir(telaperfilacesso):
             # quando desativar, verifica os usuarios vinculados, se existir
             TelaPerfilAcesso.verifica_usuarios_vinculados(perfilacesso_id)
             flash("Tela do perfil desativada", category="success")
@@ -844,6 +868,7 @@ def telaperfilacesso_excluir(telaperfilacesso_id, perfilacesso_id):
 @has_view('Usuário')
 @has_view('Ordem de Serviço')
 def perfilmanutentor_listar(usuario_id):
+    LogsEventos.registrar("evento", perfilmanutentor_listar.__name__, usuario_id=usuario_id)
     if usuario_id == 0:
         flash("Usuário não cadastrado", category="danger")
         return redirect(url_for('usuario.usuario_editar', usuario_id=usuario_id))
@@ -866,6 +891,7 @@ def perfilmanutentor_listar(usuario_id):
 @has_view('Usuário')
 @has_view('Ordem de Serviço')
 def perfilmanutentor_editar(usuario_id):
+    LogsEventos.registrar("evento", perfilmanutentor_editar.__name__, usuario_id=usuario_id)
     usuario_ = Usuario.query.filter_by(id=usuario_id).one_or_none()
     form = PerfilManutentorForm()
 
@@ -883,7 +909,7 @@ def perfilmanutentor_editar(usuario_id):
     if form.validate_on_submit():
         perfilmanutentorusuario = PerfilManutentorUsuario()
         perfilmanutentorusuario.alterar_atributos(form, usuario_id)
-        if perfilmanutentorusuario.salvar():
+        if salvar(perfilmanutentorusuario):
             flash("Perfil Manutentor Cadastrado", category="success")
         else:
             flash("Perfil Manutentor não Cadastrado", category="danger")
@@ -899,6 +925,8 @@ def perfilmanutentor_editar(usuario_id):
 @has_view('Usuário')
 @has_view('Ordem de Serviço')
 def perfilmanutentor_excluir(usuario_id, perfilmanutentorusuario_id):
+    LogsEventos.registrar("evento", perfilmanutentor_excluir.__name__, usuario_id=usuario_id,
+                          perfilmanutentorusuario_id=perfilmanutentorusuario_id)
     # retorna o usuário com o identificador
     usuario_ = Usuario.query.filter_by(id=usuario_id).one_or_none()
     if usuario_:
@@ -907,7 +935,7 @@ def perfilmanutentor_excluir(usuario_id, perfilmanutentorusuario_id):
         if perfilmanutentorusuario:
 
             # grava as informações no banco de dados
-            if perfilmanutentorusuario.excluir():
+            if excluir(perfilmanutentorusuario):
                 flash("Perfil manutentor excluir", category="success")
             else:
                 flash("Erro ao excluir o perfil manutentoro", category="danger")

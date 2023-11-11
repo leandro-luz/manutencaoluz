@@ -9,10 +9,13 @@ from webapp.equipamento.models import Equipamento, Grupo, Subgrupo, Pavimento, S
     Comprimento, Peso, Potencia, TensaoEletrica, preencher_objeto_atributos_comvinculo
 from webapp.equipamento.forms import EquipamentoForm, GrupoForm, SubgrupoForm, LocalizacaoForm, AgrupamentoForm
 from webapp.usuario import has_view
-from webapp.utils.objetos import salvar_lote, preencher_objeto_atributos_semvinculo, \
+from webapp.utils.objetos import salvar, preencher_objeto_atributos_semvinculo, \
     preencher_objeto_atributos_booleanos, preencher_objeto_atributos_datas
 from webapp.utils.files import lista_para_csv
 from webapp.utils.erros import flash_errors
+from webapp.utils.tools import data_atual_utc
+from webapp.sistema.models import LogsEventos
+from webapp.utils.objetos import excluir
 
 equipamento_blueprint = Blueprint(
     'equipamento',
@@ -28,6 +31,7 @@ equipamento_blueprint = Blueprint(
 @login_required
 @has_view('Equipamento')
 def equipamento_listar():
+    LogsEventos.registrar("evento", equipamento_listar.__name__)
     """Retorna a lista de equipamentos"""
     equipamentos = Equipamento.query.filter(
         Equipamento.subgrupo_id == Subgrupo.id,
@@ -42,23 +46,16 @@ def equipamento_listar():
 @login_required
 @has_view('Equipamento')
 def equipamento_editar(equipamento_id):
+    LogsEventos.registrar("evento", equipamento_editar.__name__, equipamento_id=equipamento_id)
+    """Função para editar um equipamento"""
     grupo_id = 0
     subgrupo_id = 0
     new = True
     equipamento = Equipamento()
 
     if equipamento_id > 0:
-        # Atualizar
-        # localiza a empresa do equipamento
         new = False
-
-        equipamento = Equipamento.query.filter(
-            current_user.empresa_id == Empresa.id,
-            Empresa.id == Grupo.empresa_id,
-            Grupo.id == Subgrupo.grupo_id,
-            Subgrupo.id == Equipamento.subgrupo_id,
-            Equipamento.id == equipamento_id
-        ).one_or_none()
+        equipamento = Equipamento.localizar_equipamento_by_id(current_user.empresa_id, equipamento_id)
 
         # verifica se o equipamento existe e se pertence a empresa do usuário
         if equipamento:
@@ -170,7 +167,7 @@ def equipamento_editar(equipamento_id):
     # Validação
     if form.validate_on_submit():
         equipamento.alterar_atributos(form, new)
-        if equipamento.salvar():
+        if salvar(equipamento):
             # Mensagens
             if equipamento_id > 0:
                 flash("Equipamento atualizado", category="success")
@@ -189,10 +186,13 @@ def equipamento_editar(equipamento_id):
 @login_required
 @has_view('Equipamento')
 def equipamento_ativar(equipamento_id):
-    equipamento = Equipamento.query.filter_by(id=equipamento_id).one_or_none()
+    LogsEventos.registrar("evento", equipamento_ativar.__name__, equipamento_id=equipamento_id)
+    """Função para ativar um equipamento"""
+
+    equipamento = equipamento = Equipamento.localizar_equipamento_by_id(current_user.empresa_id, equipamento_id)
     if equipamento:
         equipamento.ativar_desativar()
-        if not equipamento.salvar():
+        if not salvar(equipamento):
             flash("Equipamento não ativado/desativado", category="danger")
     else:
         flash("Equipamento não localizado", category="danger")
@@ -203,6 +203,8 @@ def equipamento_ativar(equipamento_id):
 @login_required
 @has_view('Equipamento')
 def gerar_padrao_equipamentos():
+    LogsEventos.registrar("evento", gerar_padrao_equipamentos.__name__)
+
     csv_data = lista_para_csv([[x] for x in Equipamento.titulos_doc], None)
     nome = "tabela_base_equipamento.csv"
 
@@ -216,6 +218,7 @@ def gerar_padrao_equipamentos():
 @login_required
 @has_view('Equipamento')
 def gerar_csv_equipamentos():
+    LogsEventos.registrar("evento", gerar_csv_equipamentos.__name__)
     # Gera o arquivo csv com os titulos
 
     csv_data = lista_para_csv([[x] for x in Equipamento.query.filter(
@@ -236,10 +239,11 @@ def gerar_csv_equipamentos():
 @login_required
 @has_view('Equipamento')
 def equipamento_excluir(equipamento_id):
-    equipamento = Equipamento.query.filter_by(id=equipamento_id, empresa_id=current_user.empresa_id).one_or_none()
+    LogsEventos.registrar("evento", equipamento_excluir.__name__, equipamento_id=equipamento_id)
 
+    equipamento = Equipamento.localizar_equipamento_by_id(current_user.empresa_id, equipamento_id)
     if equipamento:
-        if equipamento.excluir():
+        if excluir(equipamento):
             flash("Equipamento excluído", category="success")
         else:
             flash("Erro ao excluir o equipamento", category="danger")
@@ -252,8 +256,9 @@ def equipamento_excluir(equipamento_id):
 @login_required
 @has_view('Equipamento')
 def cadastrar_lote_equipamentos():
-    form = EquipamentoForm()
+    LogsEventos.registrar("evento", cadastrar_lote_equipamentos.__name__)
 
+    form = EquipamentoForm()
     # filename = secure_filename(form.file.data.filename)
     filestream = form.file.data
     filestream.seek(0)
@@ -331,8 +336,6 @@ def cadastrar_lote_equipamentos():
             # vincula a empresa no equipamento
             equipamento.subgrupo_id = subgrupo.id
 
-        # Verifica se não foi rejeitado
-        if linha not in rejeitados:
             # insere nas listas dos aceitos
             aceitos_cod.append(df.at[linha, 'Descricao_Curta*'])
             # insere o equipamento na lista
@@ -340,7 +343,7 @@ def cadastrar_lote_equipamentos():
 
     # salva a lista de equipamentos no banco de dados
     if len(aceitos) > 0:
-        salvar_lote(aceitos)
+        salvar(aceitos)
 
     flash(f"Total de equipamentos cadastrados: {len(aceitos)}, rejeitados:{len(rejeitados_texto) - 2}", "success")
 
@@ -362,6 +365,9 @@ def cadastrar_lote_equipamentos():
 @login_required
 @has_view('Equipamento')
 def gerar_csv_agrupamento():
+    LogsEventos.registrar("evento", gerar_csv_agrupamento.__name__)
+
+    """Função qeu gera os arquivos de csv do agrupamento"""
     # Gera o arquivo csv com os titulos
     csv_grupo = lista_para_csv([[x] for x in Grupo.query.filter(
         current_user.empresa_id == Empresa.id,
@@ -395,8 +401,10 @@ def gerar_csv_agrupamento():
 @login_required
 @has_view('Equipamento')
 def agrupamento_listar(grupo_id, subgrupo_id):
-    # lista de grupos existentes
+    LogsEventos.registrar("evento", agrupamento_listar.__name__, grupo_id=grupo_id, subgrupo_id=subgrupo_id)
 
+    """Função que gera a lista do agrupamento"""
+    # lista de grupos existentes
     form = AgrupamentoForm()
     form_grupo = GrupoForm()
     form_subgrupo = SubgrupoForm()
@@ -449,6 +457,9 @@ def agrupamento_listar(grupo_id, subgrupo_id):
 @login_required
 @has_view('Equipamento')
 def agrupamento_editar(grupo_id):
+    LogsEventos.registrar("evento", agrupamento_editar.__name__, grupo_id=grupo_id)
+
+    """Função que edita um agrupamento"""
     form = AgrupamentoForm()
 
     # atribui o valor do grupo no formulario
@@ -460,7 +471,7 @@ def agrupamento_editar(grupo_id):
         if form.tipo.data == 1:
             grupo = Grupo()
             grupo.alterar_atributos(form)
-            grupo.salvar()
+            salvar(grupo)
             flash("Grupo cadastrado com sucesso", category="success")
         # se tipo for subgrupo
         if form.tipo.data == 2:
@@ -469,7 +480,7 @@ def agrupamento_editar(grupo_id):
                 if grupo:
                     subgrupo = Subgrupo()
                     subgrupo.alterar_atributos(form, grupo_id)
-                    subgrupo.salvar()
+                    salvar(subgrupo)
                     flash("Subgrupo cadastrado sucesso", category="success")
                 else:
                     flash("Grupo não cadastrado", category="danger")
@@ -485,6 +496,9 @@ def agrupamento_editar(grupo_id):
 @login_required
 @has_view('Equipamento')
 def agrupamento_editar_elementos():
+    LogsEventos.registrar("evento", agrupamento_editar_elementos.__name__)
+
+    """Função que edita algum elemento do agrupamento"""
     # coletando as informações
     tipo = str(request.form.get('agp_tipo')).upper()
     grupo_id = int(request.form.get('agp_grupo_id'))
@@ -512,7 +526,7 @@ def agrupamento_editar_elementos():
                     if grupo:
                         grupo.nome = tipo_nome
                         # salva no BD
-                        if grupo.salvar():
+                        if salvar(grupo):
                             flash("Grupo atualizado", category="success")
                         else:
                             flash("Erro ao atualizar grupo", category="danger")
@@ -560,6 +574,9 @@ def agrupamento_editar_elementos():
 @login_required
 @has_view('Equipamento')
 def grupo_excluir(grupo_id, subgrupo_id):
+    LogsEventos.registrar("evento", grupo_excluir.__name__, grupo_id=grupo_id, subgrupo_id=subgrupo_id)
+
+    """Função que exclui um grupo"""
     # verificar se o grupo existe
     grupo = Grupo.query.filter_by(id=grupo_id, empresa_id=current_user.empresa_id).one_or_none()
 
@@ -567,7 +584,7 @@ def grupo_excluir(grupo_id, subgrupo_id):
         # realizar a contagem de subgrupos vinculados
         # se for >0 não permite a exclusão
         if Subgrupo.query.filter_by(grupo_id=grupo_id).count() == 0:
-            if grupo.excluir():
+            if excluir(grupo):
                 flash("Grupo excluído com sucesso", category="success")
             else:
                 flash("Erro ao excluir o grupo", category="danger")
@@ -581,6 +598,9 @@ def grupo_excluir(grupo_id, subgrupo_id):
 @login_required
 @has_view('Equipamento')
 def subgrupo_excluir(grupo_id, subgrupo_id):
+    LogsEventos.registrar("evento", subgrupo_excluir.__name__, grupo_id=grupo_id, subgrupo_id=subgrupo_id)
+
+    """Função que exclui um subgrupo"""
     # verifica se o subgrupo existe
     subgrupo = Subgrupo.query.filter(
         Subgrupo.id == subgrupo_id,
@@ -591,7 +611,7 @@ def subgrupo_excluir(grupo_id, subgrupo_id):
         # realizar a contagem de empresas vinculadas
         # se for > 0 não permite a exclusão
         if Equipamento.query.filter_by(subgrupo_id=subgrupo_id).count() == 0:
-            if subgrupo.excluir():
+            if excluir(subgrupo):
                 flash("Subgrupo excluído com sucesso", category="success")
             else:
                 flash("Erro ao excluir o subgrupo", category="danger")
@@ -605,6 +625,9 @@ def subgrupo_excluir(grupo_id, subgrupo_id):
 @login_required
 @has_view('Equipamento')
 def gerar_padrao_agrupamento():
+    LogsEventos.registrar("evento", gerar_padrao_agrupamento.__name__)
+
+    """Função que gera o arquivo csv para o cadastro em lote"""
     csv_data = lista_para_csv([[x] for x in Subgrupo.titulos_doc], None)
     nome = "tabela_base_agrupamento.csv"
 
@@ -618,6 +641,9 @@ def gerar_padrao_agrupamento():
 @login_required
 @has_view('Equipamento')
 def cadastrar_lote_agrupamento():
+    LogsEventos.registrar("evento", cadastrar_lote_agrupamento.__name__)
+
+    """Função que executa o cadastro em lote de agrupamentos"""
     form = AgrupamentoForm()
 
     filestream = form.file.data
@@ -740,7 +766,7 @@ def cadastrar_lote_agrupamento():
 
     # salva a lista de equipamentos no banco de dados
     if len(aceitos) > 0:
-        salvar_lote(aceitos)
+        salvar(aceitos)
 
     flash(f"Total de agrupamentos cadastrados: {len(aceitos)}, rejeitados:{len(rejeitados_texto)}", "success")
 
@@ -760,6 +786,8 @@ def cadastrar_lote_agrupamento():
 @equipamento_blueprint.route('/subgrupo_lista/<int:grupo_id>', methods=['GET', 'POST'])
 @login_required
 def subgrupo_lista(grupo_id: int):
+    LogsEventos.registrar("evento", subgrupo_lista.__name__, grupo_id=grupo_id)
+
     """    Função que retorna lista de locais"""
     subgrupos = Subgrupo.query.filter(
         current_user.empresa_id == Grupo.empresa_id,
@@ -783,6 +811,9 @@ def subgrupo_lista(grupo_id: int):
 @login_required
 @has_view('Equipamento')
 def localizacao_listar():
+    LogsEventos.registrar("evento", localizacao_listar.__name__)
+
+    """Função que retorna as listas de localização"""
     setores = Setor.query.filter_by(empresa_id=current_user.empresa_id).order_by(Setor.nome)
     locais = Local.query.filter_by(empresa_id=current_user.empresa_id).order_by(Local.nome)
     pavimentos = Pavimento.query.filter_by(empresa_id=current_user.empresa_id).order_by(Pavimento.nome)
@@ -797,6 +828,9 @@ def localizacao_listar():
 @login_required
 @has_view('Equipamento')
 def localizacao_editar():
+    LogsEventos.registrar("evento", localizacao_editar.__name__)
+
+    """Função que edita a localização"""
     form = LocalizacaoForm()
 
     if form.validate_on_submit():
@@ -823,6 +857,9 @@ def localizacao_editar():
 @login_required
 @has_view('Equipamento')
 def gerar_csv_localizacao():
+    LogsEventos.registrar("evento", gerar_csv_localizacao.__name__)
+
+    """Função que gera o arquivo csv para o cadastro em lote de localização"""
     # Gera o arquivo csv com os titulos
     csv_setor = lista_para_csv([[x] for x in Setor.query.filter(
         current_user.empresa_id == Setor.empresa_id
@@ -859,6 +896,9 @@ def gerar_csv_localizacao():
 @login_required
 @has_view('Equipamento')
 def cadastrar_lote_localizacao():
+    LogsEventos.registrar("evento", cadastrar_lote_localizacao.__name__)
+
+    """Função que executa o cadastro em lote de localização"""
     form = LocalizacaoForm()
 
     filestream = form.file.data
@@ -945,7 +985,7 @@ def cadastrar_lote_localizacao():
 
     # salva a lista de localizacao no banco de dados
     if len(aceitos) > 0:
-        salvar_lote(aceitos)
+        salvar(aceitos)
 
     flash(f"Total de subgrupos cadastrados: {len(aceitos)}, rejeitados:{len(rejeitados_texto)}", "success")
 
@@ -965,6 +1005,9 @@ def cadastrar_lote_localizacao():
 @login_required
 @has_view('Equipamento')
 def gerar_padrao_localizacao():
+    LogsEventos.registrar("evento", gerar_padrao_localizacao.__name__)
+
+    """Função que gera o arquivo padrão para o cadastro em lote"""
     csv_data = lista_para_csv([[x] for x in Setor.titulos_doc], None)
     nome = "tabela_base_localizacao.csv"
 
@@ -978,6 +1021,9 @@ def gerar_padrao_localizacao():
 @login_required
 @has_view('Equipamento')
 def setor_excluir(setor_id):
+    LogsEventos.registrar("evento", setor_excluir.__name__, setor_id=setor_id)
+
+    """Função que exclui um setor"""
     setor = Setor.query.filter_by(id=setor_id, empresa_id=current_user.empresa_id).one_or_none()
 
     if setor:
@@ -994,6 +1040,9 @@ def setor_excluir(setor_id):
 @login_required
 @has_view('Equipamento')
 def local_excluir(local_id):
+    LogsEventos.registrar("evento", local_excluir.__name__, local_id=local_id)
+
+    """Função que exclui um local"""
     local = Local.query.filter_by(id=local_id, empresa_id=current_user.empresa_id).one_or_none()
 
     if local:
@@ -1010,6 +1059,9 @@ def local_excluir(local_id):
 @login_required
 @has_view('Equipamento')
 def pavimento_excluir(pavimento_id):
+    LogsEventos.registrar("evento", pavimento_excluir.__name__, pavimento_id=pavimento_id)
+
+    """Função que exclui um pavimento"""
     pavimento = Pavimento.query.filter_by(id=pavimento_id, empresa_id=current_user.empresa_id).one_or_none()
 
     if pavimento:
@@ -1026,6 +1078,9 @@ def pavimento_excluir(pavimento_id):
 @login_required
 @has_view('Equipamento')
 def localizacao_editar_elementos():
+    LogsEventos.registrar("evento", localizacao_editar_elementos.__name__)
+
+    """Função que edita os elementos de localização"""
     # coletando as informações
     tipo = str(request.form.get('localizacao_tipo')).upper()
     tipo_id = int(request.form.get('localizacao_id'))

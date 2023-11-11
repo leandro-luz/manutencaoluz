@@ -1,12 +1,8 @@
-import logging
-from webapp import db
-from flask import flash
 from flask_login import current_user
-from webapp.empresa.models import Empresa
 
-logging.basicConfig(format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
-logging.getLogger().setLevel(logging.DEBUG)
-log = logging.getLogger(__name__)
+from webapp import db
+from webapp.empresa.models import Empresa
+from webapp.utils.objetos import salvar
 
 
 class Contrato(db.Model):
@@ -37,24 +33,17 @@ class Contrato(db.Model):
         else:
             self.ativo = True
 
-    def salvar(self) -> bool:
-        """    Função para salvar no banco de dados o objeto"""
-        try:
-            db.session.add(self)
-            db.session.commit()
-
-            return True
-        except Exception as e:
-            log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
-
     @staticmethod
     def inativar_by_id(contrato_id):
         """Função que inativa o contrato pelo contrato_id"""
-        contrato = Contrato.query.filter_by(id=contrato_id).one_or_none()
+        contrato = Contrato.localizar_contrato_by_id(contrato_id)
         contrato.ativo = False
-        contrato.salvar()
+        salvar(contrato)
+
+    @staticmethod
+    def localizar_contrato_by_id(contrato_id):
+        return Contrato.query.filter(Contrato.id == contrato_id,
+                                     Contrato.empresa_gestora_id == current_user.empresa_id).one_or_none()
 
 
 class Tela(db.Model):
@@ -78,17 +67,6 @@ class Tela(db.Model):
         self.url = form.url.data
         self.posicao = form.posicao.data
 
-    def salvar(self) -> bool:
-        """    Função para salvar no banco de dados o objeto"""
-        try:
-            db.session.add(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
-
 
 class Telacontrato(db.Model):
     """    Classe Relacionando Telas e Planos    """
@@ -109,28 +87,6 @@ class Telacontrato(db.Model):
         """    Altera os valores do contrato e tela    """
         self.contrato_id = contrato_id
         self.tela_id = form.tela.data
-
-    def salvar(self) -> bool:
-        """    Função para salvar no banco de dados o objeto"""
-        try:
-            db.session.add(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro salvar no bando de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
-
-    def excluir(self) -> bool:
-        """    Função para retirar do banco de dados o objeto"""
-        try:
-            db.session.delete(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro Deletar objeto no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
 
     @staticmethod
     def contagem_telas_ativas(contrato_id):

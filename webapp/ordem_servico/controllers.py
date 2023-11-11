@@ -12,6 +12,8 @@ from webapp.usuario.models import PerfilManutentorUsuario, Usuario
 from webapp.usuario import has_view
 from webapp.utils.erros import flash_errors
 from webapp.utils.files import lista_para_csv
+from webapp.utils.tools import data_atual_utc
+from webapp.sistema.models import LogsEventos
 
 ordem_servico_blueprint = Blueprint(
     'ordem_servico',
@@ -25,6 +27,7 @@ ordem_servico_blueprint = Blueprint(
 @login_required
 @has_view('Ordem de Serviço')
 def ordem_listar():
+    LogsEventos.registrar("evento", ordem_listar.__name__)
     """Retorna a lista das ordens de serviços"""
 
     # Valida se o usuário pode criar ordens de serviços
@@ -82,6 +85,7 @@ def ordem_listar():
 @login_required
 @has_view('Ordem de Serviço')
 def ordem_editar(ordem_id):
+    LogsEventos.registrar("evento", ordem_editar.__name__, ordem_id=ordem_id)
     tramitacoes = []
     novas_tramitacoes = []
     atividades = []
@@ -225,6 +229,7 @@ def ordem_editar(ordem_id):
 @login_required
 @has_view('Ordem de Serviço')
 def gerar_csv_ordens():
+    LogsEventos.registrar("evento", gerar_csv_ordens.__name__)
     # Gera o arquivo csv com os titulos
 
     csv_data = lista_para_csv([[x] for x in OrdemServico.query.filter(
@@ -242,11 +247,11 @@ def gerar_csv_ordens():
     )
 
 
-@ordem_servico_blueprint.route('/tramitacao/<int:ordem_id>/<int:tipo_situacao_id>/',
-                               methods=['GET', 'POST'])
+@ordem_servico_blueprint.route('/tramitacao/<int:ordem_id>/<int:tipo_situacao_id>/', methods=['GET', 'POST'])
 @login_required
 @has_view('Ordem de Serviço')
 def tramitacao(ordem_id, tipo_situacao_id):
+    LogsEventos.registrar("evento", 'tramitacao', ordem_id=ordem_id, tipo_situacao_id=tipo_situacao_id)
     # Localizar o tipo de tramitação
     tiposituacao = TipoSituacaoOrdem.query.filter_by(id=tipo_situacao_id).one_or_none()
 

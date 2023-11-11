@@ -7,6 +7,7 @@ from webapp.supplier.models import Supplier
 from webapp.contrato.models import Contrato, Telacontrato, Tela
 from webapp.plano_manutencao.models import TipoData, Unidade, Periodicidade, PlanoManutencao
 from webapp.ordem_servico.models import TipoSituacaoOrdem, FluxoOrdem, OrdemServico, TramitacaoOrdem
+from webapp.sistema.models import LogsEventos
 
 env = os.environ.get('WEBAPP_ENV', 'prod')
 app = create_app('config.%sConfig' % env.capitalize())
@@ -20,4 +21,4 @@ def make_shell_context():
                 Telacontrato=Telacontrato, Tela=Tela, TipoData=TipoData,
                 Unidade=Unidade, Periodicidade=Periodicidade, PlanoManutencao=PlanoManutencao,
                 TipoSituacaoOrdem=TipoSituacaoOrdem, FluxoOrdem=FluxoOrdem, OrdemServico=OrdemServico,
-                TramitacaoOrdem=TramitacaoOrdem, migrate=migrate)
+                TramitacaoOrdem=TramitacaoOrdem, migrate=migrate, LogsEventos=LogsEventos)

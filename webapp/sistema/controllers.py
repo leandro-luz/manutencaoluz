@@ -1,5 +1,5 @@
-from flask import Blueprint, redirect, url_for, render_template
-from flask_login import current_user, login_required
+from flask import Blueprint, render_template
+from flask_login import login_required
 
 sistema_blueprint = Blueprint(
     'sistema',
@@ -43,11 +43,11 @@ def indicador():
     return render_template('indicador.html', indicadores=indicadores)
 
 
-@sistema_blueprint.route('/manutenção', methods=['GET', 'POST'])
+@sistema_blueprint.route('/manutencao', methods=['GET', 'POST'])
 @login_required
-def manutenção():
+def manutencao():
     ordens = ['a', 'b', 'c', 'd']
-    return render_template('manutenção.html', ordens=ordens)
+    return render_template('manutencao.html', ordens=ordens)
 
 
 @sistema_blueprint.route('/ferramentas', methods=['GET', 'POST'])
@@ -66,16 +66,16 @@ def epi():
 
 @sistema_blueprint.route('/orçamento', methods=['GET', 'POST'])
 @login_required
-def orçamento():
+def orcamento():
     custos = ['a', 'b', 'c', 'd']
-    return render_template('orçamento.html', custos=custos)
+    return render_template('orcamento.html', custos=custos)
 
 
-@sistema_blueprint.route('/programação', methods=['GET', 'POST'])
+@sistema_blueprint.route('/programacao', methods=['GET', 'POST'])
 @login_required
-def programação():
+def programacao():
     atividades = ['a', 'b', 'c', 'd']
-    return render_template('programação.html', atividades=atividades)
+    return render_template('programacao.html', atividades=atividades)
 
 
 @sistema_blueprint.route('/rh', methods=['GET', 'POST'])

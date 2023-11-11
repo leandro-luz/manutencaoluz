@@ -1,14 +1,9 @@
-import datetime
-import logging
-import re
-from flask import flash
 from itertools import cycle
 from webapp import db
 from webapp.utils.objetos import atributo_existe, atribuir_none_id
-
-logging.basicConfig(format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
-logging.getLogger().setLevel(logging.DEBUG)
-log = logging.getLogger(__name__)
+from webapp.utils.tools import data_atual_utc
+from flask_login import current_user
+from webapp.utils.objetos import salvar
 
 
 class Interessado(db.Model):
@@ -31,23 +26,12 @@ class Interessado(db.Model):
         self.cnpj = form.cnpj.data
         self.email = form.email.data.upper()
         self.telefone = form.telefone.data
-        self.data_solicitacao = datetime.datetime.now()
-
-    def salvar(self) -> bool:
-        """    Função para salvar no banco de dados o objeto    """
-        try:
-            db.session.add(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro salvar no banco de dados: {self.__repr__()} :{e}')
-            db.session.rollback()
-            return False
+        self.data_solicitacao = data_atual_utc()
 
     def registrado(self) -> bool:
         """    Função para salvar a data de registro do 'lead' como cliente    """
-        self.data_cadastro = datetime.datetime.now()
-        return self.salvar()
+        self.data_cadastro = data_atual_utc()
+        return salvar(self)
 
 
 class Tipoempresa(db.Model):
@@ -58,18 +42,6 @@ class Tipoempresa(db.Model):
 
     def __repr__(self) -> str:
         return f'<Tipoempresa: {self.id}-{self.nome}>'
-
-    def salvar(self) -> bool:
-        """    Função para salvar no banco de dados o objeto    """
-        try:
-            db.session.add(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            flash("Erro ao cadastrar/atualizar o tipo de empresa no banco de dados", category="danger")
-            return False
 
 
 class Empresa(db.Model):
@@ -172,7 +144,7 @@ class Empresa(db.Model):
         self.empresa_gestora_id = empresa_id
         self.tipoempresa_id = tipoempresa_id
         if new:
-            self.data_cadastro = datetime.datetime.now()
+            self.data_cadastro = data_atual_utc()
 
     def alterar_atributos(self, form, empresa_id, tipoempresa_id, new=False) -> None:
         """Função para alterar os atributos"""
@@ -196,28 +168,6 @@ class Empresa(db.Model):
             self.ativo = False
         else:
             self.ativo = True
-
-    def salvar(self):
-        """    Função para salvar no banco de dados o objeto    """
-        try:
-            db.session.add(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro salvar no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
-
-    def excluir(self) -> bool:
-        """    Função para retirar do banco de dados o objeto"""
-        try:
-            db.session.delete(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            log.error(f'Erro Deletar objeto no banco de dados: {self.__repr__()}:{e}')
-            db.session.rollback()
-            return False
 
     def importar_interessado(self, interessado: [Interessado]) -> None:
         """Função para importar as informações do interessado"""
@@ -267,3 +217,17 @@ class Empresa(db.Model):
             for empresa in empresas:
                 empresa.ativo = False
                 empresa.salvar()
+
+    @staticmethod
+    def localizar_empresa_by_id(id):
+        """Função que localiza uma empresa pelo seu id que esteja vinculada a empresa do usuário"""
+        return Empresa.query.filter(Empresa.id == id,
+                                    Empresa.empresa_gestora_id == current_user.empresa_id).one_or_none()
+
+    @staticmethod
+    def lista_clientes(id):
+        """Função que retorna a lista de outras empresas vinculadas a uma empresa"""
+        clientes = Empresa.query.filter(
+            Empresa.id != 1,
+            Empresa.empresa_gestora_id == id).all()
+        return [{cliente.nome_fantasia: Empresa.lista_clientes(cliente.id)} for cliente in clientes]
