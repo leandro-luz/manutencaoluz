@@ -12,6 +12,7 @@ from flask_jwt_extended import create_access_token, get_jwt_identity
 from webapp.utils.tools import password_random
 from webapp.utils.tools import data_atual_utc
 from webapp.utils.objetos import salvar, excluir
+import bcrypt
 
 
 class PerfilAcesso(db.Model):
@@ -106,7 +107,7 @@ class PerfilManutentorUsuario(db.Model):
 class Senha(db.Model):
     __tablename__ = 'senha'
     id = db.Column(db.Integer(), primary_key=True)
-    senha = db.Column(db.String(50), nullable=False, index=True)
+    senha = db.Column(db.String(100), nullable=False)
     senha_temporaria = db.Column(db.Boolean, nullable=False, default=True)
     contador_acesso_temporario = db.Column(db.Integer(), nullable=True, default=0)
     data_expiracao = db.Column(db.DateTime(), nullable=True)
@@ -117,19 +118,25 @@ class Senha(db.Model):
     def __repr__(self):
         return f'<Senha: {self.id}-{self.senha}>'
 
+    def alterar_atributos(self, form):
+        """Função para alterar os atributos"""
+        # self.senha = bcrypt.generate_password_hash(senha)
+        self.alterar_senha(form.senha.data)
+        self.alterar_senha_temporaria(False)
+        # self.contador_acesso_temporario = 0
+        self.alterar_data_expiracao()
+
     def verificar_senha(self, senha):
         """Função para verificar a senha"""
-        # return bcrypt.check_password_hash(self.senha, senha)
-        return self.senha == senha
+        return Senha.validar_senha(senha, self.senha)
+
+    def alterar_senha(self, senha) -> None:
+        """Função para alterar a senha"""
+        self.senha = Senha.gerar_senha(senha)
 
     def alterar_senha_temporaria(self, temporario: bool) -> None:
         """Função para alterar a senha temporária"""
         self.senha_temporaria = temporario
-
-    def alterar_senha(self, senha) -> None:
-        """Função para alterar a senha"""
-        # self.senha = bcrypt.generate_password_hash(senha)
-        self.senha = senha
 
     def alterar_expiravel(self, senha_expira: bool) -> None:
         """Função para alterar se é expiravel a senha"""
@@ -142,14 +149,6 @@ class Senha(db.Model):
     def alterar_contador_accesso_temporario(self):
         """Função para incrementar o contador de acesso"""
         self.contador_acesso_temporario += 1
-
-    def alterar_atributos(self, form):
-        """Função para alterar os atributos"""
-        # self.senha = bcrypt.generate_password_hash(senha)
-        self.alterar_senha(form.senha.data)
-        self.alterar_senha_temporaria(False)
-        # self.contador_acesso_temporario = 0
-        self.alterar_data_expiracao()
 
     def verificar_data_expiracao(self) -> bool:
         """Função para verificar se a data está expirada"""
@@ -167,11 +166,26 @@ class Senha(db.Model):
     @staticmethod
     def senha_aleatoria(size=8, chars=string.ascii_uppercase + string.digits) -> str:
         """    Função que gera uma senha aleatório para acesso temporário    """
-        return ''.join(random.choice(chars) for _ in range(size))
+        senha_nova = ''.join(random.choice(chars) for _ in range(size))
+        print(senha_nova)
+        return senha_nova
 
     @staticmethod
-    def password_adminluz() -> str:
-        return 'Aaa-11111'
+    def password_adminluz() -> bytes:
+        return Senha.gerar_senha("Aaa-11111")
+
+    @staticmethod
+    def validar_senha(senha, hash_senha):
+        """Função que valida a senha repassada"""
+        # Converta a senha e o hash para bytes, se necessário
+        senha_bytes = senha.encode('utf-8') if isinstance(senha, str) else senha
+        hash_bytes = hash_senha.encode('utf-8') if isinstance(hash_senha, str) else hash_senha
+        return bcrypt.checkpw(senha_bytes, hash_bytes)
+
+    # criptografar a senha
+    @staticmethod
+    def gerar_senha(senha: str):
+        return bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt())
 
 
 class Usuario(db.Model):

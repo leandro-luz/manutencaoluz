@@ -193,8 +193,6 @@ from datetime import datetime
 # print(split(data))
 
 
-
-
 # <script>
 # var exampleModal = document.getElementById('exampleModal')
 # exampleModal.addEventListener('show.bs.modal', function (event) {
@@ -241,3 +239,74 @@ from datetime import datetime
 # print(extrair_texto_entre_underscores("teste_id"))
 # print(extrair_texto_entre_underscores("und_teste_id"))
 
+# import bcrypt
+#
+# def validar_senha(senha, hash_senha):
+#     """Função que valida a senha repassada"""
+#     # Converta a senha e o hash para bytes, se necessário
+#     senha_bytes = senha.encode('utf-8') if isinstance(senha, str) else senha
+#     hash_bytes = hash_senha.encode('utf-8') if isinstance(hash_senha, str) else hash_senha
+#
+#     # Use bcrypt.checkpw para validar a senha
+#     return bcrypt.checkpw(senha_bytes, hash_bytes)
+#
+#
+# # criptografar a senha
+# def gerar_senha(senha):
+#     return bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt())
+#
+# def validar_senha2(senha, hash_senha):
+#     """Função que valida a senha repassada"""
+#     # Converta a senha e o hash para bytes, se necessário
+#     senha_bytes = senha.encode('utf-8') if isinstance(senha, str) else senha
+#     hash_bytes = hash_senha.encode('utf-8') if isinstance(hash_senha, str) else hash_senha
+#
+#     # Use bcrypt.checkpw para validar a senha
+#     return bcrypt.checkpw(senha_bytes, hash_bytes)
+#
+# hash_senha_armazenado = "$2b$12$XySXP2jTlD/ZvcPhFh.yauxmSRSuvP1vhBalzAZPKeN9WLStNXhdG"
+# senha_usuario = "aaa-11111"
+#
+# if validar_senha2(senha_usuario, hash_senha_armazenado):
+#     print("Senha válida")
+# else:
+#     print("Senha inválida")
+
+
+# import smtplib
+#
+#
+# def validar_credenciais_email(username, password, server, port):
+#     try:
+#         # Conectar ao servidor SMTP
+#         connection = smtplib.SMTP(server, port)
+#
+#         # Iniciar conexão TLS (criptografada) se configurado para usar TLS
+#         connection.starttls()
+#
+#         # Autenticar com as credenciais fornecidas
+#         connection.login(username, password)
+#
+#         # Se chegou até aqui sem exceções, as credenciais são válidas
+#         return True
+#     except smtplib.SMTPAuthenticationError:
+#         # Se ocorrer um erro de autenticação, as credenciais são inválidas
+#         return False
+#     except Exception as e:
+#         # Outros erros (por exemplo, falha na conexão) podem ser tratados aqui
+#         print(f"Erro ao validar credenciais: {e}")
+#         return False
+#     finally:
+#         # Sempre feche a conexão, independentemente do resultado
+#         if connection:
+#             connection.quit()
+#
+#
+# # Exemplo de uso:
+# username = 'manutencaoluz@outlook.com'
+# password = 'Novas3nh@'
+# server = 'smtp-mail.outlook.com'
+# port = 587
+#
+# resultado = validar_credenciais_email(username, password, server, port)
+# print(f'Credenciais válidas: {resultado}')

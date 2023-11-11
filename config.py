@@ -10,11 +10,12 @@ class Config(object):
     SQLALCHEMY_POOL_PRE_PING = True
     # SQLALCHEMY_ECHO = True
     DEBUG_TB_INTERCEPT_REDIRECTS = False
+
     MAIL_SERVER = 'smtp-mail.outlook.com'
     MAIL_PORT = 587
     MAIL_SENDER = 'Time Manutenção Luz <manutencaoluz@outlook.com>'
-    MAIL_USERNAME = 'manutencaoluz'  # @outlook.com'
-    MAIL_PASSWORD = 'Aaa-22222'
+    MAIL_USERNAME = 'manutencaoluz@outlook.com'
+    MAIL_PASSWORD = 'Novas3nh@'
     MAIL_USE_TLS = True
     MAIL_USE_SSL = False
 

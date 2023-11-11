@@ -178,7 +178,7 @@ def empresa_editar(empresa_id):
 
 def new_admin(empresa: [Empresa], enviar_email):
     """    Função para cadastrar os (administradores, grupos) da empresa    """
-
+    nova_senha = ''
     # lista dos administradores
     lista = [{'nome': 'admin', 'descricao': 'administrador',
               'email': empresa.email, 'enviar_email': True, 'senha_temporaria': True},
@@ -207,7 +207,8 @@ def new_admin(empresa: [Empresa], enviar_email):
         senha = Senha()
         if valor['senha_temporaria']:
             # informa a senha de administrador do sistema, a senha não expira
-            senha.alterar_senha(Senha.senha_aleatoria())
+            nova_senha = Senha.senha_aleatoria()
+            senha.alterar_senha(nova_senha)
             senha.alterar_expiravel(False)
         else:
             # informa uma senha temporária para o administrador da empresa, e informa a data de expiração da senha
@@ -226,13 +227,13 @@ def new_admin(empresa: [Empresa], enviar_email):
                                       perfilacesso_id=perfilacesso.id, senha_id=senha.id)
 
         if salvar(usuario):
-            # Se está permitido o envio do email pelo usuario e ignora o email para adminstracao
+            # Se está permitido o envio do e-mail pelo usuário e ignora o e-mail para administracao
             if enviar_email and valor['enviar_email']:
                 # envia o email com as informações de login
                 if not send_email(valor['email'],
                                   'Manutenção Luz - Informações para login',
                                   'usuario/email/usuario_cadastrado',
-                                  usuario=usuario):
+                                  usuario=usuario, nova_senha=nova_senha):
                     flash("Erro ao cadastrar o usuário administrador para esta empresa", category="danger")
                     break
         else:

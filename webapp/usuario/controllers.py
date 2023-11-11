@@ -89,13 +89,14 @@ def trocar_senha():
         senha = Senha.query.filter_by(id=current_user.senha.id).one_or_none()
         if senha:
             # realiza as alterações
+            nova_senha = form.senha.data
             senha.alterar_atributos(form)
             if salvar(senha):
                 # enviar email com a senha atualizada
                 send_email(current_user.email,
                            'Alteração de Senha',
                            'usuario/email/dados_usuario',
-                           usuario=current_user)
+                           usuario=current_user, nova_senha=nova_senha)
                 flash("Sua senha foi atualizada", category="success")
                 return redirect(url_for('main.index'))
             else:
@@ -159,13 +160,14 @@ def alterar_senha_token(token):
             usuario_ = Usuario.query.filter_by(id=user_id).one_or_none()
             senha = Senha.query.filter_by(id=user_id).one_or_none()
             if senha:
+                nova_senha = form.senha.data
                 senha.alterar_atributos(form)
                 if salvar(senha):
                     # enviar email com a senha atualizada
                     send_email(usuario_.email,
                                'Alteração de Senha',
                                'usuario/email/dados_usuario',
-                               usuario=usuario_)
+                               usuario=usuario_, nova_senha=nova_senha)
                     flash("Sua senha foi atualizada.", category="success")
                     return redirect(url_for('usuario.login'))
                 else:
@@ -347,11 +349,12 @@ def usuario_editar(usuario_id):
     # --------- VALIDAÇÕES
     if form.validate_on_submit():
         # verificar se o perfilacesso está ativo
-
+        senha_nova = ''
         if new:
             # instância um novo objeto password_
             password_ = Senha()
-            password_.alterar_senha(Senha.senha_aleatoria())
+            senha_nova = Senha.senha_aleatoria()
+            password_.alterar_senha(senha_nova)
             password_.alterar_data_expiracao()
             salvar(password_)
             usuario_.senha_id = password_.id
@@ -366,7 +369,7 @@ def usuario_editar(usuario_id):
                 send_email(usuario_.email,
                            'Manutenção Luz - Informações para login',
                            'usuario/email/usuario_cadastrado',
-                           usuario=usuario_)
+                           usuario=usuario_, senha_nova=senha_nova)
                 flash("Usuário cadastrado", category="success")
             else:
 

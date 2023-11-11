@@ -5,7 +5,7 @@ Bem vindo ao Manutenção Luz!
 Segue abaixo o login e a senha provisória para o acesso ao sistema.
 
 LOGIN: {{ usuario.nome }}
-SENHA: {{ usuario.senha.senha }}
+SENHA: {{ senha_nova }}
 
 Atenciosamente,
 

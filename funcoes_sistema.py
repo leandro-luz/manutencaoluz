@@ -1,20 +1,29 @@
 import logging
-from webapp import db
 from typing import List
+
+import bcrypt
 from sqlalchemy.exc import SQLAlchemyError
-from webapp.usuario.models import PerfilAcesso, Senha, Usuario, TelaPerfilAcesso, PerfilManutentor
+
+from webapp import db
+from webapp.contrato.models import Contrato, Tela, Telacontrato
 from webapp.empresa.models import Interessado, Tipoempresa, Empresa
 from webapp.equipamento.models import Equipamento, Grupo, Subgrupo, Pavimento, Setor, Local, Vazao, \
     Volume, Area, Peso, Comprimento, Potencia, TensaoEletrica
-from webapp.contrato.models import Contrato, Tela, Telacontrato
-from webapp.plano_manutencao.models import TipoData, Unidade, Periodicidade, PlanoManutencao, Atividade, \
-    TipoParametro, ListaAtividade, TipoBinario
 from webapp.ordem_servico.models import TipoSituacaoOrdem, FluxoOrdem, OrdemServico, TramitacaoOrdem, TipoOrdem, \
     TipoStatusOrdem, TipoSituacaoOrdemPerfilManutentor
+from webapp.plano_manutencao.models import TipoData, Unidade, Periodicidade, PlanoManutencao, Atividade, \
+    TipoParametro, ListaAtividade, TipoBinario
+from webapp.usuario.models import PerfilAcesso, Senha, Usuario, TelaPerfilAcesso, PerfilManutentor
+
+from webapp.utils.objetos import salvar
 
 logging.basicConfig(format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
 logging.getLogger().setLevel(logging.DEBUG)
 log = logging.getLogger(__name__)
+
+
+def gerar_senha(senha):
+    return bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt())
 
 
 def criar_contrato(lista: List[dict]) -> List[Contrato]:
@@ -297,7 +306,7 @@ def criar_senhas(lista: List[dict]) -> List[Senha]:
 
     # Criando a lista de novas perfis a serem adicionadas
     senhas_existentes = {se.senha for se in Senha.query.all()}
-    novas_senhas = [Senha(senha=item['senha'],
+    novas_senhas = [Senha(senha=gerar_senha(item['senha']),
                           data_expiracao=item['data_expiracao'],
                           senha_temporaria=item['senha_temporaria'],
                           senha_expira=item['senha_expira'])
@@ -326,19 +335,26 @@ def criar_usuarios(lista: List[dict]) -> List[Usuario]:
        """
 
     empresas = {e.razao_social: e.id for e in Empresa.query.all()}
-    senhas = {s.senha: s.id for s in Senha.query.all()}
     usuarios = {u.nome: u.id for u in Usuario.query.all()}
 
     novos_usuarios = []
     for item in lista:
         if item['nome'] not in usuarios:
+            # criar a senha
+            senha = Senha(senha=gerar_senha(item['senha']),
+                          data_expiracao=item['data_expiracao'],
+                          senha_temporaria=item['senha_temporaria'],
+                          senha_expira=item['senha_expira'])
+            # salvar
+            salvar(senha)
+
             perfis = {p.nome: p.id for p in PerfilAcesso.query.filter_by(empresa_id=empresas[item['empresa']])}
 
             usuario = Usuario(nome=item['nome'],
                               email=item['email'],
                               data_assinatura=item['data_assinatura'],
                               ativo=True,
-                              senha_id=senhas[item['senha']],
+                              senha_id=senha.id,
                               perfilacesso_id=perfis[item['perfil']],
                               empresa_id=empresas[item['empresa']])
 

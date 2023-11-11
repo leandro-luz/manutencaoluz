@@ -218,19 +218,19 @@ import pandas as pd
 # fuso_horario = timezone('America/Sao_Paulo')
 # print(fuso_horario)
 #
-import pytz
-import datetime
-
-def data_atual_utc():
-    """Função que retorna a data atual corrigindo para o UTC"""
-    local_timezone = 'America/Sao_Paulo'
-    data_atual = datetime.datetime.now()
-    try:
-        tz = pytz.timezone(local_timezone)
-        utc_offset = tz.utcoffset(data_atual).total_seconds()/3600
-
-        # Retornar a data corrigida
-        return data_atual + datetime.timedelta(hours=utc_offset)
-    except pytz.UnknownTimeZoneError:
-        return data_atual
+# import pytz
+# import datetime
+#
+# def data_atual_utc():
+#     """Função que retorna a data atual corrigindo para o UTC"""
+#     local_timezone = 'America/Sao_Paulo'
+#     data_atual = datetime.datetime.now()
+#     try:
+#         tz = pytz.timezone(local_timezone)
+#         utc_offset = tz.utcoffset(data_atual).total_seconds()/3600
+#
+#         # Retornar a data corrigida
+#         return data_atual + datetime.timedelta(hours=utc_offset)
+#     except pytz.UnknownTimeZoneError:
+#         return data_atual
 

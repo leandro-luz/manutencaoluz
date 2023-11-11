@@ -10,10 +10,10 @@ env = os.environ.get('WEBAPP_ENV', 'prod')
 app = create_app('config.%sConfig' % env.capitalize())
 app.app_context().push()
 
-# print("Excluindo todas as tabelas")
-# db.drop_all()
-# print("Criando todas as tabelas")
-# db.create_all()
+print("Excluindo todas as tabelas")
+db.drop_all()
+print("Criando todas as tabelas")
+db.create_all()
 
 telas_lista = [
     {'posicao': 1, 'nome': 'Interessado', 'icon': 'bi-card-list', 'url': 'empresa.interessado_listar'},
@@ -246,56 +246,54 @@ telasperfil_lista = [
 
 ]
 
-senha_lista = [
-    {'senha': 'aaa11111', 'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
-     'senha_expira': False, 'senha_temporaria': False},
-    {'senha': 'admin123', 'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
-     'senha_expira': False, 'senha_temporaria': False},
-    {'senha': 'adminteste123', 'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
-     'senha_expira': False, 'senha_temporaria': False},
-    {'senha': 'teste123', 'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
-     'senha_expira': False, 'senha_temporaria': False},
-    {'senha': 'adminbeta123', 'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
-     'senha_expira': False, 'senha_temporaria': False},
-    {'senha': 'beta123', 'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
-     'senha_expira': False, 'senha_temporaria': False},
-    {'senha': 'adminluz123', 'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
-     'senha_expira': True, 'senha_temporaria': True},
-    {'senha': '12345678', 'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
-     'senha_expira': True, 'senha_temporaria': True},
-]
-
 usuario_lista = [
     {'nome': 'admin', 'email': 'admin@admin.com',
-     'senha': 'aaa11111', 'perfil': 'admin',
-     'data_assinatura': '1980/05/10 12:45:10',
-     'empresa': 'manluz.ltda'},
+     'perfil': 'admin', 'data_assinatura': '1980/05/10 12:45:10',
+     'empresa': 'manluz.ltda', 'senha': 'aaa11111',
+     'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
+     'senha_expira': False, 'senha_temporaria': False},
+
     {'nome': 'leandro', 'email': 'admin@admin.com',
-     'senha': 'admin123', 'perfil': 'admin',
-     'data_assinatura': '1980/05/10 12:45:10',
-     'empresa': 'manluz.ltda'},
+     'perfil': 'admin', 'data_assinatura': '1980/05/10 12:45:10',
+     'empresa': 'manluz.ltda', 'senha': 'admin123',
+     'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
+     'senha_expira': False, 'senha_temporaria': False},
 
     {'nome': 'adminluz_teste', 'email': 'adminteste@hotmail.com',
-     'senha': 'adminteste123', 'perfil': 'adminluz', 'data_assinatura': '1980/05/10 12:45:10',
-     'empresa': 'empresa_teste.ltda'},
+     'perfil': 'adminluz', 'data_assinatura': '1980/05/10 12:45:10',
+     'empresa': 'empresa_teste.ltda', 'senha': 'adminteste123',
+     'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
+     'senha_expira': False, 'senha_temporaria': False},
+
     {'nome': 'admin_teste', 'email': 'gerenciadorteste@hotmail.com',
-     'senha': 'teste123', 'perfil': 'admin',
-     'data_assinatura': '2023/06/05 18:00:00',
-     'empresa': 'empresa_teste.ltda'},
+     'perfil': 'admin', 'data_assinatura': '2023/06/05 18:00:00',
+     'empresa': 'empresa_teste.ltda', 'senha': 'teste123',
+     'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
+     'senha_expira': False, 'senha_temporaria': False},
 
     {'nome': 'adminluz_beta', 'email': 'adminbeta@gmail.com',
-     'senha': 'adminbeta123', 'perfil': 'adminluz', 'data_assinatura': '1980/05/10 12:45:10',
-     'empresa': 'empresa_beta.ltda'},
+     'perfil': 'adminluz', 'data_assinatura': '1980/05/10 12:45:10',
+     'empresa': 'empresa_beta.ltda', 'senha': 'adminbeta123',
+     'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
+     'senha_expira': False, 'senha_temporaria': False},
+
     {'nome': 'admin_beta', 'email': 'gerenciadorbeta@gmail.com',
-     'senha': 'beta123', 'perfil': 'admin', 'data_assinatura': '2023/06/05 18:00:00',
-     'empresa': 'empresa_beta.ltda'},
+     'perfil': 'admin', 'data_assinatura': '2023/06/05 18:00:00',
+     'empresa': 'empresa_beta.ltda', 'senha': 'beta123',
+     'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
+     'senha_expira': False, 'senha_temporaria': False},
 
     {'nome': 'adminluz_semeente', 'email': 'guguleo2019@gmail.com',
-     'senha': 'adminluz123', 'perfil': 'adminluz', 'data_assinatura': '1980/05/10 12:45:10',
-     'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA'},
+     'perfil': 'adminluz', 'data_assinatura': '1980/05/10 12:45:10',
+     'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'senha': 'adminluz123',
+     'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
+     'senha_expira': True, 'senha_temporaria': True},
+
     {'nome': 'admin_Semeente', 'email': 'contato.luzengenharia@gmail.com',
-     'senha': '12345678', 'perfil': 'admin', 'data_assinatura': '2023/06/05 18:00:00',
-     'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA'},
+     'perfil': 'admin', 'data_assinatura': '2023/06/05 18:00:00',
+     'empresa': 'SEMEENTE ENGENHARIA E CONSTRUCOES LTDA', 'senha': '12345678',
+     'data_expiracao': str(datetime.datetime.now() + datetime.timedelta(30)),
+     'senha_expira': True, 'senha_temporaria': True},
 
 ]
 
@@ -601,7 +599,6 @@ criar_empresas(subempresa_lista)
 # carregamento para os perfis e usuários
 criar_perfis(perfis_lista)
 criar_telasperfil(telasperfil_lista)
-criar_senhas(senha_lista)
 criar_usuarios(usuario_lista)
 criar_perfil_manutentor(perfil_manutentor_lista)
 
