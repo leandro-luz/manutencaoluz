@@ -558,7 +558,7 @@ def agrupamento_editar_elementos():
                         subgrupo.nome = tipo_nome
 
                         # salva no BD
-                        if subgrupo.salvar():
+                        if salvar(subgrupo):
                             flash("Subgrupo atualizado", category="success")
                         else:
                             flash("Erro ao atualizar subgrupo", category="danger")
@@ -845,7 +845,7 @@ def localizacao_editar():
             nome, model_class = models[tipo]
             model = model_class()
             model.alterar_atributos(form)
-            model.salvar()
+            salvar(model)
             flash(f"Inserido o {nome} com sucesso", category="success")
         else:
             flash("Erro ao inserir pavimento", category="danger")
@@ -1027,7 +1027,7 @@ def setor_excluir(setor_id):
     setor = Setor.query.filter_by(id=setor_id, empresa_id=current_user.empresa_id).one_or_none()
 
     if setor:
-        if setor.excluir():
+        if excluir(setor):
             flash("Setor excluído", category="success")
         else:
             flash("Erro ao excluír o setor", category="danger")
@@ -1046,7 +1046,7 @@ def local_excluir(local_id):
     local = Local.query.filter_by(id=local_id, empresa_id=current_user.empresa_id).one_or_none()
 
     if local:
-        if local.excluir():
+        if excluir(local):
             flash("Local excluído", category="success")
         else:
             flash("Erro ao local o setor", category="danger")
@@ -1065,7 +1065,7 @@ def pavimento_excluir(pavimento_id):
     pavimento = Pavimento.query.filter_by(id=pavimento_id, empresa_id=current_user.empresa_id).one_or_none()
 
     if pavimento:
-        if pavimento.excluir():
+        if excluir(pavimento):
             flash("Pavimento excluído", category="success")
         else:
             flash("Erro ao excluir o setor", category="danger")
@@ -1111,7 +1111,7 @@ def localizacao_editar_elementos():
                 if location:
                     location.nome = tipo_nome
                     location.sigla = tipo_sigla
-                    if location.salvar():
+                    if salvar(location):
                         flash_success(f"{model_name} atualizado")
                     else:
                         flash_error(f"Erro ao atualizar {model_name}")

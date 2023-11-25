@@ -14,6 +14,7 @@ from webapp.utils.erros import flash_errors
 from webapp.utils.files import lista_para_csv
 from webapp.utils.tools import data_atual_utc
 from webapp.sistema.models import LogsEventos
+from webapp.utils.objetos import salvar, excluir
 
 ordem_servico_blueprint = Blueprint(
     'ordem_servico',
@@ -197,7 +198,7 @@ def ordem_editar(ordem_id):
         ordem.alterar_atributos(form_ordem, new)
         # Verificando se o usuário pode executar esta atividade
         if OrdemServico.verificar_ordem_perfil_manutentor():
-            if ordem.salvar():
+            if salvar(ordem):
                 # Mensagens
                 if ordem_id > 0:
                     flash("Ordem de Serviço Atualizado", category="success")
@@ -261,11 +262,11 @@ def tramitacao(ordem_id, tipo_situacao_id):
         # criar uma nova tramitação
         tramitacao = TramitacaoOrdem()
         # registra os valores
-        tramitacao.alterar_atributos(ordem_id, tiposituacao.id)
+        tramitacao.alterar_atributos(ordem_id, tiposituacao.id, True)
         # alterar o texto observação
         tramitacao.alterar_observacao(form_listaatividade, tiposituacao)
         # salva no banco de dados
-        if tramitacao.salvar():
+        if salvar(tramitacao):
 
             # ETAPAS PARA GERAR NOVA ORDEM DE SERVIÇO
             ordem_antiga = OrdemServico.query.filter_by(id=ordem_id).one_or_none()
@@ -289,8 +290,8 @@ def tramitacao(ordem_id, tipo_situacao_id):
                                     ordem_nova.alterar_atributos_by_ordem(ordem=ordem_antiga, plano=plano)
 
                                     # salva a nova ordem de serviço
-                                    if ordem_nova.salvar():
-                                        plano.salvar()
+                                    if salvar(ordem_nova):
+                                        salvar(plano)
                                         flash("Ordem de Serviço Cadastrado", category="success")
                                     else:
                                         flash("Erro ao gerar nova Ordem de Serviço", category="danger")
@@ -301,8 +302,8 @@ def tramitacao(ordem_id, tipo_situacao_id):
                 tramitacao = TramitacaoOrdem()
                 tiposituacao = TipoSituacaoOrdem.query.filter_by(sigla='AGFI').one_or_none()
                 tramitacao.observacao = "AGUARDANDO FISCALIZAÇÃO"
-                tramitacao.alterar_atributos(ordem_id, tiposituacao.id)
-                tramitacao.salvar()
+                tramitacao.alterar_atributos(ordem_id, tiposituacao.id, True)
+                salvar(tramitacao)
 
             # Gera uma nova tramitação para os reserviços
             if ordem_antiga.tiposituacaoordem.sigla in ["REPR"]:
@@ -310,8 +311,8 @@ def tramitacao(ordem_id, tipo_situacao_id):
                 tramitacao = TramitacaoOrdem()
                 tiposituacao = TipoSituacaoOrdem.query.filter_by(sigla='AGAP').one_or_none()
                 tramitacao.observacao = "AGUARDANDO APROVAÇÃO RESERVIÇO"
-                tramitacao.alterar_atributos(ordem_id, tiposituacao.id)
-                tramitacao.salvar()
+                tramitacao.alterar_atributos(ordem_id, tiposituacao.id, True)
+                salvar(tramitacao)
 
             flash("Tramitação cadastrado", category="success")
         else:

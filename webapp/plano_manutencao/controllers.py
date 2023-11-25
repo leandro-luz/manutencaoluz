@@ -52,7 +52,7 @@ def listaatividade_preenchida(ordem_id):
 @has_view('Plano de Manutenção')
 def atividade_editar(plano_id, listaatividade_id, atividade_id, tipo):
     LogsEventos.registrar("evento", atividade_editar.__name__, plano_id=plano_id, listaatividade_id=listaatividade_id,
-                          atividade_id=atividade_id, tipo=tipo)
+                          atividade_id=atividade_id, tipo_atividade=tipo)
     lista_new = False
     listaatividade = ListaAtividade()
     atividade = Atividade()
@@ -75,7 +75,7 @@ def atividade_editar(plano_id, listaatividade_id, atividade_id, tipo):
                 if tipo == "subir":
                     if atividade.posicao > 1:
                         atividade.posicao -= 1
-                if atividade.salvar():
+                if salvar(atividade):
                     flash("Atividade alterada com sucesso!", category="warning")
                 else:
                     flash("Erro ao alterar a atividades", category="danger")
@@ -116,7 +116,7 @@ def atividade_editar(plano_id, listaatividade_id, atividade_id, tipo):
         if listaatividade_id_nova == 0 and listaatividade_id == 0:
             listaatividade = ListaAtividade()
             listaatividade.alterar_atributos()
-            if listaatividade.salvar():
+            if salvar(listaatividade):
                 form_atividade.listaatividade_id.data = listaatividade.id
             else:
                 flash("Erro ao cadastrar nova lista de atividades", category="danger")
@@ -139,7 +139,7 @@ def atividade_editar(plano_id, listaatividade_id, atividade_id, tipo):
                 # se não houver atividades o plano ficará inativo
                 if total_atv == 0:
                     plano.ativar_desativar()
-                    plano.salvar()
+                    salvar(plano)
                     flash("Plano de Manutenção Inativado por falta de atividades!", category="warning")
 
             flash("Atividade excluída com sucesso!", category="warning")
@@ -149,7 +149,7 @@ def atividade_editar(plano_id, listaatividade_id, atividade_id, tipo):
     if form_atividade.validate_on_submit():
         atividade.alterar_atributos(form_atividade)
         # salvar a atividade
-        if atividade.salvar():
+        if salvar(atividade):
             # vincular a lista da atividade no plano de manutenção
             plano = PlanoManutencao.query.filter_by(id=plano_id).one_or_none()
             if plano:
@@ -159,7 +159,7 @@ def atividade_editar(plano_id, listaatividade_id, atividade_id, tipo):
         else:
             # Se ocorrer um erro ao salvar a atividade, exclui
             # if lista_new:
-            #     listaatividade.excluir()
+            #     excluir(listaatividade)
             flash("Atividade não cadastrada", category="danger")
     else:
         flash_errors(form_atividade)
@@ -192,12 +192,12 @@ def listaatividade_editar(ordem_id, listaatividade_id, tramitacao_sigla):
                 if tipo_situacao:
                     # vincula a listaatividade na ordem
                     ordem.listaatividade_id = listaatividade.id
-                    if not ordem.salvar():
+                    if not salvar(ordem):
                         flash("Erro ao atualizar a ordem de serviço", category="danger")
 
                     # Salvar as informações do campo observação
                     listaatividade.alterar_observacao(observacao)
-                    if not listaatividade.salvar():
+                    if not salvar(listaatividade):
                         flash("Erro ao salvar nova lista de atividades", category="danger")
 
                     # gera a nova tramitação
@@ -243,7 +243,7 @@ def listaatividade_editar(ordem_id, listaatividade_id, tramitacao_sigla):
                             case 'valortexto':
                                 atividades[x].valortexto = tipo_valor[1]
                         # salvar a atividade
-                        if not atividades[x].salvar():
+                        if not salvar(atividades[x]):
                             flash("Valores da atividade não registrado", category="danger")
 
                     # Salvar as informações do campo observação
@@ -289,7 +289,7 @@ def plano_ativar(plano_id):
         if plano.ativo:
             # Desativar o plano
             plano.ativar_desativar()
-            if plano.salvar():
+            if salvar(plano):
                 flash("Plano de Manutenção Desativado", category="success")
             else:
                 flash("Plano de Manutenção não ativado/desativado", category="danger")
@@ -306,12 +306,19 @@ def plano_ativar(plano_id):
                         TipoData.nome == "DATA_MÓVEL"
                     ).all()
 
+                    # Ativa o plano
+                    plano.ativar_desativar()
+                    if salvar(plano):
+                        flash("Plano de Manutenção Ativado", category="success")
+                    else:
+                        flash("Plano de Manutenção não ativado/desativado", category="danger")
+
                     # Caso não haja criar a primeira ordem do plano
                     if not ordens:
                         ordem = OrdemServico()
                         ordem.alterar_atributos_by_plano(plano)
                         # salva a nova ordem de serviço
-                        if ordem.salvar():
+                        if salvar(ordem):
                             flash("Ordem de Serviço Cadastrado", category="success")
                             # criar a primeira tramitação
                             tipo_situacao = TipoSituacaoOrdem.query.filter_by(sigla="AGEX").one_or_none()
@@ -320,12 +327,7 @@ def plano_ativar(plano_id):
                                         tipo_situacao_id=tipo_situacao.id))
                         else:
                             flash("Ordem de Serviço não Cadastrado", category="danger")
-                    # Ativa o plano
-                    plano.ativar_desativar()
-                    if plano.salvar():
-                        flash("Plano de Manutenção Ativado", category="success")
-                    else:
-                        flash("Plano de Manutenção não ativado/desativado", category="danger")
+
                 else:
                     flash("Lista de Atividades sem nenhuma atividade cadastrada", category="danger")
             else:
@@ -419,7 +421,7 @@ def plano_editar(plano_id):
     # Validação
     if form.validate_on_submit():
         plano.alterar_atributos(form, new)
-        if plano.salvar():
+        if salvar(plano):
             # Mensagens
             if plano_id > 0:
                 flash("Plano de manutenção atualizado", category="success")

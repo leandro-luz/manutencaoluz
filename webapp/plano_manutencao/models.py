@@ -7,7 +7,7 @@ from unidecode import unidecode
 from webapp import db
 from webapp.equipamento.models import Equipamento
 from webapp.sistema.models import LogsEventos
-from webapp.utils.objetos import atributo_existe
+from webapp.utils.objetos import atributo_existe, salvar, excluir
 from webapp.utils.tools import data_atual_utc
 
 
@@ -84,7 +84,7 @@ class ListaAtividade(db.Model):
     def alterar_observacao(self, observacao):
         """Função para alterar o campo observação"""
         self.observacao = observacao
-        self.salvar()
+        salvar(self)
 
     def clone(self):
         d = dict(self.__dict__)
@@ -110,7 +110,7 @@ class ListaAtividade(db.Model):
                 # Criar uma copia do lista antiga
                 listaatividade_nova = listaatividade_antiga.clone()
                 listaatividade_nova.data = data_atual_utc()
-            listaatividade_nova.salvar()
+            salvar(listaatividade_nova)
             # retorna o id da nova lista
             valor = listaatividade_nova.id
             # Copiar as atividades para a nova lista
@@ -181,7 +181,7 @@ class Atividade(db.Model):
             db.session.add_all(atividades_novas)
             db.session.commit()
         except Exception as e:
-            LogsEventos.registrar("erro", clone.__name__, erro=e)
+            LogsEventos.registrar("erro", 'clone', erro=e)
             db.session.rollback()
 
 
@@ -215,6 +215,7 @@ class PlanoManutencao(db.Model):
     total_tecnico = db.Column(db.Integer(), nullable=False)
     tempo_estimado = db.Column(db.Float(), nullable=False)
     revisao = db.Column(db.Integer(), nullable=False, default=0)
+    cancelamento_data = db.Column(db.Boolean, nullable=False, default=False)
 
     tipodata_id = db.Column(db.Integer(), db.ForeignKey("tipo_data.id"), nullable=False)
     periodicidade_id = db.Column(db.Integer(), db.ForeignKey("periodicidade.id"), nullable=False)
@@ -242,6 +243,7 @@ class PlanoManutencao(db.Model):
         self.codigo = self.gerar_codigo(form, new)
         self.tipoordem_id = form.tipoordem.data
         self.tipodata_id = form.tipodata.data
+        self.cancelamento_data = form.cancelamento_data.data
         self.periodicidade_id = form.periodicidade.data
         self.equipamento_id = form.equipamento.data
         self.data_inicio = form.data_inicio.data
@@ -252,17 +254,14 @@ class PlanoManutencao(db.Model):
         self.listaatividade_id = listaatividade_id
         if alterar_revisao:
             self.revisao += 1
-        self.salvar()
-
-    def alterar_ativo(self, ativo):
-        self.ativo = ativo
+        salvar(self)
 
     def ativar_desativar(self):
         """Função para ativar e desativar """
         if self.ativo:
-            self.alterar_ativo(False)
+            self.ativo = False
         else:
-            self.alterar_ativo(True)
+            self.ativo = True
 
     def gerar_codigo(self, form, new):
         """Função que gera automático o código do equipamento"""
@@ -287,7 +286,7 @@ class PlanoManutencao(db.Model):
         self.data_inicio = self.data_futura(new,
                                             self.data_inicio,
                                             self.periodicidade.tempo,
-                                            self.periodicidade.nome.nome)
+                                            self.periodicidade.unidade.nome)
 
     @staticmethod
     def data_futura(new, data, tempo, unidade):

@@ -166,9 +166,7 @@ class Senha(db.Model):
     @staticmethod
     def senha_aleatoria(size=8, chars=string.ascii_uppercase + string.digits) -> str:
         """    Função que gera uma senha aleatório para acesso temporário    """
-        senha_nova = ''.join(random.choice(chars) for _ in range(size))
-        print(senha_nova)
-        return senha_nova
+        return ''.join(random.choice(chars) for _ in range(size))
 
     @staticmethod
     def password_adminluz() -> bytes:

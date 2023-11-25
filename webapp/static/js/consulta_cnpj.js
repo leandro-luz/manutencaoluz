@@ -29,6 +29,7 @@ function pesquisar_cnpj() {
                 document.getElementById('uf').value="...";
                 document.getElementById('email').value="...";
                 document.getElementById('telefone').value="...";
+                document.getElementById('tipo').value="...";
 
                 //Cria um elemento javascript.
                 var script_cnpj = document.createElement('script');
@@ -72,17 +73,19 @@ function limpa_formulário_cnpj() {
         document.getElementById('localizacao').value="";
         document.getElementById('email').value="";
         document.getElementById('telefone').value="";
+        document.getElementById('tipo').value="";
 }
 
 
 function callback_cnpj(conteudo_cnpj) {
     if (!("erro" in conteudo_cnpj)) {
-        //Atualiza os campos com os valores.
+        var dataAberturaString = conteudo_cnpj.abertura;
+        var dataAbertura = new Date(dataAberturaString);
+        if (!isNaN(dataAbertura.getTime())) {
+            document.getElementById('data_abertura').value = dataAbertura.toISOString().split('T')[0];
+        }
         document.getElementById('razao_social').value=(conteudo_cnpj.nome);
         document.getElementById('nome_fantasia').value=(conteudo_cnpj.fantasia);
-
-        //document.getElementById('data_abertura').value=((conteudo_cnpj.abertura);
-
         document.getElementById('situacao').value=(conteudo_cnpj.situacao);
         document.getElementById('porte').value=(conteudo_cnpj.porte);
         document.getElementById('natureza_juridica').value=(conteudo_cnpj.natureza_juridica);
@@ -94,10 +97,11 @@ function callback_cnpj(conteudo_cnpj) {
         document.getElementById('logradouro').value=(conteudo_cnpj.logradouro);
         document.getElementById('bairro').value=(conteudo_cnpj.bairro);
         document.getElementById('municipio').value=(conteudo_cnpj.municipio);
+        document.getElementById('tipo').value=(conteudo_cnpj.tipo);
         document.getElementById('uf').value=(conteudo_cnpj.uf);
-        document.getElementById('nome_responsavel').value=(conteudo_cnpj.qsa[0]['nome']);
         document.getElementById('email').value=(conteudo_cnpj.email);
         document.getElementById('telefone').value=(conteudo_cnpj.telefone);
+        document.getElementById('nome_responsavel').value=(conteudo_cnpj.qsa[0]['nome']);
 
     } //end if.
     else {

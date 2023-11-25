@@ -178,7 +178,7 @@ def empresa_editar(empresa_id):
 
 def new_admin(empresa: [Empresa], enviar_email):
     """    Função para cadastrar os (administradores, grupos) da empresa    """
-    nova_senha = ''
+    senha_nova = ''
     # lista dos administradores
     lista = [{'nome': 'admin', 'descricao': 'administrador',
               'email': empresa.email, 'enviar_email': True, 'senha_temporaria': True},
@@ -207,12 +207,12 @@ def new_admin(empresa: [Empresa], enviar_email):
         senha = Senha()
         if valor['senha_temporaria']:
             # informa a senha de administrador do sistema, a senha não expira
-            nova_senha = Senha.senha_aleatoria()
-            senha.alterar_senha(nova_senha)
+            senha_nova = Senha.senha_aleatoria()
+            senha.alterar_senha(senha_nova)
             senha.alterar_expiravel(False)
         else:
             # informa uma senha temporária para o administrador da empresa, e informa a data de expiração da senha
-            senha.alterar_senha(Senha.password_adminluz())
+            senha.alterar_senha("aaa-11111")
             senha.alterar_data_expiracao()
             senha.alterar_senha_temporaria(False)
         if not salvar(senha):
@@ -233,7 +233,7 @@ def new_admin(empresa: [Empresa], enviar_email):
                 if not send_email(valor['email'],
                                   'Manutenção Luz - Informações para login',
                                   'usuario/email/usuario_cadastrado',
-                                  usuario=usuario, nova_senha=nova_senha):
+                                  usuario=usuario, senha_nova=senha_nova):
                     flash("Erro ao cadastrar o usuário administrador para esta empresa", category="danger")
                     break
         else:
@@ -456,7 +456,8 @@ def interessado_confirmar(token):
         # instânciar o formulário com as informações inicias do interessado
         form = EmpresaSimplesForm(obj=empresa)
         # --------- LISTAS
-        form.contrato.choices = [(plans.id, plans.nome) for plans in Contrato.query.all()]
+        form.contrato.choices = [(plans.id, plans.nome) for plans in
+                                 Contrato.query.filter_by(empresa_gestora_id=1).all()]
 
         # redireciona para a tela de registro de empresa, usando token
         return render_template('empresa_registrar.html', form=form, token=token)
@@ -477,13 +478,13 @@ def empresa_registrar(token):
             new = True
             empresa = Empresa()
             # buscando a empresa gestora principal
-            gestora = Empresa.query.filter_by(nome_fantasia='empresa_1').one_or_none()
+            gestora = Empresa.query.filter_by(nome_fantasia='manluz').one_or_none()
             # atribuindo o tipo "Cliente" para a empresa
             tipoempresa = Tipoempresa.query.filter_by(nome='Cliente').one_or_none()
 
             empresa.alterar_atributos_externo(form, gestora.id, tipoempresa.id, new)
 
-            if empresa.salvar():
+            if salvar(empresa):
                 # instância um lead
                 interessado = Interessado.query.filter_by(id=interessado_id).one_or_none()
                 # registra o lead como cadastrado

@@ -2,7 +2,7 @@ import datetime
 from webapp import db
 from webapp.plano_manutencao.models import ListaAtividade, PlanoManutencao
 from webapp.usuario.models import PerfilManutentorUsuario
-from webapp.utils.objetos import atributo_existe
+from webapp.utils.objetos import atributo_existe, salvar, excluir
 from webapp.utils.tools import data_atual_utc
 from sqlalchemy import func
 from flask_login import current_user
@@ -111,11 +111,12 @@ class TramitacaoOrdem(db.Model):
     def __repr__(self) -> str:
         return f'<Tramitação da Ordem: {self.id}-{self.tiposituacaoordem.sigla}-{self.usuario.nome}>'
 
-    def alterar_atributos(self, ordem_id, tipo_situacao_id):
+    def alterar_atributos(self, ordem_id, tipo_situacao_id, mensagem):
         """Função para alterar os atributos"""
         self.ordemservico_id = ordem_id
         self.tiposituacaoordem_id = tipo_situacao_id
-        self.usuario_id = current_user.id
+        if current_user:
+            self.usuario_id = current_user.id
         self.data = data_atual_utc()
 
         # Criando o objeto OrdemServiço
@@ -145,10 +146,12 @@ class TramitacaoOrdem(db.Model):
             # Caso seja, colocará a data de fechamento da OrdemServico
             ordem.data_fechamento = data_atual_utc()
 
-        if ordem.salvar():
-            flash("Ordem de Serviço Atualizada", category="success")
+        if salvar(ordem):
+            if mensagem:
+                flash("Ordem de Serviço Atualizada", category="success")
         else:
-            flash("Erro ao atualizar a Ordem de Serviço", category="success")
+            if mensagem:
+                flash("Erro ao atualizar a Ordem de Serviço", category="success")
 
     def alterar_observacao(self, form_listaatividade, tiposituacao: [TipoSituacaoOrdem]):
         """Função que altera o campo observação da tramitação"""
@@ -169,7 +172,32 @@ class TramitacaoOrdem(db.Model):
         tramitacao.tiposituacaoordem_id = tiposituacao.id
         tramitacao.observacao = texto
         tramitacao.data = data_atual_utc()
-        tramitacao.salvar()
+        salvar(tramitacao)
+
+    @staticmethod
+    def insere_tramitacao_byplano(plano_id, cancelamento=False):
+
+        if cancelamento:
+            ordens = OrdemServico.retornar_ordem_by_plano(plano_id, cancelamento)
+            tiposituacao = TipoSituacaoOrdem.query.filter_by(sigla='ENCE').one_or_none()
+            if isinstance(ordens, list):
+                for ordem in ordens:
+                    tramitacao = TramitacaoOrdem()
+                    tramitacao.alterar_atributos(ordem.id, tiposituacao.id, False)
+                    tramitacao.observacao = 'CANCELAMENTO AUTOMÁTICO'
+                    salvar(tramitacao)
+            else:
+                tramitacao = TramitacaoOrdem()
+                tramitacao.alterar_atributos(ordens.id, tiposituacao.id, False)
+                tramitacao.observacao = tiposituacao.nome
+                salvar(tramitacao)
+
+        ordens = OrdemServico.retornar_ordem_by_plano(plano_id)
+        tiposituacao = TipoSituacaoOrdem.query.filter_by(sigla='AGEX').one_or_none()
+        tramitacao = TramitacaoOrdem()
+        tramitacao.alterar_atributos(ordens.id, tiposituacao.id, False)
+        tramitacao.observacao = tiposituacao.nome
+        salvar(tramitacao)
 
 
 class OrdemServico(db.Model):
@@ -266,3 +294,12 @@ class OrdemServico(db.Model):
             resultado = True
 
         return resultado
+
+    @staticmethod
+    def retornar_ordem_by_plano(plano_id, cancelamento=False):
+        """Função para retornar as ordens de serviços a partir de um plano"""
+        if cancelamento:
+            tiposituacao = TipoSituacaoOrdem.query.filter_by(sigla='AGEX').one_or_none()
+            return OrdemServico.query.filter_by(planomanutencao_id=plano_id, tiposituacaoordem_id=tiposituacao.id).all()
+        else:
+            return OrdemServico.query.filter_by(planomanutencao_id=plano_id).order_by(OrdemServico.id.desc()).first()

@@ -1,9 +1,12 @@
+import re
 from itertools import cycle
-from webapp import db
-from webapp.utils.objetos import atributo_existe, atribuir_none_id
-from webapp.utils.tools import data_atual_utc
+
 from flask_login import current_user
+
+from webapp import db
+from webapp.utils.objetos import atributo_existe
 from webapp.utils.objetos import salvar
+from webapp.utils.tools import data_atual_utc
 
 
 class Interessado(db.Model):
@@ -130,6 +133,7 @@ class Empresa(db.Model):
     def alterar_atributos_externo(self, form, empresa_id, tipoempresa_id, new=False) -> None:
         """    Alterações dos atributos da empresa     """
         self.nome_fantasia = form.nome_fantasia.data.upper()
+        self.razao_social = form.razao_social.data.upper()
         self.cnpj = form.cnpj.data
         self.cep = form.cep.data
         self.logradouro = form.logradouro.data.upper()
@@ -216,7 +220,7 @@ class Empresa(db.Model):
             # Inativa a empresa
             for empresa in empresas:
                 empresa.ativo = False
-                empresa.salvar()
+                salvar(empresa)
 
     @staticmethod
     def localizar_empresa_by_id(id):

@@ -135,6 +135,8 @@ class EmpresaSimplesForm(Form):
     id = IntegerField('Id')
     nome_fantasia = StringField('Nome Fantasia', validators=[InputRequired()],
                                 render_kw={"placeholder": "Digite o nome fantasia"})
+    razao_social = StringField('Razão Social', validators=[InputRequired()],
+                                render_kw={"placeholder": "Digite o nome da razão social"})
     cnpj = StringField('Cnpj', validators=[InputRequired(), Length(min=14, max=18), cnpj_validate],
                        render_kw={"placeholder": "xx.xxx.xxx/xxxx-xx"})
     cep = StringField('Cep', validators=[InputRequired(), Length(min=8, max=8, message="O CEP está no formato errado")],

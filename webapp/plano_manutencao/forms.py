@@ -18,6 +18,7 @@ class PlanoForm(Form):
                             render_kw={"placeholder": "Digite a data de início"})
     tipoordem = SelectField('Tipo de Ordem Serviço', choices=[], coerce=int, validators=[InputRequired()])
     tipodata = SelectField('Tipo de data inicial', choices=[], coerce=int, validators=[InputRequired()])
+    cancelamento_data = BooleanField('Cancelar automaticamente?')
     periodicidade = SelectField('Periodicidade', choices=[], coerce=int, validators=[InputRequired()])
     equipamento = SelectField('Equipamento', choices=[], coerce=int, validators=[InputRequired()])
 

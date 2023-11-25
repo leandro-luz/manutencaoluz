@@ -1,0 +1,7 @@
+{% macro exibir_mensagens_erro(form) %}
+    {% for field, errors in form.errors.items() %}
+        {% for error in errors %}
+            <div class="error" id="{{ field }}">{{ error }}</div>
+        {% endfor %}
+    {% endfor %}
+{% endmacro %}

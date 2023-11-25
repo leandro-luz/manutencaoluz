@@ -32,7 +32,8 @@
                 {{form.tempo_estimado.label}} {{form.tempo_estimado}}<br>
                 {{form.data_inicio.label}} {{form.data_inicio}}<br>
                 {{form.tipoordem.label}} {{form.tipoordem}}<br>
-                {{form.tipodata.label}} {{form.tipodata}}<br>
+                {{form.tipodata.label}} {{form.tipodata}}
+                {{form.cancelamento_data.label}} {{form.cancelamento_data}}<br>
                 {{form.periodicidade.label}} {{form.periodicidade}}<br>
                 {{form.equipamento.label}} {{form.equipamento}}<br>
                 {{form.ativo.label}} {{form.ativo}}<br><br>
@@ -133,7 +134,7 @@
 </div>
 
 </body>
-
+<script src="/static/js/bloqueio_campo.js" type="text/javascript"></script>
 <script src="/static/js/confirmacao_exclusao.js" type="text/javascript"></script>
 
 {% endblock %}

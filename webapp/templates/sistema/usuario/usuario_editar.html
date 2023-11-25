@@ -1,3 +1,4 @@
+{% from "macros.html" import exibir_mensagens_erro %}
 {% extends "sistema_base.html" %}
 {% block body %}
 <body>
@@ -19,8 +20,8 @@
         <div class="col-9">
 
             <form action="{{ url_for('usuario.usuario_editar', usuario_id=usuario.id) }}" method="POST">
-                {{form.csrf_token}}
-
+                {{ form.csrf_token }}
+                {{ exibir_mensagens_erro(form) }}
 
                 {{form.nome.label}} {{form.nome(size=50)}}<br>
                 {{form.email.label}} {{form.email(size=50)}}<br>

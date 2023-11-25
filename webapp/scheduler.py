@@ -3,7 +3,8 @@ import sys
 from webapp.utils.tools import data_atual_utc
 from webapp import create_app
 from webapp.plano_manutencao.models import PlanoManutencao, TipoData
-from webapp.ordem_servico.models import OrdemServico
+from webapp.ordem_servico.models import OrdemServico, TramitacaoOrdem, TipoSituacaoOrdem
+from webapp.utils.objetos import salvar, excluir
 
 path = "/home/manutencaoluz"
 if path not in sys.path:
@@ -31,6 +32,8 @@ with app.app_context():
                 ordem = OrdemServico()
                 ordem.alterar_atributos_by_plano(plano)
                 # Salvar a ordem de serviço
-                ordem.salvar()
+                salvar(ordem)
                 # Salvar o plano com data atualizada
-                plano.salvar()
+                salvar(plano)
+                # cancelamento das ordens de serviços atrasadas e geração de tramitação nova
+                TramitacaoOrdem.insere_tramitacao_byplano(plano.id, cancelamento=plano.cancelamento_data)
