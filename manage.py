@@ -9,7 +9,7 @@ from webapp.plano_manutencao.models import TipoData, Unidade, Periodicidade, Pla
 from webapp.ordem_servico.models import TipoSituacaoOrdem, FluxoOrdem, OrdemServico, TramitacaoOrdem
 from webapp.sistema.models import LogsEventos
 
-env = os.environ.get('WEBAPP_ENV', 'dev')
+env = os.environ.get('WEBAPP_ENV', 'prod')
 app = create_app('config.%sConfig' % env.capitalize())
 
 

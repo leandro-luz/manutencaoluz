@@ -10,7 +10,7 @@ path = "/home/manutencaoluz"
 if path not in sys.path:
     sys.path.insert(0, path)
 
-env = os.environ.get('WEBAPP_ENV', 'dev')
+env = os.environ.get('WEBAPP_ENV', 'prod')
 app = create_app('config.%sConfig' % env.capitalize())
 
 with app.app_context():
