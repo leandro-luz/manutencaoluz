@@ -8,7 +8,8 @@ from webapp.sistema.models import LogsEventos
 from webapp.usuario import has_view
 from webapp.usuario.models import TelaPerfilAcesso
 from webapp.utils.erros import flash_errors
-from webapp.utils.objetos import salvar, excluir
+from webapp.utils.objetos import salvar, excluir, criptografar_id_lista
+from webapp.utils.tools import criptografar, descriptografar
 
 contrato_blueprint = Blueprint(
     'contrato',
@@ -33,15 +34,21 @@ def contrato_listar() -> str:
                        Contrato.query.filter(Contrato.empresa_gestora_id == current_user.empresa_id).order_by(
                            Contrato.nome.asc())]
 
+    for contrato in lista_contratos:
+        contrato['contrato'].id_criptografado = criptografar(str(contrato['contrato'].id))
+
     form = ContratoForm()
 
     return render_template('contrato_listar.html', contratos=lista_contratos, form=form)
 
 
-@contrato_blueprint.route('/contrato_editar/<int:contrato_id>', methods=['GET', 'POST'])
+@contrato_blueprint.route('/contrato_editar/<contrato_id_crypto>', methods=['GET', 'POST'])
 @login_required
 @has_view('Contrato')
-def contrato_editar(contrato_id: int):
+def contrato_editar(contrato_id_crypto):
+    # descriptografar os ids
+    contrato_id = descriptografar(contrato_id_crypto)
+
     LogsEventos.registrar("evento", contrato_editar.__name__, contrato_id=contrato_id)
     """    Função que cadastra ou atualiza um contrato de assinatura    """
     empresas = []
@@ -55,6 +62,8 @@ def contrato_editar(contrato_id: int):
 
         if contrato:
             # inclui a consulta para dentro do formulário
+            contrato.id_criptografado = contrato_id_crypto
+
             form = ContratoForm(obj=contrato)
             # --------- ATUALIZAR AS LISTAS DO FORMULÁRIO
             # consulta das telas para o contrato existente
@@ -67,6 +76,9 @@ def contrato_editar(contrato_id: int):
             # LISTA DAS TELAS PARA O CONTRATO
             # busca a lista das telas do contrato
             telas_liberadas = Telacontrato.query.filter_by(contrato_id=contrato_id).all()
+
+            # criptografar os id
+            criptografar_id_lista(telas_liberadas)
 
             #  lista(id e nome) de todas as telas cadastradas
             telascontrato = Tela.query.filter(
@@ -115,10 +127,13 @@ def contrato_editar(contrato_id: int):
                            contrato=contrato, empresas=empresas, telascontrato=telas_liberadas)
 
 
-@contrato_blueprint.route('/contrato_excluir/<int:contrato_id>', methods=['GET', 'POST'])
+@contrato_blueprint.route('/contrato_excluir/<contrato_id_crypto>', methods=['GET', 'POST'])
 @login_required
 @has_view('Empresa')
-def contrato_excluir(contrato_id):
+def contrato_excluir(contrato_id_crypto):
+    # descriptografar os ids
+    contrato_id = descriptografar(contrato_id_crypto)
+
     LogsEventos.registrar("evento", contrato_excluir.__name__, contrato_id=contrato_id)
     """Função para excluir um contrato"""
 
@@ -134,10 +149,13 @@ def contrato_excluir(contrato_id):
     return redirect(url_for('contrato.contrato_listar'))
 
 
-@contrato_blueprint.route('/contrato_ativar/<int:contrato_id>', methods=['GET', 'POST'])
+@contrato_blueprint.route('/contrato_ativar/<contrato_id_crypto>', methods=['GET', 'POST'])
 @login_required
 @has_view('Contrato')
-def contrato_ativar(contrato_id):
+def contrato_ativar(contrato_id_crypto):
+    # descriptografar os ids
+    contrato_id = descriptografar(contrato_id_crypto)
+
     LogsEventos.registrar("evento", contrato_ativar.__name__, contrato_id=contrato_id)
     """    Função que ativa/desativa um contrato    """
     # instância um contrato com base no identificador
@@ -169,40 +187,13 @@ def contrato_ativar(contrato_id):
     return redirect(url_for('contrato.contrato_listar'))
 
 
-@contrato_blueprint.route('/telacontrato_listar/<int:contrato_id>', methods=['GET', 'POST'])
+@contrato_blueprint.route('/telacontrato_editar/<contrato_id_crypto>', methods=['GET', 'POST'])
 @login_required
 @has_view('Contrato')
-def telacontrato_listar(contrato_id: int) -> str:
-    LogsEventos.registrar("evento", telacontrato_listar.__name__, contrato_id=contrato_id)
-    """    Função que retorna uma lista de telas de um contrato de assinatura    """
+def telacontrato_editar(contrato_id_crypto):
+    # descriptografar os ids
+    contrato_id = descriptografar(contrato_id_crypto)
 
-    # instância um contrato com base no 'id' de entrada
-    contrato = Contrato.query.filter_by(id=contrato_id).one_or_none()
-    # busca a lista das telas do contrato
-    telas_liberadas = Telacontrato.query.filter_by(contrato_id=contrato_id).all()
-
-    #  lista(id e nome) de todas as telas cadastradas
-    telascontrato = Tela.query.filter(
-        Tela.id == Telacontrato.tela_id,
-        Telacontrato.contrato_id == current_user.empresa.contrato_id).all()
-
-    # Lista de telas já cadastradas
-    telasexistentes = Tela.query.filter(
-        Tela.id == Telacontrato.tela_id,
-        Telacontrato.contrato_id == contrato_id).all()
-
-    # Lista de telas permitidas sem repetições
-    form = TelaContratoForm()
-    form.tela.choices = [(tela.id, tela.nome) for tela in telascontrato if
-                         tela.id not in {tl.id for tl in telasexistentes}]
-
-    return render_template('telacontrato_listar.html', telascontrato=telas_liberadas, contrato=contrato, form=form)
-
-
-@contrato_blueprint.route('/telacontrato_editar/<int:contrato_id>', methods=['GET', 'POST'])
-@login_required
-@has_view('Contrato')
-def telacontrato_editar(contrato_id: int):
     LogsEventos.registrar("evento", telacontrato_editar.__name__, contrato_id=contrato_id)
     """    Função que edita as telas de um contrato de assinatura    """
 
@@ -225,13 +216,17 @@ def telacontrato_editar(contrato_id: int):
     else:
         flash("Contrato não cadastrado", category="danger")
 
-    return redirect(url_for("contrato.contrato_editar", contrato_id=contrato_id))
+    return redirect(url_for("contrato.contrato_editar", contrato_id_crypto=contrato_id_crypto))
 
 
-@contrato_blueprint.route('/telacontrato_excluir/<int:telacontrato_id>/<int:contrato_id>')
+@contrato_blueprint.route('/telacontrato_excluir/<telacontrato_id_crypto>/<contrato_id_crypto>')
 @login_required
 @has_view('Contrato')
-def telacontrato_excluir(telacontrato_id, contrato_id):
+def telacontrato_excluir(telacontrato_id_crypto, contrato_id_crypto):
+    # descriptografar os ids
+    telacontrato_id = descriptografar(telacontrato_id_crypto)
+    contrato_id = descriptografar(contrato_id_crypto)
+
     LogsEventos.registrar("evento", telacontrato_excluir.__name__, telacontrato_id=telacontrato_id,
                           contrato_id=contrato_id)
     """    Função para excluir a tela de um contrato    """
@@ -252,7 +247,7 @@ def telacontrato_excluir(telacontrato_id, contrato_id):
         else:
             flash("Erro ao excluir a tela do contrato", category="danger")
 
-    return redirect(url_for('contrato.contrato_editar', contrato_id=contrato_id))
+    return redirect(url_for('contrato.contrato_editar', contrato_id_crypto=contrato_id_crypto))
 
 
 @contrato_blueprint.route('/tela_listar', methods=['GET', 'POST'])

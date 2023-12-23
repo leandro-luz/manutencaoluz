@@ -196,6 +196,7 @@ class Usuario(db.Model):
 
     __tablename__ = 'usuario'
     id = db.Column(db.Integer(), primary_key=True)
+    id_criptografado = db.Column(db.String(255), nullable=True)
     nome = db.Column(db.String(50), nullable=False, index=True, unique=True)
     email = db.Column(db.String(50), nullable=False, unique=False)
     data_assinatura = db.Column(db.DateTime(), nullable=True)

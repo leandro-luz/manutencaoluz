@@ -1,6 +1,7 @@
 import logging
 from webapp import db
 from dateutil.parser import parse
+from webapp.utils.tools import criptografar
 
 logging.basicConfig(format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
 logging.getLogger().setLevel(logging.DEBUG)
@@ -105,3 +106,8 @@ def preencher_objeto_atributos_datas(objeto_model, dicionario, df, linha):
             setattr(objeto_model, atributo, None)  # ou 0 ou qualquer outro valor padrão
 
     return objeto_model
+
+
+def criptografar_id_lista(objetos):
+    for objeto in objetos:
+        setattr(objeto, 'id_criptografado', criptografar(str(objeto.id)))

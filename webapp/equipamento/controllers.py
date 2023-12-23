@@ -1,21 +1,22 @@
-import numpy as np
-import pandas as pd
 import io
 import zipfile
-from flask import render_template, Blueprint, redirect, url_for, flash, Response, jsonify, request, make_response
+
+import numpy as np
+import pandas as pd
+from flask import render_template, Blueprint, redirect, url_for, flash, Response, jsonify, request
 from flask_login import current_user, login_required
+
 from webapp.empresa.models import Empresa
+from webapp.equipamento.forms import EquipamentoForm, GrupoForm, SubgrupoForm, LocalizacaoForm, AgrupamentoForm
 from webapp.equipamento.models import Equipamento, Grupo, Subgrupo, Pavimento, Setor, Local, Area, Volume, Vazao, \
     Comprimento, Peso, Potencia, TensaoEletrica, preencher_objeto_atributos_comvinculo
-from webapp.equipamento.forms import EquipamentoForm, GrupoForm, SubgrupoForm, LocalizacaoForm, AgrupamentoForm
-from webapp.usuario import has_view
-from webapp.utils.objetos import salvar, preencher_objeto_atributos_semvinculo, \
-    preencher_objeto_atributos_booleanos, preencher_objeto_atributos_datas
-from webapp.utils.files import lista_para_csv
-from webapp.utils.erros import flash_errors
-from webapp.utils.tools import data_atual_utc
 from webapp.sistema.models import LogsEventos
-from webapp.utils.objetos import excluir
+from webapp.usuario import has_view
+from webapp.utils.erros import flash_errors
+from webapp.utils.files import lista_para_csv
+from webapp.utils.objetos import salvar, excluir, preencher_objeto_atributos_semvinculo, \
+    preencher_objeto_atributos_booleanos, preencher_objeto_atributos_datas, criptografar_id_lista
+from webapp.utils.tools import descriptografar, criptografar
 
 equipamento_blueprint = Blueprint(
     'equipamento',
@@ -39,13 +40,19 @@ def equipamento_listar():
         Grupo.empresa_id == Empresa.id,
         Empresa.id == current_user.empresa_id).order_by(
         Equipamento.cod)
+
+    criptografar_id_lista(equipamentos)
+
     return render_template('equipamento_listar.html', equipamentos=equipamentos)
 
 
-@equipamento_blueprint.route('/equipamento_editar/<int:equipamento_id>', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/equipamento_editar/<equipamento_id_crypto>', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def equipamento_editar(equipamento_id):
+def equipamento_editar(equipamento_id_crypto):
+    # Decriptografar os ids
+    equipamento_id = descriptografar(equipamento_id_crypto)
+
     LogsEventos.registrar("evento", equipamento_editar.__name__, equipamento_id=equipamento_id)
     """Função para editar um equipamento"""
     grupo_id = 0
@@ -59,9 +66,10 @@ def equipamento_editar(equipamento_id):
 
         # verifica se o equipamento existe e se pertence a empresa do usuário
         if equipamento:
+            equipamento.id_criptografado = equipamento_id_crypto
             form = EquipamentoForm(obj=equipamento)
-            grupo_id = equipamento.subgrupo.grupo_id
-            subgrupo_id = equipamento.subgrupo_id
+            grupo_id = criptografar(str(equipamento.subgrupo.grupo_id))
+            subgrupo_id = criptografar(str(equipamento.subgrupo_id))
             # Atualizar ou Ler dados
             if form.grupo.data:
                 g_d = form.grupo.data
@@ -101,6 +109,7 @@ def equipamento_editar(equipamento_id):
     else:
         # Cadastrar
         equipamento.id = 0
+        equipamento.id_criptografado = criptografar('0')
         form = EquipamentoForm()
         g_d = form.grupo.data
         sg_d = form.subgrupo.data
@@ -178,14 +187,18 @@ def equipamento_editar(equipamento_id):
             flash("Erro no ao cadastrar/atualizar o equipamento", category="danger")
     else:
         flash_errors(form)
-    return render_template("equipamento_editar.html", form=form, equipamento=equipamento, grupo_id=grupo_id,
+    return render_template("equipamento_editar.html", form=form, equipamento=equipamento,
+                           grupo_id=grupo_id,
                            subgrupo_id=subgrupo_id)
 
 
-@equipamento_blueprint.route('/equipamento_ativar/<int:equipamento_id>', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/equipamento_ativar/<equipamento_id_crypto>', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def equipamento_ativar(equipamento_id):
+def equipamento_ativar(equipamento_id_crypto):
+    # Decriptografar os ids
+    equipamento_id = descriptografar(equipamento_id_crypto)
+
     LogsEventos.registrar("evento", equipamento_ativar.__name__, equipamento_id=equipamento_id)
     """Função para ativar um equipamento"""
 
@@ -235,10 +248,13 @@ def gerar_csv_equipamentos():
     )
 
 
-@equipamento_blueprint.route('/equipamento_excluir/<int:equipamento_id>', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/equipamento_excluir/<equipamento_id_crypto>', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def equipamento_excluir(equipamento_id):
+def equipamento_excluir(equipamento_id_crypto):
+    # Decriptografar os ids
+    equipamento_id = descriptografar(equipamento_id_crypto)
+
     LogsEventos.registrar("evento", equipamento_excluir.__name__, equipamento_id=equipamento_id)
 
     equipamento = Equipamento.localizar_equipamento_by_id(current_user.empresa_id, equipamento_id)
@@ -397,10 +413,14 @@ def gerar_csv_agrupamento():
     )
 
 
-@equipamento_blueprint.route('/agrupamento_listar/<int:grupo_id>/<int:subgrupo_id>/', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/agrupamento_listar/<grupo_id_crypto>/<subgrupo_id_crypto>/', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def agrupamento_listar(grupo_id, subgrupo_id):
+def agrupamento_listar(grupo_id_crypto, subgrupo_id_crypto):
+    # Descriptografar os ids
+    grupo_id = descriptografar(grupo_id_crypto)
+    subgrupo_id = descriptografar(subgrupo_id_crypto)
+
     LogsEventos.registrar("evento", agrupamento_listar.__name__, grupo_id=grupo_id, subgrupo_id=subgrupo_id)
 
     """Função que gera a lista do agrupamento"""
@@ -410,8 +430,8 @@ def agrupamento_listar(grupo_id, subgrupo_id):
     form_subgrupo = SubgrupoForm()
     form.tipo.choices = ((0, ''), (1, 'Grupo'), (2, 'Subgrupo'))
 
-    grupos = Grupo.query.filter(
-        Grupo.empresa_id == current_user.empresa_id).order_by(Grupo.nome).all()
+    grupos = Grupo.query.filter(Grupo.empresa_id == current_user.empresa_id).order_by(Grupo.nome).all()
+    criptografar_id_lista(grupos)
     # lista de grupos com seus quantitativos de subgrupos vinculados
     lista_grupos = [{'grupo': grupo, 'total': Subgrupo.query.filter(Subgrupo.grupo_id == grupo.id).count()}
                     for grupo in grupos]
@@ -426,11 +446,13 @@ def agrupamento_listar(grupo_id, subgrupo_id):
         # verifica se o grupo existe para a empresa
         grupo = Grupo.query.filter_by(id=grupo_id, empresa_id=current_user.empresa_id).one_or_none()
         if grupo:
+            grupo.id_criptografado = grupo_id_crypto
             # lista de subgrupos
             subgrupos = Subgrupo.query.filter(
                 Subgrupo.grupo_id == Grupo.id,
                 Grupo.id == grupo_id,
                 Grupo.empresa_id == current_user.empresa_id).order_by(Subgrupo.nome).all()
+            criptografar_id_lista(subgrupos)
             # lista de subgrupos com o seus quantitativos de empresas vinculadas
             lista_subgrupos = [{'subgrupo': subgrupo,
                                 'total': Equipamento.query.filter(Equipamento.subgrupo_id == subgrupo.id).count()}
@@ -445,18 +467,25 @@ def agrupamento_listar(grupo_id, subgrupo_id):
 
             if subgrupo:
                 # lista de equipamentos
+                subgrupo.id_criptografado = criptografar(str(subgrupo.id))
                 equipamentos = Equipamento.query.filter_by(subgrupo_id=subgrupo_id).order_by(
                     Equipamento.descricao_curta).all()
+                criptografar_id_lista(equipamentos)
 
     return render_template('agrupamento_listar.html', grupo=grupo, subgrupo=subgrupo, grupos=lista_grupos,
                            subgrupos=lista_subgrupos, equipamentos=equipamentos, form=form, form_grupo=form_grupo,
-                           form_subgrupo=form_subgrupo, grupo_id=grupo_id, subgrupo_id=subgrupo_id)
+                           form_subgrupo=form_subgrupo, grupo_id_crypto=grupo_id_crypto,
+                           subgrupo_id_crypto=subgrupo_id_crypto)
 
 
-@equipamento_blueprint.route('/agrupamento_editar/<int:grupo_id>/', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/agrupamento_editar/<grupo_id_crypto>', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def agrupamento_editar(grupo_id):
+def agrupamento_editar(grupo_id_crypto):
+    # Descriptografar os ids
+    grupo_id = descriptografar(grupo_id_crypto)
+    subgrupo_id_crypto = criptografar('0')
+
     LogsEventos.registrar("evento", agrupamento_editar.__name__, grupo_id=grupo_id)
 
     """Função que edita um agrupamento"""
@@ -489,7 +518,8 @@ def agrupamento_editar(grupo_id):
     else:
         flash_errors(form)
 
-    return redirect(url_for("equipamento.agrupamento_listar", grupo_id=grupo_id, subgrupo_id=0))
+    return redirect(url_for("equipamento.agrupamento_listar", grupo_id_crypto=grupo_id_crypto,
+                            subgrupo_id_crypto=subgrupo_id_crypto))
 
 
 @equipamento_blueprint.route('/agrupamento_editar_elementos/', methods=['GET', 'POST'])
@@ -501,8 +531,11 @@ def agrupamento_editar_elementos():
     """Função que edita algum elemento do agrupamento"""
     # coletando as informações
     tipo = str(request.form.get('agp_tipo')).upper()
-    grupo_id = int(request.form.get('agp_grupo_id'))
-    subgrupo_id = int(request.form.get('agp_subgrupo_id'))
+
+    grupo_id_crypto = request.form.get('agp_grupo_id')
+    grupo_id = descriptografar(grupo_id_crypto)
+    subgrupo_id_crypto = request.form.get('agp_subgrupo_id')
+    subgrupo_id = descriptografar(subgrupo_id_crypto)
     tipo_nome = str(request.form.get('agp_nome')).upper()
 
     if tipo_nome == '':
@@ -556,7 +589,6 @@ def agrupamento_editar_elementos():
                     # se subgrupo existir
                     if subgrupo:
                         subgrupo.nome = tipo_nome
-
                         # salva no BD
                         if salvar(subgrupo):
                             flash("Subgrupo atualizado", category="success")
@@ -567,13 +599,18 @@ def agrupamento_editar_elementos():
             else:
                 flash("Subgrupo ou Grupo não informado", category="danger")
 
-    return redirect(url_for("equipamento.agrupamento_listar", grupo_id=grupo_id, subgrupo_id=subgrupo_id))
+    return redirect(url_for("equipamento.agrupamento_listar", grupo_id_crypto=grupo_id_crypto,
+                            subgrupo_id_crypto=subgrupo_id_crypto))
 
 
-@equipamento_blueprint.route('/grupo_excluir/<int:grupo_id>/<int:subgrupo_id>', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/grupo_excluir/<grupo_id_crypto>/<subgrupo_id_crypto>', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def grupo_excluir(grupo_id, subgrupo_id):
+def grupo_excluir(grupo_id_crypto, subgrupo_id_crypto):
+    # Descriptografar os id
+    grupo_id = descriptografar(grupo_id_crypto)
+    subgrupo_id = descriptografar(subgrupo_id_crypto)
+
     LogsEventos.registrar("evento", grupo_excluir.__name__, grupo_id=grupo_id, subgrupo_id=subgrupo_id)
 
     """Função que exclui um grupo"""
@@ -591,13 +628,18 @@ def grupo_excluir(grupo_id, subgrupo_id):
         else:
             flash("Não permitido excluir, pois existe subgrupo vinculado", category="danger")
 
-    return redirect(url_for("equipamento.agrupamento_listar", grupo_id=grupo_id, subgrupo_id=subgrupo_id))
+    return redirect(url_for("equipamento.agrupamento_listar", grupo_id_crypto=grupo_id_crypto,
+                            subgrupo_id_crypto=subgrupo_id_crypto))
 
 
-@equipamento_blueprint.route('/subgrupo_excluir/<int:grupo_id>/<int:subgrupo_id>', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/subgrupo_excluir/<grupo_id_crypto>/<subgrupo_id_crypto>', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def subgrupo_excluir(grupo_id, subgrupo_id):
+def subgrupo_excluir(grupo_id_crypto, subgrupo_id_crypto):
+    # Descriptografar os id
+    grupo_id = descriptografar(grupo_id_crypto)
+    subgrupo_id = descriptografar(subgrupo_id_crypto)
+
     LogsEventos.registrar("evento", subgrupo_excluir.__name__, grupo_id=grupo_id, subgrupo_id=subgrupo_id)
 
     """Função que exclui um subgrupo"""
@@ -618,7 +660,8 @@ def subgrupo_excluir(grupo_id, subgrupo_id):
         else:
             flash("Não permitido excluir, pois existe equipamento vinculado", category="danger")
 
-    return redirect(url_for("equipamento.agrupamento_listar", grupo_id=grupo_id, subgrupo_id=subgrupo_id))
+    return redirect(url_for("equipamento.agrupamento_listar", grupo_id_crypto=grupo_id_crypto,
+                            subgrupo_id_crypto=subgrupo_id_crypto))
 
 
 @equipamento_blueprint.route('/gerar_padrao_agrupamento/', methods=['GET', 'POST'])
@@ -783,9 +826,9 @@ def cadastrar_lote_agrupamento():
     return redirect(url_for("equipamento.agrupamento_listar", grupo_id=0, subgrupo_id=0))
 
 
-@equipamento_blueprint.route('/subgrupo_lista/<int:grupo_id>', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/subgrupo_lista/<grupo_id>', methods=['GET', 'POST'])
 @login_required
-def subgrupo_lista(grupo_id: int):
+def subgrupo_lista(grupo_id):
     LogsEventos.registrar("evento", subgrupo_lista.__name__, grupo_id=grupo_id)
 
     """    Função que retorna lista de locais"""
@@ -817,6 +860,10 @@ def localizacao_listar():
     setores = Setor.query.filter_by(empresa_id=current_user.empresa_id).order_by(Setor.nome)
     locais = Local.query.filter_by(empresa_id=current_user.empresa_id).order_by(Local.nome)
     pavimentos = Pavimento.query.filter_by(empresa_id=current_user.empresa_id).order_by(Pavimento.nome)
+
+    criptografar_id_lista(setores)
+    criptografar_id_lista(locais)
+    criptografar_id_lista(pavimentos)
 
     form = LocalizacaoForm()
     form.tipo.choices = ((0, ''), (1, 'Setor'), (2, 'Local'), (3, 'Pavimento'))
@@ -1017,10 +1064,13 @@ def gerar_padrao_localizacao():
         headers={'Content-Disposition': f"attachment; filename={nome}"})
 
 
-@equipamento_blueprint.route('/setor_excluir/<int:setor_id>', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/setor_excluir/<setor_id_crypto>', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def setor_excluir(setor_id):
+def setor_excluir(setor_id_crypto):
+    # descriptografar o id
+    setor_id = descriptografar(setor_id_crypto)
+
     LogsEventos.registrar("evento", setor_excluir.__name__, setor_id=setor_id)
 
     """Função que exclui um setor"""
@@ -1036,10 +1086,13 @@ def setor_excluir(setor_id):
     return redirect(url_for("equipamento.localizacao_listar"))
 
 
-@equipamento_blueprint.route('/local_excluir/<int:local_id>', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/local_excluir/<local_id_crypto>', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def local_excluir(local_id):
+def local_excluir(local_id_crypto):
+    # descriptografar o id
+    local_id = descriptografar(local_id_crypto)
+
     LogsEventos.registrar("evento", local_excluir.__name__, local_id=local_id)
 
     """Função que exclui um local"""
@@ -1055,10 +1108,13 @@ def local_excluir(local_id):
     return redirect(url_for("equipamento.localizacao_listar"))
 
 
-@equipamento_blueprint.route('/pavimento_excluir/<int:pavimento_id>', methods=['GET', 'POST'])
+@equipamento_blueprint.route('/pavimento_excluir/<pavimento_id_crypto>', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def pavimento_excluir(pavimento_id):
+def pavimento_excluir(pavimento_id_crypto):
+    # descriptografar o id
+    pavimento_id = descriptografar(pavimento_id_crypto)
+
     LogsEventos.registrar("evento", pavimento_excluir.__name__, pavimento_id=pavimento_id)
 
     """Função que exclui um pavimento"""
@@ -1083,7 +1139,9 @@ def localizacao_editar_elementos():
     """Função que edita os elementos de localização"""
     # coletando as informações
     tipo = str(request.form.get('localizacao_tipo')).upper()
-    tipo_id = int(request.form.get('localizacao_id'))
+
+    tipo_id_crypto = request.form.get('localizacao_id')
+    tipo_id = descriptografar(tipo_id_crypto)
     tipo_nome = str(request.form.get('localizacao_nome')).upper()
     tipo_sigla = str(request.form.get('localizacao_sigla')).upper()
 

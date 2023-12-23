@@ -1,24 +1,24 @@
-import config
+import numpy as np
+import pandas as pd
 from flask import (render_template, Blueprint,
                    redirect, url_for,
                    flash, Response)
 from flask_login import current_user, login_required, login_user
-from webapp.empresa.models import Interessado, Tipoempresa, Empresa
-from webapp.empresa.forms import EmpresaForm, EmpresaSimplesForm, RegistroInteressadoForm
+
+import config
 from webapp.contrato.models import Contrato
-from webapp.usuario.models import Senha, Usuario, PerfilAcesso, TelaPerfilAcesso
 from webapp.contrato.models import Telacontrato
+from webapp.empresa.forms import EmpresaForm, EmpresaSimplesForm, RegistroInteressadoForm
+from webapp.empresa.models import Interessado, Tipoempresa, Empresa
+from webapp.sistema.models import LogsEventos
 from webapp.usuario import has_view
+from webapp.usuario.models import Senha, Usuario, PerfilAcesso, TelaPerfilAcesso
 from webapp.utils.email import send_email
-from webapp.utils.tools import create_token, verify_token
 from webapp.utils.erros import flash_errors
 from webapp.utils.files import lista_para_csv
 from webapp.utils.objetos import salvar, excluir, preencher_objeto_atributos_semvinculo, \
-    preencher_objeto_atributos_booleanos, preencher_objeto_atributos_datas
-import pandas as pd
-import numpy as np
-from webapp.utils.tools import data_atual_utc
-from webapp.sistema.models import LogsEventos
+    preencher_objeto_atributos_datas, criptografar_id_lista
+from webapp.utils.tools import create_token, verify_token, descriptografar
 
 empresa_blueprint = Blueprint(
     'empresa',
@@ -35,6 +35,8 @@ def empresa_listar() -> str:
     LogsEventos.registrar("evento", empresa_listar.__name__)
     """    Retorna a lista de empresas vinculada a empresa do usuario     """
     empresas = Empresa.query.filter_by(empresa_gestora_id=current_user.empresa_id)  # retorna uma lista com base no _
+
+    criptografar_id_lista(empresas)
 
     return render_template('empresa_listar.html', empresas=empresas)
 
@@ -59,10 +61,13 @@ def empresa_cliente() -> str:
 #     return [{cliente.nome_fantasia: lista_clientes(cliente.id)} for cliente in clientes]
 
 
-@empresa_blueprint.route('/empresa_ativar/<int:empresa_id>', methods=['GET', 'POST'])
+@empresa_blueprint.route('/empresa_ativar/<empresa_id_crypto>', methods=['GET', 'POST'])
 @login_required
 @has_view('Empresa')
-def empresa_ativar(empresa_id):
+def empresa_ativar(empresa_id_crypto):
+    # Decriptografar os ids
+    empresa_id = descriptografar(empresa_id_crypto)
+
     LogsEventos.registrar("evento", empresa_ativar.__name__, empresa_id=empresa_id)
     """    Função que ativa/desativa uma empresa    """
 
@@ -91,10 +96,13 @@ def empresa_ativar(empresa_id):
     return redirect(url_for('empresa.empresa_listar'))
 
 
-@empresa_blueprint.route('/empresa_excluir/<int:empresa_id>', methods=['GET', 'POST'])
+@empresa_blueprint.route('/empresa_excluir/<empresa_id_crypto>', methods=['GET', 'POST'])
 @login_required
 @has_view('Empresa')
-def empresa_excluir(empresa_id):
+def empresa_excluir(empresa_id_crypto):
+    # Decriptografar os ids
+    empresa_id = descriptografar(empresa_id_crypto)
+
     LogsEventos.registrar("evento", empresa_excluir.__name__, empresa_id=empresa_id)
     """Função para excluir uma empresa"""
 
@@ -110,10 +118,13 @@ def empresa_excluir(empresa_id):
     return redirect(url_for('empresa.empresa_listar'))
 
 
-@empresa_blueprint.route('/empresa_editar/<int:empresa_id>', methods=['GET', 'POST'])
+@empresa_blueprint.route('/empresa_editar/<empresa_id_crypto>', methods=['GET', 'POST'])
 @login_required
 @has_view('Empresa')
-def empresa_editar(empresa_id):
+def empresa_editar(empresa_id_crypto):
+    # Decriptografar os ids
+    empresa_id = descriptografar(empresa_id_crypto)
+
     LogsEventos.registrar("evento", empresa_editar.__name__, empresa_id=empresa_id)
     """   Função que altera os valores    """
 
@@ -506,10 +517,13 @@ def empresa_registrar(token):
     return redirect(url_for('main.index'))
 
 
-@empresa_blueprint.route('/empresa_acessar/<int:empresa_id>', methods=['GET', 'POST'])
+@empresa_blueprint.route('/empresa_acessar/<empresa_id_crypto>', methods=['GET', 'POST'])
 @login_required
 @has_view('Empresa')
-def empresa_acessar(empresa_id):
+def empresa_acessar(empresa_id_crypto):
+    # descriptografar os ids
+    empresa_id = descriptografar(empresa_id_crypto)
+
     LogsEventos.registrar("evento", empresa_acessar.__name__, empresa_id=empresa_id)
     """Função para acesso rápido a empresa subsidiária"""
 

@@ -81,6 +81,7 @@ class Empresa(db.Model):
 
     __tablename__ = 'empresa'
     id = db.Column(db.Integer(), primary_key=True)
+    id_criptografado = db.Column(db.String(255), nullable=True)
     cnpj = db.Column(db.String(18), nullable=False, unique=False)
     razao_social = db.Column(db.String(100), nullable=False, index=True, unique=False)
     nome_fantasia = db.Column(db.String(100), nullable=True, unique=False)

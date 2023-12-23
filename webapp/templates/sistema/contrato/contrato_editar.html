@@ -16,7 +16,8 @@
             <h2>EDITAR CONTRATO</h2>
         </div>
         <div class="col-6">
-            <form action="{{ url_for('contrato.contrato_editar', contrato_id=contrato.id) }}" method="POST">
+            <form action="{{ url_for('contrato.contrato_editar', contrato_id_crypto=contrato.id_criptografado) }}"
+                  method="POST">
                 {{form.csrf_token}}
                 {{form.nome.label}} {{form.nome(size=50)}}
                 <input type="submit" value="Atualizar"/><br><br><br>
@@ -50,8 +51,8 @@
 
                     <td>
                         <a href="{{ url_for('contrato.telacontrato_excluir',
-                            telacontrato_id=telacontrato.id,
-                            contrato_id=contrato.id) }}" onclick="return deleteItem();">
+                            telacontrato_id_crypto=telacontrato.id_criptografado,
+                            contrato_id_crypto=contrato.id_criptografado) }}" onclick="return deleteItem();">
                                 <span data-tooltip="Excluir">
                                       <i class="bi-trash fs-6"></i>
                                 </span>
@@ -104,9 +105,6 @@
     </div>
 </div>
 
-
 </body>
 
-<script src="/static/js/filtro_coluna.js" type="text/javascript"></script>
-<script src="/static/js/confirmacao_exclusao.js" type="text/javascript"></script>
 {% endblock %}

@@ -19,7 +19,7 @@
         </div>
 
         <div class="col-1">
-            <a href="{{ url_for('empresa.empresa_editar', empresa_id=0) }}">
+            <a href="{{ url_for('empresa.empresa_editar', empresa_id_crypto=0) }}">
                <span data-bs-target="#modal" data-bs-toggle="modal" data-tooltip="INCLUIR EMPRESA">
                    <i class="bi-house-door fs-4">+</i>
                </span>
@@ -59,7 +59,7 @@
                     <td>{{ empresa.nome_fantasia }}</td>
                     <td>{{ empresa.contrato.nome }}</td>
                     <td>
-                        <a href="{{ url_for('empresa.empresa_excluir', empresa_id=empresa.id) }}"
+                        <a href="{{ url_for('empresa.empresa_excluir', empresa_id_crypto=empresa.id_criptografado) }}"
                            onclick="return deleteItem();">
                             <span data-tooltip="Excluir">
                                <i class="bi-trash fs-6"></i>
@@ -68,14 +68,14 @@
                     </td>
                     {% if empresa.ativo == True %}
                     <td>
-                        <a href="{{ url_for('empresa.empresa_ativar', empresa_id=empresa.id) }}">
+                        <a href="{{ url_for('empresa.empresa_ativar', empresa_id_crypto=empresa.id_criptografado) }}">
                         <span data-tooltip="Desativar">
                             <i class="bi-hand-thumbs-up fs-6"></i>
                         </span>
                         </a>
                     </td>
                     <td>
-                        <a href="{{ url_for('empresa.empresa_acessar', empresa_id=empresa.id) }}">
+                        <a href="{{ url_for('empresa.empresa_acessar', empresa_id_crypto=empresa.id_criptografado) }}">
                         <span data-tooltip="Acesso">
                             <i class="bi-box-arrow-in-down fs-6"></i>
                         </span>
@@ -84,7 +84,7 @@
 
                     {% else %}
                     <td>
-                        <a href="{{ url_for('empresa.empresa_ativar', empresa_id=empresa.id) }}">
+                        <a href="{{ url_for('empresa.empresa_ativar', empresa_id_crypto=empresa.id_criptografado) }}">
                         <span data-tooltip="Ativar">
                             <i class="bi-hand-thumbs-down fs-6"></i>
                         </span>
@@ -93,7 +93,7 @@
                     <td></td>
                     {% endif %}
                     <td>
-                        <a href="{{ url_for('empresa.empresa_editar', empresa_id=empresa.id) }}">
+                        <a href="{{ url_for('empresa.empresa_editar', empresa_id_crypto=empresa.id_criptografado) }}">
                         <span data-tooltip="Informações">
                             <i class="bi-caret-right fs-6"></i>
                         </span>
@@ -113,6 +113,5 @@
 
 </body>
 
-<script src="/static/js/filtro_coluna.js" type="text/javascript"></script>
-<script src="/static/js/confirmacao_exclusao.js" type="text/javascript"></script>
+
 {% endblock %}

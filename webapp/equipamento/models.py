@@ -44,6 +44,7 @@ class Grupo(db.Model):
 
     __tablename__ = 'grupo'
     id = db.Column(db.Integer(), primary_key=True)
+    id_criptografado = db.Column(db.String(255), nullable=True)
     nome = db.Column(db.String(50), nullable=False, index=True)
     empresa_id = db.Column(db.Integer(), db.ForeignKey("empresa.id"), nullable=False)
 
@@ -70,6 +71,7 @@ class Subgrupo(db.Model):
 
     __tablename__ = 'subgrupo'
     id = db.Column(db.Integer(), primary_key=True)
+    id_criptografado = db.Column(db.String(255), nullable=True)
     nome = db.Column(db.String(50), nullable=False, index=True)
     grupo_id = db.Column(db.Integer(), db.ForeignKey("grupo.id"), nullable=True)
 
@@ -143,6 +145,7 @@ class Equipamento(db.Model):
 
     __tablename__ = 'equipamento'
     id = db.Column(db.Integer(), primary_key=True)
+    id_criptografado = db.Column(db.String(255), nullable=True)
     cod = db.Column(db.String(50), nullable=True, index=True)
     descricao_curta = db.Column(db.String(50), nullable=False)
     descricao_longa = db.Column(db.String(50), nullable=True)
@@ -357,6 +360,7 @@ class Pavimento(db.Model):
 
     __tablename__ = 'pavimento'
     id = db.Column(db.Integer(), primary_key=True)
+    id_criptografado = db.Column(db.String(255), nullable=True)
     nome = db.Column(db.String(50), nullable=False, index=True)
     sigla = db.Column(db.String(5), nullable=False)
 
@@ -387,6 +391,7 @@ class Setor(db.Model):
 
     __tablename__ = 'setor'
     id = db.Column(db.Integer(), primary_key=True)
+    id_criptografado = db.Column(db.String(255), nullable=True)
     nome = db.Column(db.String(50), nullable=False, index=True)
     sigla = db.Column(db.String(5), nullable=False)
     empresa_id = db.Column(db.Integer(), db.ForeignKey("empresa.id"), nullable=False)
@@ -416,6 +421,7 @@ class Local(db.Model):
 
     __tablename__ = 'local'
     id = db.Column(db.Integer(), primary_key=True)
+    id_criptografado = db.Column(db.String(255), nullable=True)
     nome = db.Column(db.String(50), nullable=False, index=True)
     sigla = db.Column(db.String(5), nullable=False)
     empresa_id = db.Column(db.Integer(), db.ForeignKey("empresa.id"), nullable=False)
@@ -440,6 +446,7 @@ class Volume(db.Model):
 
     __tablename__ = 'tipo_volume'
     id = db.Column(db.Integer(), primary_key=True)
+    id_criptografado = db.Column(db.String(255), nullable=True)
     nome = db.Column(db.String(10), nullable=False)
     descricao = db.Column(db.String(50), nullable=False)
     equipamento = db.relationship("Equipamento", back_populates="volume")
@@ -453,6 +460,7 @@ class Vazao(db.Model):
 
     __tablename__ = 'tipo_vazao'
     id = db.Column(db.Integer(), primary_key=True)
+    id_criptografado = db.Column(db.String(255), nullable=True)
     nome = db.Column(db.String(10), nullable=False)
     descricao = db.Column(db.String(50), nullable=False)
     equipamento = db.relationship("Equipamento", back_populates="vazao")
@@ -466,6 +474,7 @@ class Area(db.Model):
 
     __tablename__ = 'tipo_area'
     id = db.Column(db.Integer(), primary_key=True)
+    id_criptografado = db.Column(db.String(255), nullable=True)
     nome = db.Column(db.String(10), nullable=False)
     descricao = db.Column(db.String(50), nullable=False)
     equipamento = db.relationship("Equipamento", back_populates="area")
@@ -479,6 +488,7 @@ class Peso(db.Model):
 
     __tablename__ = 'tipo_peso'
     id = db.Column(db.Integer(), primary_key=True)
+    id_criptografado = db.Column(db.String(255), nullable=True)
     nome = db.Column(db.String(10), nullable=False)
     descricao = db.Column(db.String(50), nullable=False)
     equipamento = db.relationship("Equipamento", back_populates="peso")
@@ -492,6 +502,7 @@ class Comprimento(db.Model):
 
     __tablename__ = 'tipo_comprimento'
     id = db.Column(db.Integer(), primary_key=True)
+    id_criptografado = db.Column(db.String(255), nullable=True)
     nome = db.Column(db.String(10), nullable=False)
     descricao = db.Column(db.String(50), nullable=False)
 
@@ -504,6 +515,7 @@ class Potencia(db.Model):
 
     __tablename__ = 'tipo_potencia'
     id = db.Column(db.Integer(), primary_key=True)
+    id_criptografado = db.Column(db.String(255), nullable=True)
     nome = db.Column(db.String(10), nullable=False)
     descricao = db.Column(db.String(50), nullable=False)
     equipamento = db.relationship("Equipamento", back_populates="potencia")
@@ -517,6 +529,7 @@ class TensaoEletrica(db.Model):
 
     __tablename__ = 'tipo_tensao_eletrica'
     id = db.Column(db.Integer(), primary_key=True)
+    id_criptografado = db.Column(db.String(255), nullable=True)
     nome = db.Column(db.String(10), nullable=False)
     descricao = db.Column(db.String(50), nullable=False)
     equipamento = db.relationship("Equipamento", back_populates="tensaoeletrica")

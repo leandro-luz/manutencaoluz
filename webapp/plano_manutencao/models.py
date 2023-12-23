@@ -134,6 +134,7 @@ class Atividade(db.Model):
     """    Classe de atividades  """
     __tablename__ = 'atividade'
     id = db.Column(db.Integer(), primary_key=True)
+    id_criptografado = db.Column(db.String(255), nullable=True)
     posicao = db.Column(db.Integer(), nullable=False)
     descricao = db.Column(db.String(100), nullable=False, index=True)
 
@@ -208,6 +209,7 @@ class PlanoManutencao(db.Model):
     __tablename__ = 'plano_manutencao'
 
     id = db.Column(db.Integer(), primary_key=True)
+    id_criptografado = db.Column(db.String(255), nullable=True)
     nome = db.Column(db.String(50), nullable=False, index=True)
     codigo = db.Column(db.String(50), nullable=True)
     data_inicio = db.Column(db.DateTime(), nullable=False)

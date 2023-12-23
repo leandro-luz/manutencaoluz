@@ -22,7 +22,7 @@
 
     <div class="row">
         <div class="col-10">
-            <form action="{{ url_for('empresa.empresa_editar', empresa_id=empresa.id) }}" method="POST">
+            <form action="#" method="POST">
                 {{form.csrf_token}}
 
                 {{form.contrato.label}} {{form.contrato}}
@@ -66,9 +66,9 @@
 
 
                 {% if empresa.id == 0 %}
-                <input type="submit" value="Cadastrar"/>
+                <input onclick="empresa_editar({{ empresa.id }}, 'action')" type="submit" value="Cadastrar"/>
                 {% else %}
-                <input type="submit" value="Atualizar"/>
+                <input onclick="empresa_editar({{ empresa.id }}, 'action')" type="submit" value="Atualizar"/>
                 {% endif %}
             </form>
 

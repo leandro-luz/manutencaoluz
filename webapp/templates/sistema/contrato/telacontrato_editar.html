@@ -11,7 +11,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form action="{{ url_for('contrato.telacontrato_editar', contrato_id=contrato.id) }}" method="POST">
+                <form action="{{ url_for('contrato.telacontrato_editar', contrato_id_crypto=contrato.id_criptografado) }}" method="POST">
                     {{form.csrf_token}}
 
                     {{form_telacontrato.tela.label}} {{form_telacontrato.tela}}<br><br>

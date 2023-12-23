@@ -65,7 +65,7 @@
                     <td>
                         <span data-bs-target="#agrupamentoModal"
                               data-bs-toggle="modal"
-                              data-grupo-id="{{ grupo['grupo'].id }}"
+                              data-grupo-id="{{ grupo['grupo'].id_criptografado }}"
                               data-nome="{{ grupo['grupo'].nome }}"
                               data-subgrupo-id="0"
                               data-tipo="Grupo"
@@ -76,7 +76,7 @@
                     </td>
 
                     <td>
-                        <a href="{{ url_for('equipamento.grupo_excluir', grupo_id=grupo['grupo'].id, subgrupo_id=subgrupo_id) }} "
+                        <a href="{{ url_for('equipamento.grupo_excluir', grupo_id_crypto=grupo['grupo'].id_criptografado, subgrupo_id_crypto=subgrupo_id_crypto) }} "
                            onclick="return deleteItem();">
                         <span data-tooltip="Excluir">
                            <i class="bi-trash fs-6"></i>
@@ -84,7 +84,8 @@
                         </a>
                     </td>
                     <td>
-                        <a href="{{ url_for('equipamento.agrupamento_listar', grupo_id=grupo['grupo'].id, subgrupo_id=subgrupo_id) }}">
+                        <a href="{{ url_for('equipamento.agrupamento_listar', grupo_id_crypto=grupo['grupo'].id_criptografado,
+                        subgrupo_id_crypto=subgrupo_id_crypto) }}">
                         <span data-tooltip="Subrupos">
                             <i class="bi-caret-right fs-6"></i>
                         </span>
@@ -127,9 +128,9 @@
                     <td>
                         <span data-bs-target="#agrupamentoModal"
                               data-bs-toggle="modal"
-                              data-grupo-id={{grupo.id}}
+                              data-grupo-id={{grupo.id_criptografado}}
                               data-nome="{{ subgrupo['subgrupo'].nome }}"
-                              data-subgrupo-id="{{ subgrupo['subgrupo'].id }}"
+                              data-subgrupo-id="{{ subgrupo['subgrupo'].id_criptografado }}"
                               data-tipo="Subgrupo"
                               data-tooltip="Editar">
                           <i class="bi-box-arrow-in-up fs-6"></i>
@@ -137,8 +138,8 @@
                         {% include "agrupamento_modal.html" %}
                     </td>
                     <td>
-                        <a href="{{ url_for('equipamento.subgrupo_excluir', grupo_id=grupo_id,
-                         subgrupo_id=subgrupo['subgrupo'].id) }}" onclick="return deleteItem();">
+                        <a href="{{ url_for('equipamento.subgrupo_excluir', grupo_id_crypto=grupo_id_crypto,
+                         subgrupo_id_crypto=subgrupo['subgrupo'].id_criptografado) }}" onclick="return deleteItem();">
                         <span data-tooltip="Excluir">
                            <i class="bi-trash fs-6"></i>
                         </span>
@@ -146,7 +147,7 @@
                     </td>
 
                     <td>
-                        <a href="{{ url_for('equipamento.agrupamento_listar', grupo_id=grupo_id, subgrupo_id=subgrupo['subgrupo'].id) }}">
+                        <a href="{{ url_for('equipamento.agrupamento_listar', grupo_id_crypto=grupo_id_crypto, subgrupo_id_crypto=subgrupo['subgrupo'].id_criptografado) }}">
                         <span data-tooltip="Equipamentos">
                             <i class="bi-caret-right fs-6"></i>
                         </span>
@@ -183,7 +184,7 @@
                     <td>{{ equipamento.descricao_curta }}</td>
 
                     <td>
-                        <a href="{{ url_for('equipamento.equipamento_editar', equipamento_id=equipamento.id) }}">
+                        <a href="{{ url_for('equipamento.equipamento_editar', equipamento_id_crypto=equipamento.id_criptografado) }}">
                             <span data-tooltip="Informações">
                                 <i class="bi-caret-right fs-6"></i>
                             </span>
@@ -200,8 +201,6 @@
     </div>
 </div>
 
-<script src="/static/js/filtro_coluna.js" type="text/javascript"></script>
-<script src="/static/js/confirmacao_exclusao.js" type="text/javascript"></script>
 <script src="/static/js/atualizar_agrupamento.js" type="text/javascript"></script>
 
 {% endblock %}

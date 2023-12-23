@@ -14,7 +14,8 @@ from webapp.usuario import has_view
 from webapp.utils.erros import flash_errors
 from webapp.utils.files import lista_para_csv
 from webapp.utils.objetos import preencher_objeto_atributos_semvinculo, preencher_objeto_atributos_datas, salvar, \
-    excluir
+    excluir, criptografar_id_lista
+from webapp.utils.tools import descriptografar, criptografar
 
 plano_manutencao_blueprint = Blueprint(
     'plano_manutencao',
@@ -24,10 +25,13 @@ plano_manutencao_blueprint = Blueprint(
 )
 
 
-@plano_manutencao_blueprint.route('/listaatividade_preenchida/<int:ordem_id>', methods=['GET', 'POST'])
+@plano_manutencao_blueprint.route('/listaatividade_preenchida/<ordem_id_crypto>', methods=['GET', 'POST'])
 @login_required
 @has_view('Plano de Manutenção')
-def listaatividade_preenchida(ordem_id):
+def listaatividade_preenchida(ordem_id_crypto):
+    # descriptografar o id
+    ordem_id = descriptografar(ordem_id_crypto)
+
     LogsEventos.registrar("evento", listaatividade_preenchida.__name__, ordem_id=ordem_id)
     # Localiza a ordem de serviço e verifica se existe
     ordem = OrdemServico.query.filter_by(id=ordem_id).one_or_none()
@@ -37,20 +41,26 @@ def listaatividade_preenchida(ordem_id):
         if atividades:
             listaatividade = ListaAtividade.query.filter_by(id=ordem.listaatividade_id).one_or_none()
             return render_template('lista_atividade_preenchida.html', atividades=atividades,
-                                   listaatividade=listaatividade, ordem_id=ordem_id)
+                                   listaatividade=listaatividade, ordem_id_crypto=ordem_id_crypto)
         else:
             flash("Atividades não cadastradas nesta ordem de serviço!", category="danger")
-            return redirect(url_for("ordem_servico.ordem_editar", ordem_id=ordem_id))
+            return redirect(url_for("ordem_servico.ordem_editar", ordem_id_crypto=ordem_id_crypto))
     else:
         flash("Ordem de Serviço não cadastrada!", category="danger")
-        return redirect(url_for("ordem_servico.ordem_editar", ordem_id=ordem_id))
+        return redirect(url_for("ordem_servico.ordem_editar", ordem_id_crypto=ordem_id_crypto))
 
 
 @plano_manutencao_blueprint.route(
-    '/atividade_editar/<int:plano_id>/<int:listaatividade_id>/<int:atividade_id>/<tipo>', methods=['GET', 'POST'])
+    '/atividade_editar/<plano_id_crypto>/<listaatividade_id_crypto>/<atividade_id_crypto>/<tipo>/',
+    methods=['GET', 'POST'])
 @login_required
 @has_view('Plano de Manutenção')
-def atividade_editar(plano_id, listaatividade_id, atividade_id, tipo):
+def atividade_editar(plano_id_crypto, listaatividade_id_crypto, atividade_id_crypto, tipo):
+    # descriptografar os ids
+    plano_id = descriptografar(plano_id_crypto)
+    listaatividade_id = descriptografar(listaatividade_id_crypto)
+    atividade_id = descriptografar(atividade_id_crypto)
+
     LogsEventos.registrar("evento", atividade_editar.__name__, plano_id=plano_id, listaatividade_id=listaatividade_id,
                           atividade_id=atividade_id, tipo_atividade=tipo)
     lista_new = False
@@ -80,7 +90,7 @@ def atividade_editar(plano_id, listaatividade_id, atividade_id, tipo):
                 else:
                     flash("Erro ao alterar a atividades", category="danger")
 
-                return redirect(url_for("plano_manutencao.plano_editar", plano_id=plano_id))
+                return redirect(url_for("plano_manutencao.plano_editar", plano_id_crypto=plano_id_crypto))
 
     if listaatividade_id > 0:
         # busca a lista de atividades
@@ -102,7 +112,7 @@ def atividade_editar(plano_id, listaatividade_id, atividade_id, tipo):
                 lista_new = True
         else:
             flash("Lista de Atividades não encontrada", category="danger")
-            return redirect(url_for("plano_manutencao.plano_editar", plano_id=plano_id))
+            return redirect(url_for("plano_manutencao.plano_editar", plano_id_crypto=plano_id_crypto))
 
     # Cria uma nova listaatividade
     if listaatividade_id == 0 or lista_new:
@@ -120,7 +130,7 @@ def atividade_editar(plano_id, listaatividade_id, atividade_id, tipo):
                 form_atividade.listaatividade_id.data = listaatividade.id
             else:
                 flash("Erro ao cadastrar nova lista de atividades", category="danger")
-                return redirect(url_for("plano_manutencao.plano_editar", plano_id=plano_id))
+                return redirect(url_for("plano_manutencao.plano_editar", plano_id_crypto=plano_id_crypto))
         else:
             listaatividade = ListaAtividade.query.filter_by(id=listaatividade.id).one_or_none()
             form_atividade.listaatividade_id.data = listaatividade.id
@@ -143,7 +153,7 @@ def atividade_editar(plano_id, listaatividade_id, atividade_id, tipo):
                     flash("Plano de Manutenção Inativado por falta de atividades!", category="warning")
 
             flash("Atividade excluída com sucesso!", category="warning")
-            return redirect(url_for("plano_manutencao.plano_editar", plano_id=plano_id))
+            return redirect(url_for("plano_manutencao.plano_editar", plano_id_crypto=plano_id_crypto))
 
     # validar as informações da atividade
     if form_atividade.validate_on_submit():
@@ -163,14 +173,18 @@ def atividade_editar(plano_id, listaatividade_id, atividade_id, tipo):
             flash("Atividade não cadastrada", category="danger")
     else:
         flash_errors(form_atividade)
-    return redirect(url_for("plano_manutencao.plano_editar", plano_id=plano_id))
+    return redirect(url_for("plano_manutencao.plano_editar", plano_id_crypto=plano_id_crypto))
 
 
-@plano_manutencao_blueprint.route('/listaatividade_editar/<int:ordem_id>/<int:listaatividade_id>/<tramitacao_sigla>/',
-                                  methods=['GET', 'POST'])
+@plano_manutencao_blueprint.route(
+    '/listaatividade_editar/<ordem_id_crypto>/<int:listaatividade_id>/<tramitacao_sigla>/',
+    methods=['GET', 'POST'])
 @login_required
 @has_view('Plano de Manutenção')
-def listaatividade_editar(ordem_id, listaatividade_id, tramitacao_sigla):
+def listaatividade_editar(ordem_id_crypto, listaatividade_id, tramitacao_sigla):
+    # descriptografar os ids
+    ordem_id = descriptografar(ordem_id_crypto)
+
     LogsEventos.registrar("evento", listaatividade_editar.__name__, ordem_id=ordem_id,
                           listaatividade_id=listaatividade_id,
                           tramitacao_sigla=tramitacao_sigla)
@@ -190,6 +204,7 @@ def listaatividade_editar(ordem_id, listaatividade_id, tramitacao_sigla):
             if listaatividade:
                 tipo_situacao = TipoSituacaoOrdem.query.filter_by(sigla=tramitacao_sigla).one_or_none()
                 if tipo_situacao:
+                    tipo_situacao.id_criptografado = criptografar(tipo_situacao.id)
                     # vincula a listaatividade na ordem
                     ordem.listaatividade_id = listaatividade.id
                     if not salvar(ordem):
@@ -202,7 +217,8 @@ def listaatividade_editar(ordem_id, listaatividade_id, tramitacao_sigla):
 
                     # gera a nova tramitação
                     return redirect(
-                        url_for("ordem_servico.tramitacao", ordem_id=ordem_id, tipo_situacao_id=tipo_situacao.id))
+                        url_for("ordem_servico.tramitacao", ordem_id_crypto=ordem_id_crypto,
+                                tipo_situacao_id_crypto=tipo_situacao.id_criptografado))
                 else:
                     flash("Tipo Situação não cadastrada", category="danger")
             else:
@@ -215,6 +231,7 @@ def listaatividade_editar(ordem_id, listaatividade_id, tramitacao_sigla):
                 # verifica a existencia do tipo de situação da ordem
                 tipo_situacao = TipoSituacaoOrdem.query.filter_by(sigla=tramitacao_sigla).one_or_none()
                 if tipo_situacao:
+                    tipo_situacao.id_criptografado = criptografar(str(tipo_situacao.id))
                     # instanciar o formulário
                     form_atividade = AtividadeForm()
 
@@ -251,7 +268,8 @@ def listaatividade_editar(ordem_id, listaatividade_id, tramitacao_sigla):
 
                     # gera a nova tramitação
                     return redirect(
-                        url_for("ordem_servico.tramitacao", ordem_id=ordem_id, tipo_situacao_id=tipo_situacao.id))
+                        url_for("ordem_servico.tramitacao", ordem_id_crypto=ordem_id_crypto,
+                                tipo_situacao_id_crypto=tipo_situacao.id_criptografado))
                 else:
                     flash("Tipo de Tramitação não cadastrada", category="danger")
             else:
@@ -262,7 +280,7 @@ def listaatividade_editar(ordem_id, listaatividade_id, tramitacao_sigla):
     return redirect(url_for("ordem_servico.ordem_listar"))
 
 
-@plano_manutencao_blueprint.route('/plano_listar', methods=['GET', 'POST'])
+@plano_manutencao_blueprint.route('/plano_listar/', methods=['GET', 'POST'])
 @login_required
 @has_view('Plano de Manutenção')
 def plano_listar():
@@ -274,13 +292,17 @@ def plano_listar():
         Grupo.id == Subgrupo.grupo_id,
         Subgrupo.id == Equipamento.subgrupo_id,
         Equipamento.id == PlanoManutencao.equipamento_id).all()
+    criptografar_id_lista(planos)
     return render_template('plano_manutencao_listar.html', planos=planos)
 
 
-@plano_manutencao_blueprint.route('/plano_ativar/<int:plano_id>', methods=['GET', 'POST'])
+@plano_manutencao_blueprint.route('/plano_ativar/<plano_id_crypto>/', methods=['GET', 'POST'])
 @login_required
 @has_view('Plano de Manutenção')
-def plano_ativar(plano_id):
+def plano_ativar(plano_id_crypto):
+    # descritografar o id
+    plano_id = descriptografar(plano_id_crypto)
+
     LogsEventos.registrar("evento", plano_ativar.__name__, plano_id=plano_id)
     plano = PlanoManutencao.query.filter_by(id=plano_id).one_or_none()
     # Verifica se o plano está cadastrado
@@ -317,14 +339,19 @@ def plano_ativar(plano_id):
                     if not ordens:
                         ordem = OrdemServico()
                         ordem.alterar_atributos_by_plano(plano)
+
                         # salva a nova ordem de serviço
                         if salvar(ordem):
                             flash("Ordem de Serviço Cadastrado", category="success")
                             # criar a primeira tramitação
+                            ordem = OrdemServico.retornar_ordem_by_plano(plano_id)
+                            ordem_id_crypto = criptografar(str(ordem.id))
+
                             tipo_situacao = TipoSituacaoOrdem.query.filter_by(sigla="AGEX").one_or_none()
+                            tipo_situacao.id_criptografado = criptografar(str(tipo_situacao.id))
                             return redirect(
-                                url_for("ordem_servico.tramitacao", ordem_id=ordem.id,
-                                        tipo_situacao_id=tipo_situacao.id))
+                                url_for("ordem_servico.tramitacao", ordem_id_crypto=ordem_id_crypto,
+                                        tipo_situacao_id_crypto=tipo_situacao.id_criptografado))
                         else:
                             flash("Ordem de Serviço não Cadastrado", category="danger")
 
@@ -337,15 +364,18 @@ def plano_ativar(plano_id):
     return redirect(url_for('plano_manutencao.plano_listar'))
 
 
-@plano_manutencao_blueprint.route('/plano_editar/<int:plano_id>', methods=['GET', 'POST'])
+@plano_manutencao_blueprint.route('/plano_editar/<plano_id_crypto>/', methods=['GET', 'POST'])
 @login_required
 @has_view('Plano de Manutenção')
-def plano_editar(plano_id):
+def plano_editar(plano_id_crypto):
+    # descritografar o id
+    plano_id = descriptografar(plano_id_crypto)
+
     LogsEventos.registrar("evento", plano_editar.__name__, plano_id=plano_id)
     new = True
     atividades = []
     listaatividade_id = 0
-
+    listaatividade_id_crypto = criptografar('0')
     if plano_id > 0:
         # Atualizar
         plano = PlanoManutencao.query.filter(
@@ -359,11 +389,13 @@ def plano_editar(plano_id):
 
         # verifica se o plano existe
         if plano:
+            plano.id_criptografado = plano_id_crypto
             form = PlanoForm(obj=plano)
             new = False
             # verifica se o plano tem lista de atividades
             if plano.listaatividade_id:
                 listaatividade_id = plano.listaatividade_id
+                listaatividade_id_crypto = criptografar(str(listaatividade_id))
 
             # Atualizar ou Ler dados
             if form.tipodata.data:
@@ -379,6 +411,7 @@ def plano_editar(plano_id):
             # Lista de atividades vinculado ao plano de manutenção
             atividades = Atividade.query.filter_by(listaatividade_id=listaatividade_id) \
                 .order_by(Atividade.posicao.asc()).all()
+            criptografar_id_lista(atividades)
 
             form_atividade = AtividadeForm()
             form_atividade.posicao.data = len(atividades) + 1
@@ -392,7 +425,7 @@ def plano_editar(plano_id):
         # Cadastrar
         plano = PlanoManutencao()
         plano.id = 0
-
+        plano.id_criptografado = criptografar('0')
         form = PlanoForm()
 
         tp_d = form.tipodata.data
@@ -434,8 +467,8 @@ def plano_editar(plano_id):
     else:
         flash_errors(form)
 
-    return render_template("plano_manutencao_editar.html", form=form, plano=plano, plano_id=plano.id,
-                           listaatividade_id=listaatividade_id, atividades=atividades,
+    return render_template("plano_manutencao_editar.html", form=form, plano=plano, plano_id_crypto=plano_id_crypto,
+                           listaatividade_id_crypto=listaatividade_id_crypto, atividades=atividades,
                            form_atividade=form_atividade)
 
 
@@ -476,10 +509,12 @@ def gerar_csv_planos():
     )
 
 
-@plano_manutencao_blueprint.route('/plano_excluir/<int:plano_id>', methods=['GET', 'POST'])
+@plano_manutencao_blueprint.route('/plano_excluir/<plano_id_crypto>', methods=['GET', 'POST'])
 @login_required
 @has_view('Equipamento')
-def plano_excluir(plano_id):
+def plano_excluir(plano_id_crypto):
+    # descriptografar o id
+    plano_id = descriptografar(plano_id_crypto)
     LogsEventos.registrar("evento", plano_excluir.__name__, plano_id=plano_id)
 
     plano = PlanoManutencao.query.filter(

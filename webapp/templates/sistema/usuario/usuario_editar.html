@@ -18,8 +18,8 @@
 
     <div class="row">
         <div class="col-9">
-
-            <form action="{{ url_for('usuario.usuario_editar', usuario_id=usuario.id) }}" method="POST">
+            <form action="{{ url_for('usuario.usuario_editar', usuario_id_crypto=usuario.id_criptografado) }}"
+                  method="POST">
                 {{ form.csrf_token }}
                 {{ exibir_mensagens_erro(form) }}
 
@@ -31,7 +31,7 @@
                 {% if ppm %}
                 {{form.perfil_manutentor.label}} {{form.perfil_manutentor}}
                 {% if usuario.id > 0 %}
-                <a href="{{ url_for('usuario.perfilmanutentor_listar', usuario_id=usuario.id) }}">
+                <a href="{{ url_for('usuario.perfilmanutentor_listar', usuario_id_crypto=usuario.id_criptografado) }}">
                     <span data-tooltip="Atualizar">
                         <i class="bi-caret-down fs-6"></i>
                     </span>

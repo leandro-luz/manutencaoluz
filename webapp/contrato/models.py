@@ -9,6 +9,7 @@ class Contrato(db.Model):
     """    Classe o Contrato de Assinaturas   """
     __tablename__ = 'contrato'
     id = db.Column(db.Integer(), primary_key=True)
+    id_criptografado = db.Column(db.String(255), nullable=True)
     nome = db.Column(db.String(50), nullable=False, index=True)
     ativo = db.Column(db.Boolean, nullable=False, default=False)
 
@@ -50,6 +51,7 @@ class Tela(db.Model):
     """    Classe das telas    """
     __tablename__ = 'tela'
     id = db.Column(db.Integer(), primary_key=True)
+    id_criptografado = db.Column(db.String(255), nullable=True)
     nome = db.Column(db.String(50), nullable=False, index=True)
     icon = db.Column(db.String(50), nullable=False)
     url = db.Column(db.String(50), nullable=False)
@@ -72,6 +74,7 @@ class Telacontrato(db.Model):
     """    Classe Relacionando Telas e Planos    """
     __tablename__ = 'tela_contrato'
     id = db.Column(db.Integer(), primary_key=True)
+    id_criptografado = db.Column(db.String(255), nullable=True)
     ativo = db.Column(db.Boolean, default=False)
 
     contrato_id = db.Column(db.Integer(), db.ForeignKey("contrato.id"), nullable=False)

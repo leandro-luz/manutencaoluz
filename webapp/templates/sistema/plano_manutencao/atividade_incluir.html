@@ -11,8 +11,11 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form action="{{ url_for('plano_manutencao.atividade_editar', plano_id=plano_id,
-                listaatividade_id=listaatividade_id, atividade_id=0, tipo='incluir') }}" method="POST">
+                <form action="{{ url_for('plano_manutencao.atividade_editar',
+                plano_id_crypto=plano_id_crypto,
+                listaatividade_id_crypto=listaatividade_id_crypto,
+                atividade_id_crypto=0,
+                tipo='incluir') }}" method="POST">
                     {{form_atividade.csrf_token}}
                     <table class="table">
                         <thead>

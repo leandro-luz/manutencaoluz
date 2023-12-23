@@ -12,7 +12,7 @@
             </div>
 
             <div class="modal-body">
-                <form action="{{ url_for('plano_manutencao.listaatividade_editar',ordem_id=ordem.id,
+                <form action="{{ url_for('plano_manutencao.listaatividade_editar',ordem_id_crypto=ordem.id_criptografado,
                listaatividade_id=listaatividade_id, tramitacao_sigla='CONC') }}"
                       id="form_atividade" method="POST" onsubmit="return coletar_valores_atividade();">
                     {{form_atividade.csrf_token}}
@@ -79,8 +79,8 @@
                     {% for nova_t in novas_tramitacoes %}
                     {% if not nova_t.sigla == 'CONC' %}
 
-                    <form action="{{ url_for('ordem_servico.tramitacao', ordem_id=ordem.id,
-                    tipo_situacao_id=nova_t.id) }}"
+                    <form action="{{ url_for('ordem_servico.tramitacao', ordem_id_crypto=ordem.id_criptografado,
+                    tipo_situacao_id_crypto=nova_t.id_criptografado) }}"
                           id="form_atividade_2" method="POST" onsubmit="return coletar_valores_atividade(true);">
                         {{form_listaatividade.csrf_token}}
                         <tr>

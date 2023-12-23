@@ -83,7 +83,7 @@
                     <td>{{ ordem.data_prevista }}</td>
                     <td>{{ ordem.data_fechamento }}</td>
                     <td>
-                        <a href="{{ url_for('ordem_servico.ordem_editar', ordem_id=ordem.id) }}">
+                        <a href="{{ url_for('ordem_servico.ordem_editar', ordem_id_crypto=ordem.id_criptografado) }}">
                             <span data-tooltip="Informações">
                                 <i class="bi-caret-right fs-6"></i>
                             </span>
@@ -103,7 +103,5 @@
 
 </body>
 
-<script src="/static/js/exportar_consulta.js" type="text/javascript"></script>
-<script src="/static/js/filtro_coluna.js" type="text/javascript"></script>
 
 {% endblock %}

@@ -11,7 +11,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form action="{{ url_for('usuario.telaperfilacesso_editar', perfilacesso_id=perfilacesso.id) }}"
+                <form action="{{ url_for('usuario.telaperfilacesso_editar', perfilacesso_id_crypto=perfilacesso.id_criptografado) }}"
                       method="POST">
                     {{form_telaperfil.csrf_token}}
 

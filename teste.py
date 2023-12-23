@@ -234,3 +234,65 @@ import pandas as pd
 #     except pytz.UnknownTimeZoneError:
 #         return data_atual
 
+# from cryptography.fernet import Fernet
+# from urllib.parse import quote, unquote
+#
+# #
+# def criar_objeto_fernet():
+#     """Cria um objeto Fernet usando a chave específica."""
+#     chave_especifica = b'4GkmZOz7sIJssA6W9ZDeKs8FjNsQViRSZqy2U0ZyC44='
+#     return Fernet(chave_especifica)
+#
+#
+# def criptografar(dados):
+#     """Criptografa os dados usando o objeto Fernet."""
+#     fernet = criar_objeto_fernet()
+#     return quote(fernet.encrypt(dados.encode('utf-8')))
+#
+#
+# def descriptografar(dados):
+#     fernet = criar_objeto_fernet()
+#     """Descriptografa os dados criptografados usando o objeto Fernet."""
+#     return fernet.decrypt(unquote(dados)).decode('utf-8')
+#
+#
+#
+# # # Dados a serem criptografados
+# dados_originais = str(3)
+# #
+# # # Criptografar os dados
+# print("Dados originais:", dados_originais)
+# dados_criptografados = criptografar(dados_originais)
+# print("Dados criptografados:", dados_criptografados)
+#
+#
+# # Descriptografar os dados
+# dados_descriptografados = descriptografar(dados_criptografados)
+# print("Dados descriptografados:", dados_descriptografados)
+
+
+# key = Fernet.generate_key()
+#
+# print(key)
+
+
+import base64
+
+def codificar_base64(texto):
+    # Codifica o texto para base64
+    texto_codificado = base64.b64encode(texto.encode('utf-8')).decode('utf-8')
+    return texto_codificado
+
+def decodificar_base64(texto_codificado):
+    # Decodifica o texto base64
+    texto_decodificado = base64.b64decode(texto_codificado.encode('utf-8')).decode('utf-8')
+    return texto_decodificado
+
+# Exemplo de uso:
+texto_original = "Olá, Mundo!"
+texto_codificado = codificar_base64(texto_original)
+texto_decodificado = decodificar_base64(texto_codificado)
+
+print("Texto original:", texto_original)
+print("Texto codificado:", texto_codificado)
+print("Texto decodificado:", texto_decodificado)

@@ -17,7 +17,8 @@
 
     <div class="row">
         <div class="col-4">
-            <form action="{{ url_for('usuario.perfilacesso_editar', perfilacesso_id=perfilacesso.id) }}" method="POST">
+            <form action="{{ url_for('usuario.perfilacesso_editar', perfilacesso_id_crypto=perfilacesso.id_criptografado) }}"
+                  method="POST">
                 {{form.csrf_token}}
 
                 {{form.nome.label}} {{form.nome(size=50)}}<br>
@@ -53,8 +54,8 @@
 
                     <td>
                         <a href="{{ url_for('usuario.telaperfilacesso_excluir',
-                        telaperfilacesso_id=telaperfilacesso.id,
-                        perfilacesso_id=perfilacesso.id) }}" onclick="return deleteItem();">
+                        telaperfilacesso_id_crypto=telaperfilacesso.id_criptografado,
+                        perfilacesso_id_crypto=perfilacesso.id_criptografado) }}" onclick="return deleteItem();">
                             <span data-tooltip="Desativar">
                                 <i class="bi-trash fs-6"></i>
                             </span>
@@ -110,6 +111,5 @@
 
 </body>
 
-<script src="/static/js/confirmacao_exclusao.js" type="text/javascript"></script>
 
 {% endblock %}

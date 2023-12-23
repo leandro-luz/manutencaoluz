@@ -54,10 +54,3 @@ def lista_para_csv(lista, titulos):
     # Retorna o objeto CSV como uma string
     return output.getvalue()
 
-#
-# from sqlalchemy.orm import class_mapper
-# import sqlalchemy
-# def attribute_names(cls):
-#     return [prop.key for prop in class_mapper(cls).iterate_properties
-#             if isinstance(prop, sqlalchemy.orm.ColumnProperty)]
-# print(attribute_names(Empresa))

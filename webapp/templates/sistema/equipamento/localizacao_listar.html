@@ -60,7 +60,7 @@
                         <td>
                             <span data-bs-target="#localizacaoModal"
                                   data-bs-toggle="modal"
-                                  data-id="{{ setor.id }}"
+                                  data-id="{{ setor.id_criptografado }}"
                                   data-nome="{{ setor.nome }}"
                                   data-sigla="{{ setor.sigla }}"
                                   data-tipo="Setor"
@@ -71,7 +71,7 @@
                         </td>
 
                         <td>
-                            <a href="{{ url_for('equipamento.setor_excluir', setor_id=setor.id) }}"
+                            <a href="{{ url_for('equipamento.setor_excluir', setor_id_crypto=setor.id_criptografado) }}"
                                onclick="return deleteItem();">
                             <span data-tooltip="Excluir">
                                <i class="bi-trash fs-6"></i>
@@ -107,7 +107,7 @@
                         <td>
                             <span data-bs-target="#localizacaoModal"
                                   data-bs-toggle="modal"
-                                  data-id="{{ local.id }}"
+                                  data-id="{{ local.id_criptografado }}"
                                   data-nome="{{ local.nome }}"
                                   data-sigla="{{ local.sigla }}"
                                   data-tipo="Local"
@@ -118,7 +118,7 @@
                         </td>
 
                         <td>
-                            <a href="{{ url_for('equipamento.local_excluir', local_id=local.id) }}"
+                            <a href="{{ url_for('equipamento.local_excluir', local_id_crypto=local.id_criptografado) }}"
                                onclick="return deleteItem();">
                             <span data-tooltip="Excluir">
                                <i class="bi-trash fs-6"></i>
@@ -154,7 +154,7 @@
                         <td>
                             <span data-bs-target="#localizacaoModal"
                                   data-bs-toggle="modal"
-                                  data-id="{{ pavimento.id }}"
+                                  data-id="{{ pavimento.id_criptografado }}"
                                   data-nome="{{ pavimento.nome }}"
                                   data-sigla="{{ pavimento.sigla }}"
                                   data-tipo="Pavimento"
@@ -165,7 +165,7 @@
                         </td>
 
                         <td>
-                            <a href="{{ url_for('equipamento.pavimento_excluir', pavimento_id=pavimento.id) }}"
+                            <a href="{{ url_for('equipamento.pavimento_excluir', pavimento_id_crypto=pavimento.id_criptografado) }}"
                                onclick="return deleteItem();">
                             <span data-tooltip="Excluir">
                                <i class="bi-trash fs-6"></i>
@@ -184,8 +184,6 @@
 
 </body>
 
-<script src="/static/js/filtro_coluna.js" type="text/javascript"></script>
-<script src="/static/js/confirmacao_exclusao.js" type="text/javascript"></script>
 <script src="/static/js/atualizar_agrupamento.js" type="text/javascript"></script>
 
 {% endblock %}

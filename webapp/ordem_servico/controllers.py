@@ -13,8 +13,9 @@ from webapp.usuario import has_view
 from webapp.utils.erros import flash_errors
 from webapp.utils.files import lista_para_csv
 from webapp.utils.tools import data_atual_utc
+from webapp.utils.tools import descriptografar, criptografar
 from webapp.sistema.models import LogsEventos
-from webapp.utils.objetos import salvar, excluir
+from webapp.utils.objetos import salvar, excluir, criptografar_id_lista
 
 ordem_servico_blueprint = Blueprint(
     'ordem_servico',
@@ -42,7 +43,7 @@ def ordem_listar():
         Subgrupo.grupo_id == Grupo.id,
         Grupo.empresa_id == Empresa.id,
         Empresa.id == current_user.empresa_id
-    )
+    ).all()
 
     # Lista de ordens quando o usuario é o solicitante
     ordens_by_solicitante = OrdemServico.query.filter(
@@ -52,19 +53,26 @@ def ordem_listar():
         Subgrupo.grupo_id == Grupo.id,
         Grupo.empresa_id == Empresa.id,
         Empresa.id == current_user.empresa_id
-    )
+    ).all()
 
     # Lista de ordens filtrada pelo tipo de perfil_manutentor do usuario
     ordens_by_perfil = OrdemServico.query.filter(
         OrdemServico.tiposituacaoordem_id == TipoSituacaoOrdemPerfilManutentor.tiposituacaoordem_id,
         TipoSituacaoOrdemPerfilManutentor.perfilmanutentor_id == PerfilManutentorUsuario.perfilmanutentor_id,
-        PerfilManutentorUsuario.usuario_id == current_user.id
-    )
+        PerfilManutentorUsuario.usuario_id == current_user.id,
+        OrdemServico.equipamento_id == Equipamento.id,
+        Equipamento.subgrupo_id == Subgrupo.id,
+        Subgrupo.grupo_id == Grupo.id,
+        Grupo.empresa_id == Empresa.id,
+        Empresa.id == current_user.empresa_id
+    ).all()
 
     # união das listas sem repetições
     ordens_p = list(set(ordens_by_solicitante) | set(ordens_by_perfil) | set(ordens_by_null))
     # ordenação pelo código
     ordens = sorted(ordens_p, key=lambda ordem: ordem.codigo, reverse=True)
+
+    criptografar_id_lista(ordens)
 
     form_ordem = OrdemServicoForm()
     form_ordem.tipo.choices = [(0, '')] + [(tipo.id, tipo.nome)
@@ -82,10 +90,13 @@ def ordem_listar():
                            form_ordem=form_ordem)
 
 
-@ordem_servico_blueprint.route('/ordem_editar/<int:ordem_id>', methods=['GET', 'POST'])
+@ordem_servico_blueprint.route('/ordem_editar/<ordem_id_crypto>/', methods=['GET', 'POST'])
 @login_required
 @has_view('Ordem de Serviço')
-def ordem_editar(ordem_id):
+def ordem_editar(ordem_id_crypto):
+    # descriptografar o id
+    ordem_id = descriptografar(ordem_id_crypto)
+
     LogsEventos.registrar("evento", ordem_editar.__name__, ordem_id=ordem_id)
     tramitacoes = []
     novas_tramitacoes = []
@@ -119,6 +130,7 @@ def ordem_editar(ordem_id):
         # verifica se a ordem existe
         if ordem:
             form_ordem = OrdemServicoForm(obj=ordem)
+            ordem.id_criptografado = ordem_id_crypto
             # form_tramitacao = TramitacaoForm()
 
             # Atualizar ou Ler dados
@@ -133,6 +145,7 @@ def ordem_editar(ordem_id):
         # Filtro dos status possíveis
         fluxos = FluxoOrdem.query.filter_by(de=ordem.tiposituacaoordem_id).all()
         novas_tramitacoes = [TipoSituacaoOrdem.query.filter_by(id=fluxo.para).first() for fluxo in fluxos]
+        criptografar_id_lista(novas_tramitacoes)
 
         # Lista das tramitações já realizadas
         tramitacoes = TramitacaoOrdem.query.filter_by(ordemservico_id=ordem.id). \
@@ -162,6 +175,7 @@ def ordem_editar(ordem_id):
             # Cadastrar
             ordem = OrdemServico()
             ordem.id = 0
+            ordem.id_criptografado = criptografar('0')
             form_ordem = OrdemServicoForm()
             # form_tramitacao = TramitacaoForm()
             form_atividade = AtividadeForm()
@@ -213,6 +227,7 @@ def ordem_editar(ordem_id):
                 flash("Ordem de Serviço não cadastrado/atualizado", category="danger")
     else:
         flash_errors(form_ordem)
+
     return render_template("ordem_servico_editar.html", form_ordem=form_ordem,
                            form_atividade=form_atividade,
                            # form_tramitacao=form_tramitacao,
@@ -248,10 +263,14 @@ def gerar_csv_ordens():
     )
 
 
-@ordem_servico_blueprint.route('/tramitacao/<int:ordem_id>/<int:tipo_situacao_id>/', methods=['GET', 'POST'])
+@ordem_servico_blueprint.route('/tramitacao/<ordem_id_crypto>/<tipo_situacao_id_crypto>/', methods=['GET', 'POST'])
 @login_required
 @has_view('Ordem de Serviço')
-def tramitacao(ordem_id, tipo_situacao_id):
+def tramitacao(ordem_id_crypto, tipo_situacao_id_crypto):
+    # descritografar os ids
+    ordem_id = descriptografar(ordem_id_crypto)
+    tipo_situacao_id = descriptografar(tipo_situacao_id_crypto)
+
     LogsEventos.registrar("evento", 'tramitacao', ordem_id=ordem_id, tipo_situacao_id=tipo_situacao_id)
     # Localizar o tipo de tramitação
     tiposituacao = TipoSituacaoOrdem.query.filter_by(id=tipo_situacao_id).one_or_none()
@@ -320,4 +339,4 @@ def tramitacao(ordem_id, tipo_situacao_id):
     else:
         flash("Tipo de Tramitação não cadastrada", category="danger")
 
-    return redirect(url_for("ordem_servico.ordem_editar", ordem_id=ordem_id))
+    return redirect(url_for("ordem_servico.ordem_editar", ordem_id_crypto=ordem_id_crypto))

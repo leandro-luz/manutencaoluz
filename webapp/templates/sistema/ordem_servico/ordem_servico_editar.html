@@ -18,7 +18,8 @@
 
     <div class="row">
         <div class="col-10">
-            <form action="{{ url_for('ordem_servico.ordem_editar', ordem_id=ordem.id) }}" method="POST">
+            <form action="{{ url_for('ordem_servico.ordem_editar', ordem_id_crypto=ordem.id_criptografado) }}"
+                  method="POST">
                 {{form_ordem.csrf_token}}
 
                 Código: {{ ordem.codigo }}<br>
@@ -56,7 +57,8 @@
             {% if lib_aprovador or lib_fiscalizador %}
             {% for nova_t in novas_tramitacoes %}
 
-            <a href="{{ url_for('ordem_servico.tramitacao', ordem_id=ordem.id, tipo_situacao_id=nova_t.id) }}">
+            <a href="{{ url_for('ordem_servico.tramitacao', ordem_id_crypto=ordem.id_criptografado,
+            tipo_situacao_id_crypto=nova_t.id_criptografado) }}">
                 <button class="btn btn-info"> {{ nova_t.texto_futuro }}</button>
             </a>
             {% endfor %}
@@ -67,7 +69,7 @@
             {% if ordem.tiposituacaoordem.sigla == "CONC" or
             ordem.tiposituacaoordem.sigla == "AGFI" or
             ordem.tiposituacaoordem.sigla == "ENCE" %}
-            <a href="{{ url_for('plano_manutencao.listaatividade_preenchida', ordem_id=ordem.id) }}">
+            <a href="{{ url_for('plano_manutencao.listaatividade_preenchida', ordem_id_crypto=ordem.id_criptografado) }}">
                 <button class="btn btn-secondary">ATIVIDADES PREENCHIDAS</button>
             </a>
             {% endif %}
@@ -120,9 +122,7 @@
 
 </body>
 
-<script src="/static/js/filtro_coluna.js" type="text/javascript"></script>
 <script src="/static/js/atividades.js" type="text/javascript"></script>
-
 
 {% endblock %}
 

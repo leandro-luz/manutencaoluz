@@ -21,7 +21,7 @@
     </div>
     <div class="row">
         <div class="col-10">
-            <form action="{{ url_for('plano_manutencao.plano_editar', plano_id=plano.id) }}"
+            <form action="{{ url_for('plano_manutencao.plano_editar', plano_id_crypto=plano.id_criptografado) }}"
                   method="POST">
                 {{form.csrf_token}}
 
@@ -97,8 +97,11 @@
                     <td>{{ atividade.descricao }}</td>
                     <td>{{ atividade.tipoparametro.nome }}</td>
                     <td>
-                        <a href="{{ url_for('plano_manutencao.atividade_editar',plano_id=plano.id,
-                listaatividade_id=listaatividade_id, atividade_id=atividade.id, tipo='excluir') }}">
+                        <a href="{{ url_for('plano_manutencao.atividade_editar',
+                        plano_id_crypto=plano.id_criptografado,
+                        listaatividade_id_crypto=listaatividade_id_crypto,
+                        atividade_id_crypto=atividade.id_criptografado,
+                        tipo='excluir') }}">
                 <span data-tooltip="Excluir">
                     <i class="bi-clipboard-minus fs-6"></i>
                 </span>
@@ -106,8 +109,11 @@
                     </td>
 
                     <td>
-                        <a href="{{ url_for('plano_manutencao.atividade_editar',plano_id=plano.id,
-                listaatividade_id=listaatividade_id, atividade_id=atividade.id, tipo='subir') }}">
+                        <a href="{{ url_for('plano_manutencao.atividade_editar',
+                        plano_id_crypto=plano.id_criptografado,
+                        listaatividade_id_crypto=listaatividade_id_crypto,
+                        atividade_id_crypto=atividade.id_criptografado,
+                        tipo='subir') }}">
                             <span data-tooltip="Subir Posição">
                                 <i class="bi-caret-up fs-6"></i>
                             </span>
@@ -115,8 +121,11 @@
                     </td>
 
                     <td>
-                        <a href="{{ url_for('plano_manutencao.atividade_editar',plano_id=plano.id,
-                listaatividade_id=listaatividade_id, atividade_id=atividade.id, tipo='descer') }}">
+                        <a href="{{ url_for('plano_manutencao.atividade_editar',
+                        plano_id_crypto=plano.id_criptografado,
+                        listaatividade_id_crypto=listaatividade_id_crypto,
+                        atividade_id_crypto=atividade.id_criptografado,
+                        tipo='descer') }}">
                             <span data-tooltip="Descer Posição">
                                 <i class="bi-caret-down fs-6"></i>
                             </span>
@@ -135,7 +144,6 @@
 
 </body>
 <script src="/static/js/bloqueio_campo.js" type="text/javascript"></script>
-<script src="/static/js/confirmacao_exclusao.js" type="text/javascript"></script>
 
 {% endblock %}
 

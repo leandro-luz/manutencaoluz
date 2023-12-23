@@ -2,7 +2,7 @@
 {% block body %}
 <body>
 
-<a href="{{ url_for('usuario.usuario_editar', usuario_id=usuario_id) }}">
+<a href="{{ url_for('usuario.usuario_editar', usuario_id_crypto=usuario_id_crypto) }}">
     <span data-tooltip="VOLTAR">
         <i class="bi-backspace fs-6"></i>
     </span>
@@ -44,8 +44,9 @@
 
                     <td>
                         <a href="{{ url_for('usuario.perfilmanutentor_excluir',
-                        perfilmanutentorusuario_id=perfil.id,
-                        usuario_id=usuario_id) }}" onclick="return deleteItem();">
+                        usuario_id_crypto=usuario_id_crypto,
+                        perfilmanutentorusuario_id_crypto=perfil.id_criptografado)}}"
+                           onclick="return deleteItem();">
                             <span data-tooltip="Desativar">
                                 <i class="bi-trash fs-6"></i>
                             </span>
@@ -63,6 +64,5 @@
 
 </body>
 
-<script src="/static/js/confirmacao_exclusao.js" type="text/javascript"></script>
 
 {% endblock %}

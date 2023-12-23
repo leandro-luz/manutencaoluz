@@ -1,24 +1,23 @@
-import datetime
-
 import numpy as np
 import pandas as pd
 from flask import (render_template, Blueprint, redirect, url_for, flash, Response)
 from flask_login import login_user, logout_user, current_user, login_required
+
+from webapp.contrato.models import Contrato, Telacontrato, Tela
+from webapp.empresa.models import Empresa
+from webapp.sistema.models import LogsEventos
+from webapp.usuario import has_view
 from webapp.usuario.models import Senha, Usuario, PerfilAcesso, TelaPerfilAcesso, PerfilManutentor, \
     PerfilManutentorUsuario
-from webapp.empresa.models import Empresa
-from webapp.contrato.models import Contrato, Telacontrato, Tela
-from .forms import LoginForm, AlterarSenhaForm, SolicitarNovaSenhaForm, AlterarSenhaTokenForm, \
-    AlterarEmailForm, EditarUsuarioForm, PerfilAcessoForm, TelaPerfilForm, PerfilManutentorForm
-from webapp.usuario import has_view
 from webapp.utils.email import send_email
-from webapp.utils.tools import create_token, verify_token
 from webapp.utils.erros import flash_errors
 from webapp.utils.files import lista_para_csv
 from webapp.utils.objetos import salvar, excluir, preencher_objeto_atributos_semvinculo, \
-    preencher_objeto_atributos_booleanos, preencher_objeto_atributos_datas
-from webapp.utils.tools import data_atual_utc
-from webapp.sistema.models import LogsEventos
+    criptografar_id_lista
+from webapp.utils.tools import create_token, verify_token
+from webapp.utils.tools import data_atual_utc, descriptografar, criptografar
+from .forms import LoginForm, AlterarSenhaForm, SolicitarNovaSenhaForm, AlterarSenhaTokenForm, \
+    AlterarEmailForm, EditarUsuarioForm, PerfilAcessoForm, TelaPerfilForm, PerfilManutentorForm
 
 usuario_blueprint = Blueprint(
     'usuario',
@@ -232,9 +231,12 @@ def trocar_email(token):
     return redirect(url_for('main.index'))
 
 
-@usuario_blueprint.route('/usuario_ativar/<int:usuario_id>')
+@usuario_blueprint.route('/usuario_ativar/<usuario_id_crypto>')
 @login_required
-def usuario_ativar(usuario_id):
+def usuario_ativar(usuario_id_crypto):
+    # descriptografar os ids
+    usuario_id = descriptografar(usuario_id_crypto)
+
     LogsEventos.registrar("evento", usuario_ativar.__name__, usuario_id=usuario_id)
     """    Função que ativa/inativa um usuário"""
     # retorna o usuário com o identificador
@@ -289,15 +291,22 @@ def usuario_listar() -> str:
     usuarios = Usuario.query.filter_by(empresa_id=current_user.empresa_id). \
         filter(Usuario.nome.notlike("%adminluz%")).all()
 
+    # criptografar os id
+    criptografar_id_lista(usuarios)
+
     return render_template('usuario_listar.html', usuarios=usuarios)
 
 
-@usuario_blueprint.route('/usuario_editar/<int:usuario_id>', methods=['GET', 'POST'])
+@usuario_blueprint.route('/usuario_editar/<usuario_id_crypto>', methods=['GET', 'POST'])
 @login_required
 @has_view('Usuário')
-def usuario_editar(usuario_id):
+def usuario_editar(usuario_id_crypto):
+    # descriptografar os ids
+    usuario_id = descriptografar(usuario_id_crypto)
+
     LogsEventos.registrar("evento", usuario_editar.__name__, usuario_id=usuario_id)
     """    Função atualiza as informações do usuário    """
+
     if usuario_id > 0:  # se o identificador foi passado com parâmetro
         # --------- ATUALIZAR
         # instância um usuário com base no identificador
@@ -328,6 +337,7 @@ def usuario_editar(usuario_id):
         # --------- CADASTRAR
         usuario_ = Usuario()  # instância um usuário em branco
         usuario_.id = 0
+        usuario_.id_criptografado = 0
         form = EditarUsuarioForm()  # instância um formulário em branco
         new = True  # é um usuário novo
         r_d = form.perfilacesso.data
@@ -377,7 +387,7 @@ def usuario_editar(usuario_id):
             return redirect(url_for("usuario.usuario_listar"))
         else:
             flash("Usuário não cadastrado/atualizado", category="danger")
-            return redirect(url_for("usuario.usuario_editar", usuario_id=usuario_id))
+            return redirect(url_for("usuario.usuario_editar", usuario_id_crypto=usuario_id_crypto))
     else:
         flash_errors(form)
     return render_template("usuario_editar.html", form=form, usuario=usuario_, ppm=permissao_perfil_manutentor)
@@ -414,10 +424,13 @@ def gerar_csv_usuario():
         headers={'Content-Disposition': 'attachment; filename=usuarios.csv'})
 
 
-@usuario_blueprint.route('/usuario_excluir/<int:usuario_id>', methods=['GET', 'POST'])
+@usuario_blueprint.route('/usuario_excluir/<usuario_id_crypto>', methods=['GET', 'POST'])
 @login_required
 @has_view('Usuário')
-def usuario_excluir(usuario_id):
+def usuario_excluir(usuario_id_crypto):
+    # descriptografar os ids
+    usuario_id = descriptografar(usuario_id_crypto)
+
     LogsEventos.registrar("evento", usuario_excluir.__name__, usuario_id=usuario_id)
     usuario = Usuario.query.filter_by(id=usuario_id).one_or_none()
 
@@ -547,25 +560,35 @@ def cadastrar_lote_usuarios():
 @has_view('Usuário')
 def perfilacesso_listar():
     LogsEventos.registrar("evento", perfilacesso_listar.__name__)
+
+    perfilacessos = PerfilAcesso.query.filter_by(empresa_id=current_user.empresa_id).filter(
+        PerfilAcesso.nome.notlike("%adminluz%")).order_by(PerfilAcesso.nome).all()
+
+    # criptografar os id
+    criptografar_id_lista(perfilacessos)
+
     lista_perfis = [{'perfilacesso': perfilacesso,
                      'total': Usuario.query.filter(Usuario.empresa_id == Empresa.id,
                                                    Usuario.perfilacesso_id == perfilacesso.id,
                                                    Empresa.id == current_user.empresa_id).count(),
                      'telas': TelaPerfilAcesso.query.filter_by(perfilacesso_id=perfilacesso.id).count()}
-                    for perfilacesso in PerfilAcesso.query.filter_by(empresa_id=current_user.empresa_id).filter(
-            PerfilAcesso.nome.notlike("%adminluz%")).order_by(PerfilAcesso.nome).all()]
+                    for perfilacesso in perfilacessos]
 
     form = PerfilAcessoForm()
 
     return render_template('perfilacesso_listar.html', perfisacesso=lista_perfis, form=form)
 
 
-@usuario_blueprint.route('/perfilacesso_editar/<int:perfilacesso_id>', methods=['GET', 'POST'])
+@usuario_blueprint.route('/perfilacesso_editar/<perfilacesso_id_crypto>', methods=['GET', 'POST'])
 @login_required
 @has_view('Usuário')
-def perfilacesso_editar(perfilacesso_id):
+def perfilacesso_editar(perfilacesso_id_crypto):
+    # descriptografas os ids
+    perfilacesso_id = descriptografar(perfilacesso_id_crypto)
+
     LogsEventos.registrar("evento", perfilacesso_editar.__name__, perfilacesso_id=perfilacesso_id)
     usuarios = []
+
     if perfilacesso_id > 0:
         # Atualizar
         perfilacesso = PerfilAcesso.query.filter(
@@ -577,11 +600,11 @@ def perfilacesso_editar(perfilacesso_id):
         # verifica se o perfil existe
         if perfilacesso:
             form = PerfilAcessoForm(obj=perfilacesso)
+            perfilacesso.id_criptografado = perfilacesso_id_crypto
             # new = False
 
             # Usuários vinculados no perfil
             usuarios = Usuario.query.filter_by(perfilacesso_id=perfilacesso.id).all()
-
         else:
             flash("PerfilAcesso não localizado", category="danger")
             return redirect(url_for("usuario.perfilacesso_listar"))
@@ -590,11 +613,13 @@ def perfilacesso_editar(perfilacesso_id):
         # Cadastrar
         perfilacesso = PerfilAcesso()
         perfilacesso.id = 0
+        perfilacesso.id_criptografado = criptografar('0')
         form = PerfilAcessoForm()
         # new = True
 
     # LISTA DAS TELAS DO PERFIL ACESSO
     telasperfilacesso_liberadas = TelaPerfilAcesso.query.filter_by(perfilacesso_id=perfilacesso_id).all()
+    criptografar_id_lista(telasperfilacesso_liberadas)
 
     #  lista(id e nome) de todas as telas liberadas para uso
     telasperfil = Tela.query.filter(
@@ -631,10 +656,13 @@ def perfilacesso_editar(perfilacesso_id):
                            telasperfilacesso=telasperfilacesso_liberadas, form_telaperfil=form_telaperfil)
 
 
-@usuario_blueprint.route('/perfilacesso_ativar/<int:perfilacesso_id>', methods=['GET', 'POST'])
+@usuario_blueprint.route('/perfilacesso_ativar/<perfilacesso_id_crypto>/', methods=['GET', 'POST'])
 @login_required
 @has_view('Usuário')
-def perfilacesso_ativar(perfilacesso_id):
+def perfilacesso_ativar(perfilacesso_id_crypto):
+    # descriptografas os ids
+    perfilacesso_id = descriptografar(perfilacesso_id_crypto)
+
     LogsEventos.registrar("evento", perfilacesso_ativar.__name__, perfilacesso_id=perfilacesso_id)
     """    Função que ativa/desativa um perfil    """
     # instância um perfil com base no identificador
@@ -683,10 +711,13 @@ def gerar_padrao_perfis():
     )
 
 
-@usuario_blueprint.route('/perfilacesso_excluir/<int:perfilacesso_id>', methods=['GET', 'POST'])
+@usuario_blueprint.route('/perfilacesso_excluir/<perfilacesso_id_crypto>/', methods=['GET', 'POST'])
 @login_required
 @has_view('Usuário')
-def perfilacesso_excluir(perfilacesso_id):
+def perfilacesso_excluir(perfilacesso_id_crypto):
+    # descriptografas os ids
+    perfilacesso_id = descriptografar(perfilacesso_id_crypto)
+
     LogsEventos.registrar("evento", perfilacesso_excluir.__name__, perfilacesso_id=perfilacesso_id)
     perfilacesso = PerfilAcesso.query.filter_by(id=perfilacesso_id).one_or_none()
 
@@ -794,38 +825,44 @@ def cadastrar_lote_perfis():
     return redirect(url_for('usuario.perfil_listar'))
 
 
-@usuario_blueprint.route('/telaperfilacesso_listar/<int:perfilacesso_id>>', methods=['GET', 'POST'])
+# @usuario_blueprint.route('/telaperfilacesso_listar/<perfilacesso_id_crypto>/', methods=['GET', 'POST'])
+# @login_required
+# @has_view('Usuário')
+# def telaperfilacesso_listar(perfilacesso_id_crypto):
+#     # descriptografas os ids
+#     perfilacesso_id = descriptografar(perfilacesso_id_crypto)
+#
+#     LogsEventos.registrar("evento", telaperfilacesso_listar.__name__, perfilacesso_id=perfilacesso_id)
+#     telasperfilacesso_liberadas = TelaPerfilAcesso.query.filter_by(perfilacesso_id=perfilacesso_id).all()
+#
+#     #  lista(id e nome) de todas as telas liberadas para uso
+#     telasperfil = Tela.query.filter(
+#         Tela.id == Telacontrato.tela_id,
+#         Telacontrato.contrato_id == Contrato.id,
+#         Contrato.id == Empresa.contrato_id,
+#         Empresa.id == current_user.empresa_id).order_by(Tela.posicao)
+#
+#     # # Lista de telas já cadastradas
+#     telasexistentes = Tela.query.filter(
+#         Tela.id == TelaPerfilAcesso.tela_id,
+#         TelaPerfilAcesso.perfilacesso_id == perfilacesso_id).order_by(Tela.posicao)
+#
+#     # # Lista de telas permitidas sem repetições
+#     form = TelaPerfilForm()
+#     form.tela.choices = [(tela.id, tela.nome) for tela in telasperfil if
+#                          tela.id not in {tl.id for tl in telasexistentes}]
+#
+#     return render_template('telaperfilacesso_listar.html', telasperfilacesso=telasperfilacesso_liberadas,
+#                            perfilacesso_id_crypto=perfilacesso_id_crypto, form=form)
+
+
+@usuario_blueprint.route('/telaperfilacesso_editar/<perfilacesso_id_crypto>/', methods=['GET', 'POST'])
 @login_required
 @has_view('Usuário')
-def telaperfilacesso_listar(perfilacesso_id):
-    LogsEventos.registrar("evento", telaperfilacesso_listar.__name__, perfilacesso_id=perfilacesso_id)
-    telasperfilacesso_liberadas = TelaPerfilAcesso.query.filter_by(perfilacesso_id=perfilacesso_id).all()
+def telaperfilacesso_editar(perfilacesso_id_crypto):
+    # descriptografas os ids
+    perfilacesso_id = descriptografar(perfilacesso_id_crypto)
 
-    #  lista(id e nome) de todas as telas liberadas para uso
-    telasperfil = Tela.query.filter(
-        Tela.id == Telacontrato.tela_id,
-        Telacontrato.contrato_id == Contrato.id,
-        Contrato.id == Empresa.contrato_id,
-        Empresa.id == current_user.empresa_id).order_by(Tela.posicao)
-
-    # # Lista de telas já cadastradas
-    telasexistentes = Tela.query.filter(
-        Tela.id == TelaPerfilAcesso.tela_id,
-        TelaPerfilAcesso.perfilacesso_id == perfilacesso_id).order_by(Tela.posicao)
-
-    # # Lista de telas permitidas sem repetições
-    form = TelaPerfilForm()
-    form.tela.choices = [(tela.id, tela.nome) for tela in telasperfil if
-                         tela.id not in {tl.id for tl in telasexistentes}]
-
-    return render_template('telaperfilacesso_listar.html', telasperfilacesso=telasperfilacesso_liberadas,
-                           perfilacesso_id=perfilacesso_id, form=form)
-
-
-@usuario_blueprint.route('/telaperfilacesso_editar/<int:perfilacesso_id>>', methods=['GET', 'POST'])
-@login_required
-@has_view('Usuário')
-def telaperfilacesso_editar(perfilacesso_id):
     LogsEventos.registrar("evento", telaperfilacesso_editar.__name__, perfilacesso_id=perfilacesso_id)
     perfilacesso = PerfilAcesso.query.filter_by(id=perfilacesso_id).one_or_none()
     form = TelaPerfilForm()
@@ -843,14 +880,18 @@ def telaperfilacesso_editar(perfilacesso_id):
     else:
         flash("Perfil não cadastrado", category="danger")
 
-    return redirect(url_for("usuario.perfilacesso_editar", perfilacesso_id=perfilacesso_id))
+    return redirect(url_for("usuario.perfilacesso_editar", perfilacesso_id_crypto=perfilacesso_id_crypto))
 
 
-@usuario_blueprint.route('/telaperfilacesso_excluir/<int:telaperfilacesso_id>/<int:perfilacesso_id>',
+@usuario_blueprint.route('/telaperfilacesso_excluir/<telaperfilacesso_id_crypto>/<perfilacesso_id_crypto>/',
                          methods=['GET', 'POST'])
 @login_required
 @has_view('Usuário')
-def telaperfilacesso_excluir(telaperfilacesso_id, perfilacesso_id):
+def telaperfilacesso_excluir(telaperfilacesso_id_crypto, perfilacesso_id_crypto):
+    # descriptografas os ids
+    telaperfilacesso_id = descriptografar(telaperfilacesso_id_crypto)
+    perfilacesso_id = descriptografar(perfilacesso_id_crypto)
+
     LogsEventos.registrar("evento", telaperfilacesso_excluir.__name__, telaperfilacesso_id=telaperfilacesso_id,
                           perfilacesso_id=perfilacesso_id)
     # verifica se a telaperfilacesso existe
@@ -863,20 +904,24 @@ def telaperfilacesso_excluir(telaperfilacesso_id, perfilacesso_id):
             flash("Tela do perfil desativada", category="success")
         else:
             flash("Tela do perfil não ativada/desativada", category="danger")
-    return redirect(url_for('usuario.perfilacesso_editar', perfilacesso_id=perfilacesso_id))
+    return redirect(url_for('usuario.perfilacesso_editar', perfilacesso_id_crypto=perfilacesso_id_crypto))
 
 
-@usuario_blueprint.route('/perfilmanutentor_listar/<int:usuario_id>', methods=['GET', 'POST'])
+@usuario_blueprint.route('/perfilmanutentor_listar/<usuario_id_crypto>/', methods=['GET', 'POST'])
 @login_required
 @has_view('Usuário')
 @has_view('Ordem de Serviço')
-def perfilmanutentor_listar(usuario_id):
+def perfilmanutentor_listar(usuario_id_crypto):
+    # descriptografas os ids
+    usuario_id = descriptografar(usuario_id_crypto)
+
     LogsEventos.registrar("evento", perfilmanutentor_listar.__name__, usuario_id=usuario_id)
     if usuario_id == 0:
         flash("Usuário não cadastrado", category="danger")
-        return redirect(url_for('usuario.usuario_editar', usuario_id=usuario_id))
+        return redirect(url_for('usuario.usuario_editar', usuario_id_crypto=usuario_id_crypto))
     else:
         perfismanutentor_existentes = PerfilManutentorUsuario.query.filter_by(usuario_id=usuario_id).all()
+        criptografar_id_lista(perfismanutentor_existentes)
         perfis = PerfilManutentor.query.all()
 
         # # Lista de telas permitidas sem repetições
@@ -886,14 +931,17 @@ def perfilmanutentor_listar(usuario_id):
                                                                        perfismanutentor_existentes}]
 
     return render_template("perfilmanutentor_listar.html", perfismanutentor=perfismanutentor_existentes,
-                           usuario_id=usuario_id, form=form)
+                           usuario_id_crypto=usuario_id_crypto, form=form)
 
 
-@usuario_blueprint.route('/perfilmanutentor_editar/<int:usuario_id>', methods=['GET', 'POST'])
+@usuario_blueprint.route('/perfilmanutentor_editar/<usuario_id_crypto>/', methods=['GET', 'POST'])
 @login_required
 @has_view('Usuário')
 @has_view('Ordem de Serviço')
-def perfilmanutentor_editar(usuario_id):
+def perfilmanutentor_editar(usuario_id_crypto):
+    # descriptografas os ids
+    usuario_id = descriptografar(usuario_id_crypto)
+
     LogsEventos.registrar("evento", perfilmanutentor_editar.__name__, usuario_id=usuario_id)
     usuario_ = Usuario.query.filter_by(id=usuario_id).one_or_none()
     form = PerfilManutentorForm()
@@ -901,7 +949,7 @@ def perfilmanutentor_editar(usuario_id):
     # verifica se o usuário está cadastrado
     if not usuario_:
         flash("Usuário não cadastrado", category="danger")
-        return redirect(url_for('usuario.usuario_editar', usuario_id=usuario_id))
+        return redirect(url_for('usuario.usuario_editar', usuario_id_crypto=usuario_id_crypto))
     else:
         # pesquisa os perfis manutentor cadastrado
         form.perfilmanutentor.choices = [(0, '')] + [(pm.id, pm.nome)
@@ -916,18 +964,22 @@ def perfilmanutentor_editar(usuario_id):
             flash("Perfil Manutentor Cadastrado", category="success")
         else:
             flash("Perfil Manutentor não Cadastrado", category="danger")
-        return redirect(url_for('usuario.perfilmanutentor_listar', usuario_id=usuario_id))
+        return redirect(url_for('usuario.perfilmanutentor_listar', usuario_id_crypto=usuario_id_crypto))
     else:
         flash_errors(form)
 
-    return redirect(url_for('usuario.perfilmanutentor_listar', usuario_id=usuario_id))
+    return redirect(url_for('usuario.perfilmanutentor_listar', usuario_id_crypto=usuario_id_crypto))
 
 
-@usuario_blueprint.route('/perfilmanutentor_excluir/<int:usuario_id>/<int:perfilmanutentorusuario_id>')
+@usuario_blueprint.route('/perfilmanutentor_excluir/<usuario_id_crypto>/<perfilmanutentorusuario_id_crypto>/')
 @login_required
 @has_view('Usuário')
 @has_view('Ordem de Serviço')
-def perfilmanutentor_excluir(usuario_id, perfilmanutentorusuario_id):
+def perfilmanutentor_excluir(usuario_id_crypto, perfilmanutentorusuario_id_crypto):
+    # descriptografas os ids
+    usuario_id = descriptografar(usuario_id_crypto)
+    perfilmanutentorusuario_id = descriptografar(perfilmanutentorusuario_id_crypto)
+
     LogsEventos.registrar("evento", perfilmanutentor_excluir.__name__, usuario_id=usuario_id,
                           perfilmanutentorusuario_id=perfilmanutentorusuario_id)
     # retorna o usuário com o identificador
@@ -948,4 +1000,4 @@ def perfilmanutentor_excluir(usuario_id, perfilmanutentorusuario_id):
     else:  # se o usuário não existir
         flash("Usuário não cadastrado", category="danger")
 
-    return redirect(url_for('usuario.perfilmanutentor_listar', usuario_id=usuario_id))
+    return redirect(url_for('usuario.perfilmanutentor_listar', usuario_id_crypto=usuario_id_crypto))

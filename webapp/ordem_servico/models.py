@@ -207,6 +207,7 @@ class OrdemServico(db.Model):
     __tablename__ = 'ordem_servico'
 
     id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    id_criptografado = db.Column(db.String(255), nullable=True)
     codigo = db.Column(db.Integer())
     descricao = db.Column(db.String(100), nullable=False, index=True)
     data_abertura = db.Column(db.DateTime(), nullable=False)

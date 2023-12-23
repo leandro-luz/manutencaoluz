@@ -11,7 +11,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form action="{{ url_for('usuario.perfilacesso_editar', perfilacesso_id=0) }}" method="POST">
+                <form action="{{ url_for('usuario.perfilacesso_editar', perfilacesso_id_crypto=0) }}" method="POST">
                     {{form.csrf_token}}
 
                     {{form.nome.label}} {{form.nome(size=50)}}<br>
