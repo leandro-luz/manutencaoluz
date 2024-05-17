@@ -1,65 +1,73 @@
-<nav class="navbar navbar-expand-lg primary-bg-color" id="navbar">
-    <div class="container">
-        <a class="navbar-brand" href="{{url_for('main.index')}}"> MANUTENÇÃOLUZ </a>
-        {% if current_user.is_authenticated %}
-        <a class="navbar-brand"> {{ current_user.empresa.razao_social }} </a>
-        <a class="navbar-brand"> {{ current_user.perfilacesso.nome }} </a>
-        {% endif %}
-        <div id="navbar-items">
-            <ul class="navbar-nav">
-                {% if current_user.is_authenticated %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{{url_for('sistema.index')}}">
-                        <i class="bi bi-house"></i>
-                        <b>Início</b>
-                    </a>
-                </li>
+<!-- CSS MANUTENCAO LUZ -->
+<link href="/static/css/navbar.css" rel="stylesheet">
 
-                <li class="nav-item">
-                    <div class="dropdown ">
-                        <a class="nav-link" data-bs-toggle="dropdown" href="#">
-                            <i class="bi bi-person-circle"></i>
-                            <b>{{ current_user.nome }}</b>
-                        </a>
-                        <ul aria-labelledby="dropdownMenuButton1" class="dropdown-menu">
-                            <li><a class="dropdown-item"
-                                   href="{{ url_for('usuario.usuario', usuario_id=current_user.id) }}">Conta</a>
-                            </li>
-                            <li><a class="dropdown-item" href="{{ url_for('usuario.trocar_senha') }}">Trocar senha</a>
-                            </li>
-                            <li><a class="dropdown-item" href="{{ url_for('usuario.solicitar_troca_email') }}">Trocar
-                                email</a>
-                            </li>
-                            <li><a class="dropdown-item" href="{{ url_for('usuario.logout') }}">Desconectar</a></li>
-                        </ul>
+<nav class="navbar navbar-expand-md sticky-top ">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center" href="{{url_for('main.index')}}">
+            {% if current_user.is_authenticated %}
+            <span class="navbar-brand span">{{ current_user.empresa.razao_social }}</span>
+            {% else %}
+            <span class="navbar-brand span">MANLUZ</span>
+            {% endif %}
+        </a>
+        <!--        <nav class="navbar navbar-dark">-->
+        <!--            <button class="navbar-toggler" data-bs-target="#navcol-1" data-bs-toggle="collapse">-->
+        <!--                <span class="visually-hidden">Toggle navigation</span>-->
+        <!--                <span class="navbar-toggler-icon"></span>-->
+        <!--            </button>-->
+        <!--        </nav>-->
+        <!--        <div class="collapse navbar-collapse d-md-flex" id="navcol-1">-->
+        <ul class="navbar-nav ms-auto list-group list-group-horizontal">
+            {% if current_user.is_authenticated %}
+            <li class="nav-item">
+                <a class="nav-link" href="{{url_for('sistema.index')}}">
+                    <i class="bi bi-house fs-4"></i>
+                    <b>SISTEMA</b>
+                </a>
+            </li>
+            <li class="nav-item">
+                <div class="dropdown">
+                    <a class="nav-link" data-bs-toggle="dropdown" href="#">
+                        <i class="bi bi-person-circle fs-4"></i>
+                        <b>{{ current_user.nome }}</b>
+                    </a>
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item"
+                           href="{{ url_for('usuario.usuario', usuario_id=current_user.id) }}">Conta</a>
+                        <a class="dropdown-item" href="{{ url_for('usuario.trocar_senha') }}">Trocar senha</a>
+                        <a class="dropdown-item" href="{{ url_for('usuario.solicitar_troca_email') }}">Trocar
+                            email</a>
+                        <a class="dropdown-item" href="{{ url_for('usuario.logout') }}">Desconectar</a>
                     </div>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <i class="bi bi-chat-left"></i>
-                        <b>Ajuda</b>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{url_for('usuario.login')}}">
-                        <i class="bi-bootstrap-reboot"></i>
-                    </a>
-                </li>
-                {% else %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{{url_for('usuario.login')}}">
-                        <i class="bi bi-person"></i>
-                        <b>Acessar</b>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{url_for('empresa.solicitar')}}">
-                        <i class="bi bi-person-plus"></i>
-                        <b>Cadastro</b>
-                    </a>
-                </li>
-                {% endif %}
-            </ul>
-        </div>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="bi bi-chat-left fs-4"></i>
+                    <b>AJUDA</b>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{url_for('usuario.login')}}">
+                    <i class="bi-bootstrap-reboot fs-4"></i>
+                </a>
+            </li>
+            {% else %}
+            <li class="nav-item">
+                <a class="nav-link" href="{{url_for('usuario.login')}}">
+                    <i class="bi bi-person fs-4"></i>
+                    <b>ACESSAR</b>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{url_for('empresa.solicitar')}}">
+                    <i class="bi bi-person-plus fs-4"></i>
+                    <b>CADASTRO</b>
+                </a>
+            </li>
+            {% endif %}
+
+        </ul>
     </div>
+    <!--    </div>-->
 </nav>

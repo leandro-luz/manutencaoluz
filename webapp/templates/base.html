@@ -34,14 +34,23 @@
 
 </head>
 <body>
-{% include 'navbar.html' %}
+
+<header>
+    <!-- Navbar -->
+    {% include 'navbar.html' %}
+</header>
+
 <div class="container">
     {% include 'messages.html' %}
     {% block body %}
     {% endblock %}
 </div>
-{% include 'footer.html' %}
-</body>
+<footer class="text-center d-flex align-items-end py-4">
+    <!-- Footer -->
+    {% include 'footer.html' %}
+</footer>
+
+
 {% block js %}
 {% endblock %}
 

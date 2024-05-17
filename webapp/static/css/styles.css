@@ -1,240 +1,192 @@
-
-
 body {
-    background-color: #1111;
-    color: #111;
+  background: #F3F4F5;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
-.text {
-    color: #111;
+.navbar {
+  background: #86A789;
+  border-bottom: 5px solid #739072;
+  font-size: 0.8vw;
+}
+.navbar-brand.span {
+  color: white;
+  font-weight: bold;
+}
+.navbar-brand.span:hover {
+  color: #4F6F52;
 }
 
-.primary-bg-color {
-    background-color: #57A5DC;
+.nav-link{
+  color: white;
+  font-weight: bold;
+}
+.nav-link:hover{
+ color: #4F6F52;
 }
 
-.secondary-bg-color {
-    background-color: #19259C;
-}
-
-.light-bg-color {
-    background-color: #FCF5EB;
-}
-
-.dark-bg-color {
-    background-color: #101010;
-}
-
-.primary-color {
-    color: #C09578;
-}
-
-.secondary-color {
-    color: #626262;
-}
-
-.light-color {
-    color: #FCF5EB;
-}
-
-/* NAVBAR */
-#navbar .navbar-nav {
-    flex-direction: row
-    justify-content: end
-}
-
-#navbar .navbar-nav li {
-    margin-left: 1em;
-}
-
-#navbar a {
-    color: #FFF;
-}
-
-#navbar li {
-    position: relative;
-}
-
-#navbar i {
-    font-size: 20px;
-}
-
-.navbar-brand {
-    font-weight: 700;
-    width: 100%
-    text-align: center;
-}
-
-@media (min-width: 768px) {
-    .navbar-brand{
-        text-align: left;
-    }
-}
-
-#navbar-items {
-    justify-content: space-between;
-}
-
-@media(min-width: 768px) {
-    .navbar-items {
-        min-width: 80%
-        display: flex;
-    }
-}
 
 .dropdown-menu {
-    position: relative;
-    background-color: #57A5DC;
+  background: #d2e3c8;
 }
 
-
-/* TELAS AUTH */
-
-.container {
-    margin-left: 25px;
-    margin-right: 25px;
-}
-
-
-#form-container {
-    background-color: #FFF;
-    border-radius: 20px;
-    box-shadow: .5px 10px 15px rgba(0, 0, 0, .2);
-    margin: 25px;
-}
-
-@media(min-width: 768px) {
-    #form-container {
-        margin: 25px auto;
-        padding: 25px;
-    }
-}
-
-#form-container h2 {
-    font-weight: 900;
-    font-size: 23px;
-    margin-bottom: 10px;
-}
-
-#form-container a {
-    color: #222;
-    transition: .5s;
-}
-
-#form-container a:hover {
-    color: #6C63FF;
-}
-
-#form-container form {
-    padding-bottom: 10px;
-}
-
-#form-container .form-control {
-    border: none;
-    border-bottom: 1px solid #CCC;
-    border-radius: 0;
-}
-
-#form-container .form-control:focus {
-    box-shadow: none;
-}
-
-#form-container .form-floating label {
-    color: #CCC;
-}
-
-#form-container .form-floating > .form-control:focus~label {
-    color: #222;
-}
-
-#form-container input[type="submit"],
-#form-container input[type="checkbox"]:checked {
-    background-color: #6C63FF;
-    border-color: 6C3FF;
-}
-
-.btn.btn-primary {
-    width: 100%;
-    margin-top: 25px;
-}
-
-@media(min-width: 768px) {
-    .btn.btn-primary {
-        width: auto;
-    }
-}
-
-/*  IMAGE LOGIN */
-.row.align-items-center {
-    align-content: center;
-    height: 100%;
-    padding: 10px 0;
-}
-
-.col-md-6.order-md-1 {
-    padding-top: 50px;
-}
-
-@media(min-width: 768px) {
-    .col-md-6.order-md-1 {
-        padding-top: 0;
-    }
-}
-
-
-#link-new-password,
-#link-register-user {
-    text-align: center;
-    padding-top: 50px;
-}
-
-
-/*  TELA SISTEMA */
-
-#system-container {
-    margin-top: 25px;
-    font-size: 10px;
-}
-
-input[required]{
-    background-image: radial-gradient(#F00 15%, transparent 16%),
-    radial-gradient(#F00 15%, transparent 16%);
-    background-size: 1.5em 1.5em;
-    background-position: right top;
-    background-repeat: no-repeat;
-}
-
-/* FOOTER */
-
-#footer-container {
-    margin-top: 25px;
-    padding-top: 5px;
-    padding-left: 25px;
-}
-
-#footer {
-    color: #FFF;
-}
-
-
-[data-tooltip] {
-  position: relative;
+.dropdown.a {
+  color: white;
   font-weight: bold;
 }
 
-[data-tooltip]:after {
-  display: none;
-  position: absolute;
-  top: -5px;
-  padding: 5px;
-  border-radius: 3px;
-  left: calc(100% + 2px);
-  content: attr(data-tooltip);
-  white-space: nowrap;
-  background-color: #0095ff;
-  color: White;
+.dropdown.a:hover {
+  color: #4F6F52;
 }
 
-[data-tooltip]:hover:after {
+
+footer {
+  background: #86A789;
+  position: relative;
+  margin-top: auto;
+}
+
+
+#sidebar {
+  background-color: #86A789;
+  width: 170px;
+  position: fixed;
+  z-index: 1;
+  top: 100px;
+  left: 5px;
+  overflow-x: hidden;
+  padding: 8px 0;
+
+}
+
+#sidebar a {
+  padding: 6px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 12px;
+  font-size: 0.8vw;
   display: block;
 }
+
+.top-buffer {
+    margin-top:20px;
+}
+
+#system {
+  margin-left: 170px;
+  padding: 0px 10px;
+  font-size: 12px;
+  font-size: 0.8vw;
+}
+
+@media screen and (max-height: 600px) {
+  #sidebar {width: 100px}
+  #sidebar {padding-top: 15px;}
+  #sidebar a {font-size: 5px;}
+  #system {margin-left: 100px}
+  #system {font-size: 5px;}
+}
+
+
+
+
+
+
+
+
+
+/* Add a black background color to the top navigation */
+.topnav {
+    background-color: #333;
+    overflow: hidden;
+}
+
+/* Style the links inside the navigation bar */
+.topnav a {
+  float: left;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+}
+
+/* Change the color of links on hover */
+.topnav a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+/* Add a color to the active/current link */
+.topnav a.active {
+  background-color: #04AA6D;
+  color: white;
+}
+
+/* Right-aligned section inside the top navigation */
+.topnav-right {
+  float: right;
+}
+
+
+
+
+
+/*
+.bs-icon {
+  --bs-icon-size: .75rem;
+  display: flex;
+  flex-shrink: 0;
+  justify-content: center;
+  align-items: center;
+  font-size: var(--bs-icon-size);
+  width: calc(var(--bs-icon-size) * 2);
+  height: calc(var(--bs-icon-size) * 2);
+  color: var(--bs-primary);
+}
+
+.bs-icon-xs {
+  --bs-icon-size: 1rem;
+  width: calc(var(--bs-icon-size) * 1.5);
+  height: calc(var(--bs-icon-size) * 1.5);
+}
+
+.bs-icon-sm {
+  --bs-icon-size: 1rem;
+}
+
+.bs-icon-md {
+  --bs-icon-size: 1.5rem;
+}
+
+.bs-icon-lg {
+  --bs-icon-size: 2rem;
+}
+
+.bs-icon-xl {
+  --bs-icon-size: 2.5rem;
+}
+
+.bs-icon.bs-icon-primary {
+  color: var(--bs-white);
+  background: var(--bs-primary);
+}
+
+.bs-icon.bs-icon-primary-light {
+  color: var(--bs-primary);
+  background: rgba(var(--bs-primary-rgb), .2);
+}
+
+.bs-icon.bs-icon-semi-white {
+  color: var(--bs-primary);
+  background: rgba(255, 255, 255, .5);
+}
+
+.bs-icon.bs-icon-rounded {
+  border-radius: .5rem;
+}
+
+.bs-icon.bs-icon-circle {
+  border-radius: 50%;
+}*/
+
